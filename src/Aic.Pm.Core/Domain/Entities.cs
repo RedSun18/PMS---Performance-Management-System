@@ -1,0 +1,313 @@
+namespace Aic.Pm.Core.Domain;
+
+/// <summary>
+/// PM-relevant subset of the legacy empmaster (see docs/legacy-mapping.md §5).
+/// </summary>
+public class Employee
+{
+    public string EmpCode { get; set; } = "";
+    public string LatinName { get; set; } = "";
+    public string? ArabicName { get; set; }
+    public string? DesignationCode { get; set; }
+    public string? DeptCode { get; set; }
+    public string? SectionCode { get; set; }
+    public string? Grade { get; set; }
+    public DateOnly? JoinDate { get; set; }
+    public DateOnly? TermDate { get; set; }
+    public string? Email { get; set; }
+    /// <summary>HDR_SNAPSHOT for rows synthesized from pm_form_records; MANUAL for app-entered.</summary>
+    public string Source { get; set; } = "MANUAL";
+
+    public bool IsActive => TermDate is null;
+}
+
+public class Department
+{
+    public string Code { get; set; } = "";
+    public string NameEn { get; set; } = "";
+    public string? NameAr { get; set; }
+}
+
+public class Designation
+{
+    public string Code { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string? DescriptionAr { get; set; }
+}
+
+public class Section
+{
+    public string Code { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string? DescriptionAr { get; set; }
+}
+
+/// <summary>Legacy reference rows: rf_codetype ADM / rf_moduleno KPI / rf_subtype J.</summary>
+public class JobFamily
+{
+    public string Code { get; set; } = "";          // JF001..
+    public string NameEn { get; set; } = "";
+    public string? NameAr { get; set; }
+    /// <summary>Comma-separated grade list from rf_lastsrl, e.g. "6,7,8".</summary>
+    public string GradesCsv { get; set; } = "";
+    public int KpiWeight { get; set; }              // rf_frac
+    public int CompWeight { get; set; }             // rf_toac
+    public string Status { get; set; } = "A";
+
+    public IEnumerable<string> Grades =>
+        GradesCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+
+/// <summary>Legacy reference rows: rf_codetype ADM / rf_moduleno KPI / rf_subtype R.</summary>
+public class RatingScale
+{
+    public string Code { get; set; } = "";          // "1".."6"
+    public string NameEn { get; set; } = "";
+    public string? NameAr { get; set; }
+    public int MinScore { get; set; }               // rf_frac
+    public int MaxScore { get; set; }               // rf_toac
+    public string? Remarks { get; set; }
+    public string Status { get; set; } = "A";
+}
+
+public class KpiMaster
+{
+    public string KpiId { get; set; } = "";         // KPI001..
+    public string Name { get; set; } = "";
+    public string? NameAr { get; set; }
+    public string Perspective { get; set; } = "";   // F / C / I / L  (legacy kpi_type)
+    public string? PerspectiveDesc { get; set; }
+    public string? PerspectiveDescAr { get; set; }
+    public string? Description { get; set; }
+    public string? DescriptionAr { get; set; }
+    public string? Formula { get; set; }
+    public string? FormulaAr { get; set; }
+    /// <summary>Comma-separated dept codes or "*" for all.</summary>
+    public string DeptCsv { get; set; } = "*";
+    public string? DeptDesc { get; set; }
+    public string? DeptDescAr { get; set; }
+    public string? WeightRange { get; set; }
+    public int MinWeight { get; set; } = 10;
+    public int MaxWeight { get; set; } = 25;
+    public string Status { get; set; } = "A";
+    public string? Remarks { get; set; }
+    public string? CreatedBy { get; set; }
+    public DateOnly? CreatedDate { get; set; }
+    public string? ModifiedBy { get; set; }
+    public DateOnly? ModifiedDate { get; set; }
+    public string? ModifiedTime { get; set; }
+
+    public bool AppliesToDept(string deptCode) =>
+        DeptCsv.Trim() == "*" ||
+        DeptCsv.Split(',', StringSplitOptions.TrimEntries).Contains(deptCode, StringComparer.OrdinalIgnoreCase);
+}
+
+public class CompetencyMaster
+{
+    public string CompId { get; set; } = "";        // COM001..
+    public string Name { get; set; } = "";
+    public string? NameAr { get; set; }
+    public string CompType { get; set; } = "B";     // B behavioural / T technical
+    public string? TypeDesc { get; set; }
+    public string? TypeDescAr { get; set; }
+    public string? Description { get; set; }
+    public string? DescriptionAr { get; set; }
+    public string DeptCsv { get; set; } = "*";
+    public string? DeptDesc { get; set; }
+    public string? DeptDescAr { get; set; }
+    public string? WeightRange { get; set; }
+    public int MinWeight { get; set; } = 10;
+    public int MaxWeight { get; set; } = 20;
+    public string Status { get; set; } = "A";
+    public string? Remarks { get; set; }
+    public string? CreatedBy { get; set; }
+    public DateOnly? CreatedDate { get; set; }
+    public string? ModifiedBy { get; set; }
+    public DateOnly? ModifiedDate { get; set; }
+    public string? ModifiedTime { get; set; }
+}
+
+/// <summary>Form-level authoritative record (legacy pm_form_records HDR row).</summary>
+public class PmForm
+{
+    public int Id { get; set; }
+    /// <summary>Legacy ref_no, preserved verbatim (may be unpadded historic format).</summary>
+    public string LegacyRefNo { get; set; } = "";
+    public string EmpCode { get; set; } = "";
+    public int EvalYear { get; set; }
+
+    // Snapshots captured at save time (legacy behaviour)
+    public string EmpNameSnapshot { get; set; } = "";
+    public string? DesignationSnapshot { get; set; }
+    public string? DeptCode { get; set; }
+    public string? SectionCode { get; set; }
+    public string? ManagerEmpCode { get; set; }     // legacy app_by
+    public string? GradeSnapshot { get; set; }
+    public DateOnly? JoinDateSnapshot { get; set; }
+    public DateOnly? LastReviewDate { get; set; }
+    public string? JobFamily { get; set; }
+
+    public int KpiWeightTotal { get; set; }
+    public int CompWeightTotal { get; set; }
+    public decimal KpiScore { get; set; }
+    public decimal CompScore { get; set; }
+    public decimal PerformanceScore { get; set; }
+    public string? OverallRatingCode { get; set; }
+
+    public string Status { get; set; } = PmFormStatus.Draft;
+    public string? PreviousStatus { get; set; }
+    public DateOnly? StatusChangeDate { get; set; }
+
+    public string? SelfAssessment { get; set; }
+    public string? DevelopmentPlan { get; set; }
+    public string? EmployeeSign { get; set; }
+    public string? ManagerSign { get; set; }
+
+    public string? EmpAckBy { get; set; }
+    public DateOnly? EmpAckDate { get; set; }
+    public string? EmpAckSign { get; set; }
+    public string? EmpAckComments { get; set; }
+
+    public string? Hr1ReviewerName { get; set; }
+    public DateOnly? Hr1ReviewDate { get; set; }
+    public string? Hr1Sign { get; set; }
+    public string? Hr1Remarks { get; set; }
+
+    public string? Hr2ReviewerName { get; set; }
+    public DateOnly? Hr2ReviewDate { get; set; }
+    public string? Hr2Sign { get; set; }
+    public string? Hr2Remarks { get; set; }
+
+    public string? PromotionRecommendationValue { get; set; }  // YES / BORDERLINE / NO
+    public string? PromotionComments { get; set; }
+
+    public bool IsLocked { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateOnly? LastRemindedDate { get; set; }
+
+    public string? CreatedBy { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public string? UpdatedBy { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>Optimistic-concurrency token, incremented on every state transition.</summary>
+    public int Version { get; set; }
+
+    public List<PmFormKpi> Kpis { get; set; } = new();
+    public List<PmFormCompetency> Competencies { get; set; } = new();
+    public List<PmFormStatusHistory> History { get; set; } = new();
+}
+
+public class PmFormKpi
+{
+    public int Id { get; set; }
+    public int PmFormId { get; set; }
+    public PmForm? PmForm { get; set; }
+    public int RecordSeq { get; set; }
+    public string? LegacyRefNo { get; set; }
+    public string Perspective { get; set; } = "";   // F / C / I / L
+    public string KpiCode { get; set; } = "";
+    public string KpiName { get; set; } = "";
+    public string? KpiDefinition { get; set; }
+    public string? FormulaMetric { get; set; }
+    public string? Target { get; set; }
+    public int ItemWeight { get; set; }
+    public int AchievementScore { get; set; }
+    public decimal WeightedCalculation { get; set; }
+    public string? Comments { get; set; }
+}
+
+public class PmFormCompetency
+{
+    public int Id { get; set; }
+    public int PmFormId { get; set; }
+    public PmForm? PmForm { get; set; }
+    public int RecordSeq { get; set; }
+    public string? LegacyRefNo { get; set; }
+    public string CompType { get; set; } = "B";     // B / T
+    public string CompCode { get; set; } = "";
+    public string CompName { get; set; } = "";
+    /// <summary>Legacy stored the competency description in kpi_definition.</summary>
+    public string? Description { get; set; }
+    public int ItemWeight { get; set; }
+    public int AchievementScore { get; set; }
+    public decimal WeightedCalculation { get; set; }
+    public string? Comments { get; set; }
+}
+
+public class PmFormStatusHistory
+{
+    public int Id { get; set; }
+    public int PmFormId { get; set; }
+    public PmForm? PmForm { get; set; }
+    public string? FromStatus { get; set; }
+    public string ToStatus { get; set; } = "";
+    public string ChangedBy { get; set; } = "";
+    public DateTime ChangedAt { get; set; }
+    public string? Note { get; set; }
+}
+
+/// <summary>
+/// HR-designated direct manager for PM Form purposes. Some designated managers are
+/// not formal org-chart managers (legacy note in KPIForm.aspx.vb).
+/// </summary>
+public class ManagerAssignment
+{
+    public string EmpCode { get; set; } = "";
+    public string ManagerEmpCode { get; set; } = "";
+    public string Source { get; set; } = "HR_LIST";
+    public string? Note { get; set; }
+}
+
+/// <summary>Data-driven business-rule exceptions (see ExceptionRule).</summary>
+public class EmployeeException
+{
+    public int Id { get; set; }
+    public string EmpCode { get; set; } = "";
+    public string RuleCode { get; set; } = "";
+    public string? Reason { get; set; }
+    public DateOnly? EffectiveFrom { get; set; }
+    public DateOnly? EffectiveTo { get; set; }
+
+    public bool IsEffective(DateOnly today) =>
+        (EffectiveFrom is null || EffectiveFrom <= today) &&
+        (EffectiveTo is null || EffectiveTo >= today);
+}
+
+public class AppUser
+{
+    public int Id { get; set; }
+    public string UserName { get; set; } = "";
+    public string PasswordHash { get; set; } = "";
+    public string? EmpCode { get; set; }
+    public string DisplayName { get; set; } = "";
+    public string? Email { get; set; }
+    public bool MustChangePassword { get; set; }
+    public bool IsActive { get; set; } = true;
+    public List<UserRole> RolesList { get; set; } = new();
+}
+
+public class UserRole
+{
+    public int Id { get; set; }
+    public int AppUserId { get; set; }
+    public AppUser? AppUser { get; set; }
+    public string Role { get; set; } = "";
+}
+
+public class EmailLog
+{
+    public int Id { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string TemplateKey { get; set; } = "";
+    public string? FormLegacyRefNo { get; set; }
+    public string ToRecipients { get; set; } = "";
+    public string CcRecipients { get; set; } = "";
+    public string Subject { get; set; } = "";
+    public string Body { get; set; } = "";
+    /// <summary>LOGGED (dev, no SMTP), SENT, SKIPPED_NO_RECIPIENT, FAILED.</summary>
+    public string Status { get; set; } = "LOGGED";
+    public string? Note { get; set; }
+    /// <summary>Idempotency key: templateKey + form + transition version.</summary>
+    public string? IdempotencyKey { get; set; }
+}

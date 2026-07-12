@@ -6,7 +6,7 @@
 |---|---|---|
 | `pm_form_records-informix-inserts.sql` / `-csv` | pm_form_records | pm_form_records **subset** (~200 rows) + full `CREATE TABLE` DDL |
 | `empmaster-informix-inserts.sql` / `-csv` | empmaster | **Mislabeled — contains the full `pm_form_records` export**: 1,321 rows (185 HDR / 248 KPI / 888 COMP), 185 distinct employees. No empmaster data exists in this snapshot. |
-| `kpi_master-informix-inserts.sql` / `-csv` | kpi_master | kpi_master, 136 rows, EN+AR |
+| `kpi_master-informix-inserts.sql` / `-csv` | kpi_master | kpi_master, 134 rows, EN+AR |
 | `competency_master-informix-inserts.sql` / `-csv` | competency_master | competency_master, 77 rows, EN+AR |
 | `reference-informix-inserts.sql` / `-csv` | reference | Only `ADM/KPI` rows: 6 job families (subtype `J`) + 6 rating ranges (subtype `R`) |
 | `informix-core-schema.sql` | full DDL | **Missing.** DDL recovered from the `CREATE TABLE` headers inside the insert exports. |
@@ -66,7 +66,7 @@ Parsing rules: dates are `dd/MM/yyyy`; `record_seq` NULL on HDR → 1; numeric N
 
 The importer prints and `docs/acceptance-tests.md` §D asserts:
 
-- Row counts: 185 forms, 248 KPI items, 888 COMP items, 136 KPI masters (active count reported),
+- Row counts: 185 forms, 248 KPI items, 888 COMP items, 134 KPI masters,
   77 competency masters, 6 job families, 6 rating scales.
 - Status counts equal the source (160/23/2).
 - Σ item weights per form equals the legacy stored totals where the legacy form was complete;

@@ -1,0 +1,23 @@
+# Local development database for the standalone AIC Performance Management system.
+#   docker compose up -d
+# Port 5445 avoids clashing with any locally-installed PostgreSQL.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aicpm-postgres
+    environment:
+      POSTGRES_DB: aicpm
+      POSTGRES_USER: aicpm
+      POSTGRES_PASSWORD: aicpm_dev
+    ports:
+      - "5445:5432"
+    volumes:
+      - aicpm-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aicpm -d aicpm"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  aicpm-pgdata:

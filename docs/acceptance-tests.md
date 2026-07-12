@@ -79,7 +79,7 @@ automated tests; **[manual]** are browser walkthroughs for release sign-off. Per
 2. Existing HDR keeps its stored ref_no on update, including legacy unpadded `PM2026907HDR01`.
 3. Lookup is by (emp, year, type) — a form saved under an unpadded ref is found and updated, never
    duplicated.
-4. Import reconciliation: 185 forms / 248 KPI / 888 COMP; statuses 160 EMPLOYEE_ACKNOWLEDGE +
+4. Import reconciliation: 185 forms / 248 KPI / 888 COMP / 134 KPI masters; statuses 160 EMPLOYEE_ACKNOWLEDGE +
    23 DRAFT + 2 PENDING_EMPLOYEE_ACK; `eval_year` trimmed to 2026; CHAR padding trimmed;
    `'Y     '` → true; sample form `PM20261022HDR01` has 5 COMP and 0 KPI rows and job family
    “Specialists & Professionals” with 0/100 weights.

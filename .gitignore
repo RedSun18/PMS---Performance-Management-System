@@ -1,0 +1,15 @@
+# Build outputs
+bin/
+obj/
+*.user
+.vs/
+.idea/
+
+# Local dev
+*.db
+*.log
+.DS_Store
+
+# Legacy read-only snapshot + approved data exports (kept outside source control
+# per References/DATABASE_EXPORT_CHECKLIST.md; importer reads them from this path)
+References/

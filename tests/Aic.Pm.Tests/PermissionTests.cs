@@ -11,18 +11,17 @@ public class PermissionTests : IAsyncLifetime
     public Task DisposeAsync() { _h.Dispose(); return Task.CompletedTask; }
 
     // ---- B.1 explicit HR admin list -------------------------------------------
+    // The standalone rebuild seeds a single configurable "admin" account rather than the
+    // legacy adm22/adm12/... list (see SeedData.cs / DatabaseSeeder.SeedCoreAsync). Only
+    // accounts actually holding the HR_ADMIN role are administrators — no username pattern.
     [Theory]
-    [InlineData("adm22", true)]
-    [InlineData("adm12", true)]
-    [InlineData("adm4", true)]
-    [InlineData("adm2", true)]
-    [InlineData("adm16", true)]
-    [InlineData("adm10", true)]
-    [InlineData("ADM12", true)]     // case-insensitive
-    [InlineData("adm99", false)]    // other admin accounts are NOT PM HR admins
+    [InlineData("admin", true)]
+    [InlineData("ADMIN", true)]     // case-insensitive
+    [InlineData("adm22", false)]    // legacy AIC accounts are no longer seeded/privileged
+    [InlineData("adm12", false)]
     [InlineData("u1504", false)]
     [InlineData("", false)]
-    public async Task IsHrAdmin_matches_exactly_the_approved_accounts(string user, bool expected) =>
+    public async Task IsHrAdmin_matches_exactly_the_seeded_administrator(string user, bool expected) =>
         Assert.Equal(expected, await _h.Permissions.IsHrAdminAsync(user));
 
     // ---- B.2 direct-manager resolution -----------------------------------------
@@ -51,10 +50,9 @@ public class PermissionTests : IAsyncLifetime
         Assert.False(self.CanActAsManager);
         Assert.False(self.CanViewFullScores);
 
-        // Even an HR admin viewing their own form gets no HR actions (legacy isEmployee guard)
-        _h.Db.Employees.Add(new Employee { EmpCode = "adm12", LatinName = "HR Admin 12" });
-        await _h.Db.SaveChangesAsync();
-        var hrSelf = await _h.Permissions.GetFormPermissionsAsync("adm12", "adm12", "adm12");
+        // Even an HR admin viewing their own form gets no HR actions (legacy isEmployee guard).
+        // "admin" is the single seeded administrator account (DatabaseSeeder.SeedCoreAsync).
+        var hrSelf = await _h.Permissions.GetFormPermissionsAsync("admin", "admin", "admin");
         Assert.True(hrSelf.IsHrAdmin);
         Assert.False(hrSelf.CanActAsHr);
     }

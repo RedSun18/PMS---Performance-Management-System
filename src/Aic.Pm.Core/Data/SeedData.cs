@@ -7,11 +7,13 @@ namespace Aic.Pm.Core.Data;
 /// </summary>
 public static class SeedData
 {
-    /// <summary>
-    /// PM Form HR administrators — the explicit approved list. Broad HR-department
-    /// membership must never grant this role.
-    /// </summary>
-    public static readonly string[] HrAdminAccounts = { "adm22", "adm12", "adm4", "adm2", "adm16", "adm10" };
+    // NOTE: the legacy production system recognized six named accounts as PM Form HR
+    // administrators (adm22, adm12, adm4, adm2, adm16, adm10 — see docs/legacy-mapping.md
+    // and docs/workflow-state-machine.md §3). This standalone rebuild is deliberately
+    // decoupled from that AIC-specific account list: development seeds a single
+    // configurable administrator account instead (see DatabaseSeeder.SeedCoreAsync).
+    // A real deployment assigns the Roles.HrAdmin role to whichever accounts the
+    // organization designates — role membership, not username pattern-matching.
 
     /// <summary>Departments from the hardcoded aiccom.DeptName map (reference DPT rows were not exported).</summary>
     public static readonly (string Code, string NameEn)[] Departments =

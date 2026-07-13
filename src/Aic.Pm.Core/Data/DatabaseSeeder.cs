@@ -11,14 +11,20 @@ namespace Aic.Pm.Core.Data;
 public static class DatabaseSeeder
 {
     /// <summary>
-    /// Development-only default password for seeded accounts (MustChangePassword = true).
-    /// No production credentials are ever imported (docs/data-migration-plan.md §2).
+    /// Development-only default password for per-employee seeded accounts
+    /// (MustChangePassword = true). No production credentials are ever imported
+    /// (docs/data-migration-plan.md §2).
     /// </summary>
     public const string DevPassword = "ChangeMe123!";
 
+    /// <summary>Default single-admin dev credentials, overridable via configuration (see Program.cs).</summary>
+    public const string DefaultAdminUsername = "admin";
+    public const string DefaultAdminPassword = "admin123";
+
     private static readonly PasswordHasher<AppUser> Hasher = new();
 
-    public static async Task SeedCoreAsync(PmDbContext db)
+    public static async Task SeedCoreAsync(PmDbContext db,
+        string adminUsername = DefaultAdminUsername, string adminPassword = DefaultAdminPassword)
     {
         foreach (var (code, name) in SeedData.Departments)
             if (await db.Departments.FindAsync(code) is null)
@@ -38,27 +44,27 @@ public static class DatabaseSeeder
             if (!await db.EmployeeExceptions.AnyAsync(x => x.EmpCode == emp && x.RuleCode == rule))
                 db.EmployeeExceptions.Add(new EmployeeException { EmpCode = emp, RuleCode = rule, Reason = reason });
 
-        // The six approved HR administrator accounts — the ONLY HR_ADMIN role holders.
-        foreach (var account in SeedData.HrAdminAccounts)
+        // Single configurable administrator account — the standalone rebuild does not seed
+        // the legacy AIC adm22/adm12/... accounts (see SeedData.cs note). Override the
+        // username/password via the "AdminAccount" configuration section or environment
+        // variables in Program.cs; never hard-code real credentials here.
+        adminUsername = (adminUsername ?? DefaultAdminUsername).Trim();
+        var admin = await db.AppUsers.Include(u => u.RolesList)
+            .FirstOrDefaultAsync(u => u.UserName == adminUsername);
+        if (admin is null)
         {
-            var user = await db.AppUsers.Include(u => u.RolesList)
-                .FirstOrDefaultAsync(u => u.UserName == account);
-            if (user is null)
+            admin = new AppUser
             {
-                user = new AppUser
-                {
-                    UserName = account,
-                    DisplayName = $"HR Administrator ({account})",
-                    // Pseudo employee code so HR1/HR2 segregation-of-duties comparison works
-                    EmpCode = account,
-                    MustChangePassword = true
-                };
-                user.PasswordHash = Hasher.HashPassword(user, DevPassword);
-                db.AppUsers.Add(user);
-            }
-            if (!user.RolesList.Any(r => r.Role == Roles.HrAdmin))
-                user.RolesList.Add(new UserRole { Role = Roles.HrAdmin });
+                UserName = adminUsername,
+                DisplayName = "Administrator",
+                // Pseudo employee code so HR1/HR2 segregation-of-duties comparison works
+                EmpCode = adminUsername
+            };
+            admin.PasswordHash = Hasher.HashPassword(admin, adminPassword);
+            db.AppUsers.Add(admin);
         }
+        if (!admin.RolesList.Any(r => r.Role == Roles.HrAdmin))
+            admin.RolesList.Add(new UserRole { Role = Roles.HrAdmin });
 
         await db.SaveChangesAsync();
     }

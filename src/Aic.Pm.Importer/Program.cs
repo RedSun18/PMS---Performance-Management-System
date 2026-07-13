@@ -11,6 +11,8 @@ var dataDir = GetArg(args, "--data") ?? "References/Database";
 var connection = GetArg(args, "--connection")
     ?? Environment.GetEnvironmentVariable("PM_CONNECTION")
     ?? "Host=localhost;Port=5445;Database=aicpm;Username=aicpm;Password=aicpm_dev";
+var adminUsername = Environment.GetEnvironmentVariable("PM_ADMIN_USERNAME") ?? DatabaseSeeder.DefaultAdminUsername;
+var adminPassword = Environment.GetEnvironmentVariable("PM_ADMIN_PASSWORD") ?? DatabaseSeeder.DefaultAdminPassword;
 
 using var loggerFactory = LoggerFactory.Create(b => b.AddSimpleConsole(o => o.SingleLine = true));
 var log = loggerFactory.CreateLogger("Importer");
@@ -28,7 +30,7 @@ log.LogInformation("Applying migrations to {Conn}", connection.Split(';')[0]);
 await db.Database.MigrateAsync();
 
 var importer = new LegacyImportService(db, loggerFactory.CreateLogger<LegacyImportService>());
-var s = await importer.RunAsync(dataDir);
+var s = await importer.RunAsync(dataDir, adminUsername, adminPassword);
 
 Console.WriteLine();
 Console.WriteLine("=== Import summary ===");

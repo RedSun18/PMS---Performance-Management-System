@@ -83,34 +83,29 @@ public class IndexModel : AppPageModel
     {
         await BuildSelectionListsAsync();
 
-        // Regular employees always land on their own form (legacy auto-load)
-        if (!IsHrAdmin && !await _permissions.IsAManagerAsync(CurrentEmpCode) &&
+        // Convenience default only — NOT an authorization decision. Plain employees with
+        // no manager/branch-viewer rights land on their own form when none is specified
+        // (legacy auto-load). The gate below is what actually enforces access; it re-checks
+        // permissions from server-derived identity regardless of what Empcd was defaulted to.
+        if (string.IsNullOrWhiteSpace(Empcd) &&
+            !IsHrAdmin && !await _permissions.IsAManagerAsync(CurrentEmpCode) &&
             !await _permissions.HasExceptionAsync(CurrentEmpCode, ExceptionRule.BranchViewer))
         {
-            if (string.IsNullOrEmpty(Empcd)) Empcd = CurrentEmpCode;
-            if (Empcd != CurrentEmpCode)
-            {
-                ErrorMessage = "Access Denied: You can only view your own form.";
-                Empcd = CurrentEmpCode;
-            }
+            Empcd = CurrentEmpCode;
         }
 
         if (string.IsNullOrWhiteSpace(Empcd)) return Page();
+
+        // Authorize BEFORE any employee-specific data is read (also avoids leaking employee
+        // code existence to unauthorized callers via a different error message).
+        var denied = await AuthorizeAsync();
+        if (denied is not null) return denied;
 
         SelectedEmployee = await _db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.EmpCode == Empcd);
         if (SelectedEmployee is null)
         {
             ErrorMessage = $"Employee {Empcd} not found.";
             Empcd = null;
-            return Page();
-        }
-
-        Perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, Empcd);
-        if (!Perms.CanView)
-        {
-            ErrorMessage = "Access Denied: You are not the designated direct manager for this employee.";
-            Empcd = null;
-            SelectedEmployee = null;
             return Page();
         }
 
@@ -126,8 +121,11 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnPostAddKpiAsync(string perspective, string kpiCode, string? target,
         int weight, int? achievement, string? comments, int? editingSeq)
     {
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
         var redirect = RedirectKeep("kpi");
-        if (!await CanEditItemsAsync()) return redirect;
+        if (!await EnsureEditableStatusAsync()) return redirect;
 
         var master = await _db.KpiMasters.AsNoTracking().FirstOrDefaultAsync(k => k.KpiId == kpiCode);
         if (master is null) { ErrorMessage = "Please select a KPI."; return redirect; }
@@ -162,8 +160,11 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostDeleteKpiAsync(int seq)
     {
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
         var redirect = RedirectKeep("kpi");
-        if (!await CanEditItemsAsync()) return redirect;
+        if (!await EnsureEditableStatusAsync()) return redirect;
         var work = await GetWorkAsync();
         work.Kpis.RemoveAll(k => k.Seq == seq);
         work.Resequence();
@@ -175,8 +176,11 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnPostAddCompAsync(string compType, string compCode,
         int weight, int? achievement, string? comments, int? editingSeq)
     {
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
         var redirect = RedirectKeep("comp");
-        if (!await CanEditItemsAsync()) return redirect;
+        if (!await EnsureEditableStatusAsync()) return redirect;
 
         var master = await _db.CompetencyMasters.AsNoTracking().FirstOrDefaultAsync(c => c.CompId == compCode);
         if (master is null) { ErrorMessage = "Please select a Competency."; return redirect; }
@@ -208,8 +212,11 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostDeleteCompAsync(int seq)
     {
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
         var redirect = RedirectKeep("comp");
-        if (!await CanEditItemsAsync()) return redirect;
+        if (!await EnsureEditableStatusAsync()) return redirect;
         var work = await GetWorkAsync();
         work.Comps.RemoveAll(c => c.Seq == seq);
         work.Resequence();
@@ -220,28 +227,42 @@ public class IndexModel : AppPageModel
     // ---- workflow actions --------------------------------------------------
     public async Task<IActionResult> OnPostSaveDraftAsync(FormFields fields)
     {
-        var (perms, content) = await PrepareContentAsync(fields);
-        var result = await _workflow.SaveDraftAsync(CurrentUserName, perms, content);
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
+        var content = await PrepareContentAsync(fields);
+        var result = await _workflow.SaveDraftAsync(CurrentUserName, Perms!, content);
         return Finish(result, "Draft saved successfully. You can continue editing or click 'Send to Employee' when ready.");
     }
 
     public async Task<IActionResult> OnPostSendToEmployeeAsync(FormFields fields)
     {
-        var (perms, content) = await PrepareContentAsync(fields);
-        var result = await _workflow.SendToEmployeeAsync(CurrentUserName, perms, content);
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
+        var content = await PrepareContentAsync(fields);
+        var result = await _workflow.SendToEmployeeAsync(CurrentUserName, Perms!, content);
         return Finish(result, "Form sent to employee successfully. Notification email has been logged.");
     }
 
     public async Task<IActionResult> OnPostSubmitToHrAsync(FormFields fields)
     {
-        var (perms, content) = await PrepareContentAsync(fields);
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
+        var content = await PrepareContentAsync(fields);
         var jf = await _jobFamilies.ResolveAsync(Empcd!, SelectedEmployeeGrade());
-        var result = await _workflow.SubmitToHrAsync(CurrentUserName, perms, content, jf.Configured);
+        var result = await _workflow.SubmitToHrAsync(CurrentUserName, Perms!, content, jf.Configured);
         return Finish(result, "Form submitted to HR successfully.");
     }
 
     public async Task<IActionResult> OnPostAcknowledgeAsync(string? ackComments)
     {
+        // Acknowledgement is inherently self-scoped: the caller must be the employee
+        // named by Empcd, never a manager/HR/other employee acting on someone else's behalf.
+        var denied = await AuthorizeAsync(requireSelf: true);
+        if (denied is not null) return denied;
+
         var result = await _workflow.AcknowledgeAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "", EvalYear, ackComments);
         return Finish(result, "Thank you! Your acknowledgement has been recorded and your manager has been notified.");
     }
@@ -249,15 +270,17 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnPostHrActionAsync(string hrAction,
         string? hr1Name, string? hr1Remarks, string? hr2Name, string? hr2Remarks)
     {
-        var perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "");
+        var denied = await AuthorizeAsync(requireHr: true);
+        if (denied is not null) return denied;
+
         var result = hrAction switch
         {
             PmFormStatus.HrReview1Approved => await _workflow.HrApprove1Async(
-                CurrentUserName, perms, Empcd ?? "", EvalYear, hr1Name ?? "", CurrentEmpCode, hr1Remarks),
+                CurrentUserName, Perms!, Empcd ?? "", EvalYear, hr1Name ?? "", CurrentEmpCode, hr1Remarks),
             PmFormStatus.Approved => await _workflow.HrFinalApproveAsync(
-                CurrentUserName, perms, CurrentEmpCode, Empcd ?? "", EvalYear, hr2Name ?? "", CurrentEmpCode, hr2Remarks),
+                CurrentUserName, Perms!, CurrentEmpCode, Empcd ?? "", EvalYear, hr2Name ?? "", CurrentEmpCode, hr2Remarks),
             PmFormStatus.EmployeeAcknowledged => await _workflow.HrRevertAsync(
-                CurrentUserName, perms, Empcd ?? "", EvalYear, hr1Remarks ?? hr2Remarks),
+                CurrentUserName, Perms!, Empcd ?? "", EvalYear, hr1Remarks ?? hr2Remarks),
             _ => WorkflowResult.Fail("Please select an HR Action.")
         };
         var success = hrAction switch
@@ -271,8 +294,10 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostCancelDeleteAsync()
     {
-        var perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "");
-        var result = await _workflow.CancelDeleteAsync(CurrentUserName, perms, Empcd ?? "", EvalYear);
+        var denied = await AuthorizeAsync(requireManage: true);
+        if (denied is not null) return denied;
+
+        var result = await _workflow.CancelDeleteAsync(CurrentUserName, Perms!, Empcd ?? "", EvalYear);
         if (result.Success) WorkingSet.Clear(HttpContext.Session, Empcd ?? "", EvalYear);
         return Finish(result, "Evaluation records deleted successfully.");
     }
@@ -296,14 +321,37 @@ public class IndexModel : AppPageModel
     private IActionResult RedirectKeep(string tab) =>
         RedirectToPage(new { Dept, Empcd, Year, Tab = tab, keep = true });
 
-    private async Task<bool> CanEditItemsAsync()
+    /// <summary>
+    /// Per-record authorization gate. Must be the FIRST statement in every handler that
+    /// touches a specific employee's PM form — nothing employee-specific (DB read, session
+    /// read/write) may happen before this returns null. Returns a 403 Access Denied result
+    /// on any failure; returns null when the caller may proceed. Populates <see cref="Perms"/>.
+    /// </summary>
+    private async Task<IActionResult?> AuthorizeAsync(
+        bool requireManage = false, bool requireHr = false, bool requireSelf = false)
     {
-        var perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "");
-        if (!perms.CanActAsManager)
-        {
-            ErrorMessage = "Only the direct manager of this employee can edit this form.";
-            return false;
-        }
+        var target = (Empcd ?? "").Trim();
+        if (target.Length == 0) return AccessDenied("No employee selected.");
+
+        Perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, target);
+
+        if (!Perms.CanView) return AccessDenied($"You do not have access to employee {target}'s PM form.");
+        if (requireManage && !Perms.CanActAsManager) return AccessDenied("Only the direct manager of this employee can perform this action.");
+        if (requireHr && !Perms.CanActAsHr) return AccessDenied("Only an HR administrator can perform this action.");
+        if (requireSelf && !Perms.IsSelf) return AccessDenied("You may only act on your own PM form.");
+
+        return null;
+    }
+
+    private IActionResult AccessDenied(string detail)
+    {
+        TempData["Detail"] = detail;
+        return RedirectToPage("/AccessDenied");
+    }
+
+    /// <summary>Business-rule check only (form status/lock) — authorization is handled separately by AuthorizeAsync.</summary>
+    private async Task<bool> EnsureEditableStatusAsync()
+    {
         var form = await _workflow.FindFormAsync(Empcd ?? "", EvalYear);
         var status = form?.Status ?? PmFormStatus.Draft;
         if (!PmFormStatus.AllowsEdit(status) || (form?.IsLocked == true && status != PmFormStatus.EmployeeAcknowledged))
@@ -316,10 +364,10 @@ public class IndexModel : AppPageModel
 
     private string? SelectedEmployeeGrade() => SelectedEmployee?.Grade;
 
-    private async Task<(FormPermissions, WorkflowService.PmFormContent)> PrepareContentAsync(FormFields fields)
+    /// <summary>Assumes AuthorizeAsync has already run and set <see cref="Perms"/> for this Empcd/action.</summary>
+    private async Task<WorkflowService.PmFormContent> PrepareContentAsync(FormFields fields)
     {
         SelectedEmployee ??= await _db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.EmpCode == Empcd);
-        var perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "");
         var work = await GetWorkAsync();
 
         work.SelfAssessment = fields.SelfAssessment;
@@ -353,7 +401,7 @@ public class IndexModel : AppPageModel
                 Comments = c.Comments
             }).ToList());
 
-        return (perms, content);
+        return content;
     }
 
     /// <summary>Working set: session buffer, refreshed from the DB form when absent or stale.</summary>

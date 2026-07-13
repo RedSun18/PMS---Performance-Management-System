@@ -23,7 +23,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(o =>
     {
         o.LoginPath = "/Account/Login";
-        o.AccessDeniedPath = "/Account/Login";
+        // Role-based [Authorize] failures (e.g. non-admin hitting an admin page) land on
+        // the same explicit Access Denied page used by PM Form's per-record authorization.
+        o.AccessDeniedPath = "/AccessDenied";
         o.ExpireTimeSpan = TimeSpan.FromHours(8);
         o.SlidingExpiration = true;
     });
@@ -48,12 +50,22 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Apply migrations and core seeds at startup (idempotent)
+// Apply migrations and core seeds at startup (idempotent).
+// Single dev admin account — override via appsettings "AdminAccount" section or the
+// PM_ADMIN_USERNAME / PM_ADMIN_PASSWORD environment variables. Never hard-code real
+// production credentials here (docs/data-migration-plan.md §2).
+var adminUsername = builder.Configuration["AdminAccount:Username"]
+    ?? Environment.GetEnvironmentVariable("PM_ADMIN_USERNAME")
+    ?? DatabaseSeeder.DefaultAdminUsername;
+var adminPassword = builder.Configuration["AdminAccount:Password"]
+    ?? Environment.GetEnvironmentVariable("PM_ADMIN_PASSWORD")
+    ?? DatabaseSeeder.DefaultAdminPassword;
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PmDbContext>();
     await db.Database.MigrateAsync();
-    await DatabaseSeeder.SeedCoreAsync(db);
+    await DatabaseSeeder.SeedCoreAsync(db, adminUsername, adminPassword);
 }
 
 app.UseStaticFiles();

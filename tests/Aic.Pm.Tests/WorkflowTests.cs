@@ -188,42 +188,45 @@ public class WorkflowTests : IAsyncLifetime
     public async Task Hr_two_stage_review_with_segregation_of_duties()
     {
         await DriveToSubmittedAsync();
+        await _h.AddHrAdminAsync("hr1");
+        await _h.AddHrAdminAsync("hr2");
 
-        var hr1 = await _h.PermsAsync("adm12", "1504", userName: "adm12");
+        var hr1 = await _h.PermsAsync("hr1", "1504", userName: "hr1");
         Assert.True(hr1.IsHrAdmin);
-        var r1 = await _h.Workflow.HrApprove1Async("adm12", hr1, "1504", Year, "HR Administrator (adm12)", "adm12", "ok");
+        var r1 = await _h.Workflow.HrApprove1Async("hr1", hr1, "1504", Year, "HR Reviewer 1", "hr1", "ok");
         Assert.True(r1.Success, r1.ErrorText);
 
         var f = await FormAsync();
         Assert.Equal(PmFormStatus.HrReview1Approved, f.Status);
-        Assert.Equal("adm12", f.Hr1Sign);
+        Assert.Equal("hr1", f.Hr1Sign);
 
         // A.9 double-click guard: action no longer valid for current status
-        var again = await _h.Workflow.HrApprove1Async("adm12", hr1, "1504", Year, "x", "adm12", null);
+        var again = await _h.Workflow.HrApprove1Async("hr1", hr1, "1504", Year, "x", "hr1", null);
         Assert.False(again.Success);
 
         // A.10 same admin cannot do the final review
-        var same = await _h.Workflow.HrFinalApproveAsync("adm12", hr1, "adm12", "1504", Year, "x", "adm12", null);
+        var same = await _h.Workflow.HrFinalApproveAsync("hr1", hr1, "hr1", "1504", Year, "x", "hr1", null);
         Assert.False(same.Success);
         Assert.Contains("you were the first HR reviewer", same.ErrorText);
 
         // A different HR admin can
-        var hr2 = await _h.PermsAsync("adm22", "1504", userName: "adm22");
-        var r2 = await _h.Workflow.HrFinalApproveAsync("adm22", hr2, "adm22", "1504", Year, "HR Administrator (adm22)", "adm22", "final");
+        var hr2 = await _h.PermsAsync("hr2", "1504", userName: "hr2");
+        var r2 = await _h.Workflow.HrFinalApproveAsync("hr2", hr2, "hr2", "1504", Year, "HR Reviewer 2", "hr2", "final");
         Assert.True(r2.Success, r2.ErrorText);
 
         f = await FormAsync();
         Assert.Equal(PmFormStatus.Approved, f.Status);
         Assert.True(f.IsLocked);
-        Assert.Equal("adm22", f.Hr2Sign);
+        Assert.Equal("hr2", f.Hr2Sign);
     }
 
     [Fact]
     public async Task Hr_revert_returns_to_employee_acknowledge()
     {
         await DriveToSubmittedAsync();
-        var hr1 = await _h.PermsAsync("adm12", "1504", userName: "adm12");
-        var r = await _h.Workflow.HrRevertAsync("adm12", hr1, "1504", Year, "please revise");
+        await _h.AddHrAdminAsync("hr1");
+        var hr1 = await _h.PermsAsync("hr1", "1504", userName: "hr1");
+        var r = await _h.Workflow.HrRevertAsync("hr1", hr1, "1504", Year, "please revise");
         Assert.True(r.Success, r.ErrorText);
 
         var f = await FormAsync();

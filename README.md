@@ -58,17 +58,22 @@ step 3.
 
 ## Local dev accounts
 
-The importer creates one login per employee (`AppUsers`, username = 4-digit padded employee
-code) plus the six approved PM HR administrators:
+This is a standalone system, deliberately decoupled from the legacy AIC account list — the
+six legacy `adm22/adm12/adm4/adm2/adm16/adm10` accounts are **not** seeded. Instead:
 
-```
-adm22, adm12, adm4, adm2, adm16, adm10
-```
+- A single administrator account is seeded on startup: username/password come from the
+  `AdminAccount:Username` / `AdminAccount:Password` configuration keys (or the
+  `PM_ADMIN_USERNAME` / `PM_ADMIN_PASSWORD` environment variables), defaulting to
+  **`admin` / `admin123`** for local development. Change this in production.
+- The importer additionally creates one login per employee (`AppUsers`, username = 4-digit
+  padded employee code), sharing the development password `ChangeMe123!`
+  (see `DatabaseSeeder.DevPassword`), flagged `MustChangePassword`.
+- Additional accounts (Administrator, Employee, or Viewer) can be created from the in-app
+  **User Management** page once signed in as `admin`.
 
-All seeded accounts share the development password `ChangeMe123!` (see
-`DatabaseSeeder.DevPassword`) and are flagged `MustChangePassword`. **No production credentials,
-connection strings, or SMTP secrets are ever imported** — this is a hard rule from the export
-checklist and is enforced by keeping `References/` out of source control (`.gitignore`).
+**No production credentials, connection strings, or SMTP secrets are ever imported** — this is
+a hard rule from the export checklist and is enforced by keeping `References/` out of source
+control (`.gitignore`).
 
 ## Email safety guardrail
 

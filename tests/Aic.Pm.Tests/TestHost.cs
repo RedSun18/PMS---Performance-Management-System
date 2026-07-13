@@ -94,6 +94,25 @@ public sealed class TestHost : IDisposable
     public Task<FormPermissions> PermsAsync(string userEmpCode, string targetEmpCode, string? userName = null) =>
         Permissions.GetFormPermissionsAsync(userName ?? $"u{userEmpCode}", userEmpCode, targetEmpCode);
 
+    /// <summary>
+    /// Seeds an ad-hoc HR admin test account, decoupled from production seed data (which
+    /// now seeds only a single configurable "admin" account — see DatabaseSeeder). Tests
+    /// that need two distinct HR admins (segregation of duties) call this twice.
+    /// </summary>
+    public async Task AddHrAdminAsync(string userName)
+    {
+        var user = new AppUser
+        {
+            UserName = userName,
+            DisplayName = $"HR Admin ({userName})",
+            EmpCode = userName,
+            PasswordHash = "test-fixture-no-login"
+        };
+        user.RolesList.Add(new UserRole { Role = Roles.HrAdmin });
+        Db.AppUsers.Add(user);
+        await Db.SaveChangesAsync();
+    }
+
     /// <summary>Standard complete content for employee 1504 (grade 7 → 60/40): 4 KPIs / 3 comps.</summary>
     public WorkflowService.PmFormContent Content1504(int achievement = 0, int? year = null) =>
         new("1504", year ?? Clock.Today.Year, "Employee 1504", "TL", "MAR", null, "854", "7", null,

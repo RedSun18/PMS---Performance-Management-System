@@ -28,11 +28,13 @@ public class LegacyImportService
         int Employees, int ManagerAssignments, int Exceptions, int Users,
         int Forms, int KpiItems, int CompItems, IReadOnlyList<string> Warnings);
 
-    public async Task<ImportSummary> RunAsync(string dataDir)
+    public async Task<ImportSummary> RunAsync(string dataDir,
+        string adminUsername = DatabaseSeeder.DefaultAdminUsername,
+        string adminPassword = DatabaseSeeder.DefaultAdminPassword)
     {
         var warnings = new List<string>();
 
-        await DatabaseSeeder.SeedCoreAsync(_db);
+        await DatabaseSeeder.SeedCoreAsync(_db, adminUsername, adminPassword);
 
         var jobFamilies = 0; var ratings = 0;
         var referencePath = Path.Combine(dataDir, "reference-informix-csv");

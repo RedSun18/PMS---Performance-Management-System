@@ -17,19 +17,33 @@ public record EmailSpec(
 /// Centralized mail dispatch (handoff mail design): one caller, one send per transition,
 /// deduplicated recipients, empty To ⇒ graceful skip (never an SMTP call), delivery log
 /// with idempotency key. Development default is log-only (no SMTP configured).
+///
+/// SAFETY GUARDRAIL: this build must never address a real employee inbox imported from
+/// the legacy empmaster/pm_form_records export. Every dispatch that would have had a
+/// recipient is redirected to <see cref="SafeRecipient"/>; the originally intended
+/// recipients are preserved in the log's Note field for traceability only, never used
+/// as an actual send target.
 /// </summary>
 public class EmailService
 {
+    /// <summary>All dispatches are redirected here instead of any legacy empmaster address.</summary>
+    public const string SafeRecipient = "aryanbhandary@gmail.com";
+
     private readonly PmDbContext _db;
     private readonly IClock _clock;
     public EmailService(PmDbContext db, IClock clock) { _db = db; _clock = clock; }
 
-    /// <summary>Dedupe (To wins over CC), skip empties, write the log row. Returns the log entry.</summary>
+    /// <summary>Dedupe (To wins over CC), skip empties, redirect to SafeRecipient, write the log row.</summary>
     public async Task<EmailLog> DispatchAsync(EmailSpec spec)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var to = spec.To.Select(a => a.Trim()).Where(a => a.Length > 0 && seen.Add(a)).ToList();
-        var cc = spec.Cc.Select(a => a.Trim()).Where(a => a.Length > 0 && seen.Add(a)).ToList();
+        var intendedTo = spec.To.Select(a => a.Trim()).Where(a => a.Length > 0 && seen.Add(a)).ToList();
+        var intendedCc = spec.Cc.Select(a => a.Trim()).Where(a => a.Length > 0 && seen.Add(a)).ToList();
+
+        // Redirect: never send to legacy empmaster addresses. Empty intended-To still
+        // skips entirely (legacy "no recipients ⇒ no SMTP call" rule is preserved).
+        var to = intendedTo.Count == 0 ? new List<string>() : new List<string> { SafeRecipient };
+        var cc = new List<string>();
 
         var log = new EmailLog
         {
@@ -41,6 +55,9 @@ public class EmailService
             Subject = spec.Subject,
             Body = spec.Body,
             IdempotencyKey = spec.IdempotencyKey,
+            Note = (intendedTo.Count == 0 && intendedCc.Count == 0)
+                ? null
+                : $"Redirected to {SafeRecipient}. Intended To=[{string.Join(";", intendedTo)}] Cc=[{string.Join(";", intendedCc)}].",
             Status = to.Count == 0 ? "SKIPPED_NO_RECIPIENT" : "LOGGED"
         };
 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "AIC Performance Management")</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="topnav">
+        <div class="topnav-brand">AIC Performance Management</div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <nav class="topnav-links">
+                <a asp-page="/PmForm/Index">PM Form</a>
+                @if ((bool?)ViewData["IsHrAdmin"] == true)
+                {
+                    <a asp-page="/PmFormSummary/Index">PM Form Summary</a>
+                    <a asp-page="/Employees/Index">Employee Master</a>
+                    <a asp-page="/ReferenceMaster/Index">Reference Master</a>
+                }
+            </nav>
+            <div class="topnav-user">
+                <span>@User.FindFirst("DisplayName")?.Value (@User.Identity.Name)</span>
+                <form method="post" asp-page="/Account/Logout" class="inline-form">
+                    <button type="submit" class="btn btn-link">Sign out</button>
+                </form>
+            </div>
+        }
+    </header>
+    <main class="page">
+        @RenderBody()
+    </main>
+</body>
+</html>

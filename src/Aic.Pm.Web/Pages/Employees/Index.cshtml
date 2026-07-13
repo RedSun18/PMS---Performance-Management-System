@@ -1,0 +1,70 @@
+@page
+@model Aic.Pm.Web.Pages.Employees.IndexModel
+@{
+    ViewData["Title"] = "Employee Master";
+}
+<div class="page-header">Employee Master</div>
+
+<div class="card">
+    <div class="card-header">Search</div>
+    <div class="card-body">
+        <form method="get">
+            <div class="filters">
+                <div>
+                    <label>Search (code or name)</label>
+                    <input type="text" name="q" value="@Model.Q" />
+                </div>
+                <div>
+                    <label>Department</label>
+                    <select name="dept" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            <option value="@d.Code" selected="@(d.Code == Model.Dept)">@d.NameEn</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label style="text-transform:none;">
+                        <input type="checkbox" name="showInactive" value="true" style="width:auto;" checked="@Model.ShowInactive"
+                               onchange="this.form.submit()" /> Include terminated
+                    </label>
+                </div>
+                <div></div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    <a class="btn btn-success" asp-page="Edit">＋ New Employee</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<table class="grid">
+    <thead>
+        <tr>
+            <th>Code</th><th>Name</th><th>Department</th><th>Section</th><th>Designation</th>
+            <th>Grade</th><th>Join Date</th><th>Direct Manager</th><th>Status</th><th>Source</th><th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var r in Model.Rows)
+    {
+        <tr>
+            <td>@r.E.EmpCode</td>
+            <td><strong>@r.E.LatinName</strong>@(string.IsNullOrEmpty(r.E.ArabicName) ? "" : $" / {r.E.ArabicName}")</td>
+            <td>@r.DeptName</td>
+            <td>@r.E.SectionCode</td>
+            <td>@r.DesigName</td>
+            <td>@r.E.Grade</td>
+            <td>@r.E.JoinDate?.ToString("dd/MM/yyyy")</td>
+            <td>@r.ManagerLabel</td>
+            <td>@(r.E.IsActive ? "Active" : $"Terminated {r.E.TermDate:dd/MM/yyyy}")</td>
+            <td class="muted">@r.E.Source</td>
+            <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">Edit</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+<p class="muted">@Model.Rows.Count employees. Rows sourced from HDR_SNAPSHOT were synthesized from the
+legacy pm_form_records export because no empmaster export exists (docs/data-migration-plan.md §2).</p>

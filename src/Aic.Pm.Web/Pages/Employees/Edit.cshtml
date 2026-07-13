@@ -1,0 +1,87 @@
+@page
+@model Aic.Pm.Web.Pages.Employees.EditModel
+@{
+    ViewData["Title"] = Model.IsNew ? "New Employee" : $"Edit Employee {Model.Empcd}";
+}
+<div class="page-header">@(Model.IsNew ? "New Employee" : $"Edit Employee — {Model.Empcd}")</div>
+
+@if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
+
+<div class="card">
+    <div class="card-header">Employee Details (PM-relevant subset — see docs/legacy-mapping.md §5)</div>
+    <div class="card-body">
+        <form method="post">
+            <div class="grid-3" style="margin-bottom:12px;">
+                <div>
+                    <label>Employee Code</label>
+                    @if (Model.IsNew)
+                    {
+                        <input type="text" name="Form.EmpCode" value="@Model.Form.EmpCode" maxlength="10" />
+                        <span class="muted">New records use padded 4-digit codes in PM reference numbers.</span>
+                    }
+                    else
+                    {
+                        <input type="text" value="@Model.Empcd" readonly />
+                    }
+                </div>
+                <div><label>Latin Name</label><input type="text" name="Form.LatinName" value="@Model.Form.LatinName" maxlength="100" /></div>
+                <div><label>Arabic Name</label><input type="text" name="Form.ArabicName" value="@Model.Form.ArabicName" maxlength="100" dir="rtl" /></div>
+            </div>
+            <div class="grid-3" style="margin-bottom:12px;">
+                <div>
+                    <label>Department</label>
+                    <select name="Form.DeptCode">
+                        <option value="">—</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            <option value="@d.Code" selected="@(d.Code == Model.Form.DeptCode)">@d.Code — @d.NameEn</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>Section</label>
+                    <select name="Form.SectionCode">
+                        <option value="">—</option>
+                        @foreach (var s in Model.Sections)
+                        {
+                            <option value="@s.Code" selected="@(s.Code == Model.Form.SectionCode)">@s.Code — @s.Description</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label>Designation</label>
+                    <select name="Form.DesignationCode">
+                        <option value="">—</option>
+                        @foreach (var d in Model.Designations)
+                        {
+                            <option value="@d.Code" selected="@(d.Code == Model.Form.DesignationCode)">@d.Code — @d.Description</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="grid-4" style="margin-bottom:12px;">
+                <div><label>Grade</label><input type="text" name="Form.Grade" value="@Model.Form.Grade" maxlength="10" /></div>
+                <div><label>Join Date</label><input type="date" name="Form.JoinDate" value="@Model.Form.JoinDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label>Termination Date</label><input type="date" name="Form.TermDate" value="@Model.Form.TermDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label>Email</label><input type="text" name="Form.Email" value="@Model.Form.Email" /></div>
+            </div>
+            <div class="grid-2" style="margin-bottom:16px;">
+                <div>
+                    <label>Direct Manager (PM Form designation)</label>
+                    <select name="Form.ManagerEmpCode">
+                        <option value="">— none —</option>
+                        @foreach (var (code, label) in Model.ManagerOptions)
+                        {
+                            <option value="@code" selected="@(code == Model.Form.ManagerEmpCode)">@label</option>
+                        }
+                    </select>
+                    <span class="muted">Designated for the PM Form; may differ from the formal org chart.</span>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -13,13 +13,18 @@
         {
             <nav class="topnav-links">
                 <a asp-page="/PmForm/Index">PM Form</a>
-                @if ((bool?)ViewData["IsHrAdmin"] == true)
+                @if ((bool?)ViewData["IsHrAdmin"] == true || (bool?)ViewData["IsViewer"] == true)
                 {
                     <a asp-page="/PmFormSummary/Index">PM Form Summary</a>
                     <a asp-page="/Employees/Index">Employee Master</a>
                     <a asp-page="/ReferenceMaster/Index" asp-route-tab="kpi">KPI Master</a>
                     <a asp-page="/ReferenceMaster/Index" asp-route-tab="comp">Competency Master</a>
                     <a asp-page="/ReferenceMaster/Index" asp-route-tab="ref">Reference Master</a>
+                }
+                @if ((bool?)ViewData["IsHrAdmin"] == true)
+                {
+                    <a asp-page="/Users/Index">User Management</a>
+                    <a asp-page="/Admin/LoginAs">Login As</a>
                 }
             </nav>
             <div class="topnav-user">
@@ -30,6 +35,17 @@
             </div>
         }
     </header>
+    @if ((bool?)ViewData["IsImpersonating"] == true)
+    {
+        <div class="impersonation-banner">
+            <span>You are currently impersonating: <strong>@User.FindFirst("DisplayName")?.Value</strong>
+                (@(string.IsNullOrEmpty(User.FindFirst("EmpCode")?.Value) ? User.Identity!.Name : $"Employee {User.FindFirst("EmpCode")!.Value}"))
+                — signed in as @ViewData["OriginalAdminDisplayName"]</span>
+            <form method="post" asp-page="/Admin/LoginAs" asp-page-handler="Return" class="inline-form">
+                <button type="submit" class="btn btn-utility">Return to Administrator</button>
+            </form>
+        </div>
+    }
     <main class="page">
         @RenderBody()
     </main>

@@ -311,3 +311,23 @@ public class EmailLog
     /// <summary>Idempotency key: templateKey + form + transition version.</summary>
     public string? IdempotencyKey { get; set; }
 }
+
+/// <summary>
+/// Audit trail for the admin "Login As" impersonation feature. One row per impersonation
+/// session, opened when impersonation starts and closed (EndedAt set) on "Return to
+/// Administrator" or logout. Never deleted — this is the accountability record.
+/// </summary>
+public class ImpersonationLog
+{
+    public int Id { get; set; }
+    public string AdminUserName { get; set; } = "";
+    public string AdminDisplayName { get; set; } = "";
+    public string ImpersonatedUserName { get; set; } = "";
+    public string ImpersonatedDisplayName { get; set; } = "";
+    public string? ImpersonatedEmpCode { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? EndedAt { get; set; }
+    public string? IpAddress { get; set; }
+    /// <summary>Correlates the running session's claim back to this row so Return can close it.</summary>
+    public Guid SessionId { get; set; }
+}

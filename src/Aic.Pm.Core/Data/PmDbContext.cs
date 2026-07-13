@@ -24,6 +24,7 @@ public class PmDbContext : DbContext
     public DbSet<AppUser> AppUsers => Set<AppUser>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
+    public DbSet<ImpersonationLog> ImpersonationLogs => Set<ImpersonationLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -103,5 +104,11 @@ public class PmDbContext : DbContext
         b.Entity<UserRole>().HasIndex(x => new { x.AppUserId, x.Role }).IsUnique();
 
         b.Entity<EmailLog>().HasIndex(x => x.IdempotencyKey);
+
+        b.Entity<ImpersonationLog>(e =>
+        {
+            e.HasIndex(x => x.SessionId).IsUnique();
+            e.HasIndex(x => x.StartedAt);
+        });
     }
 }

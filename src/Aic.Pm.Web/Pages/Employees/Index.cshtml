@@ -33,7 +33,10 @@
                 <div></div>
                 <div style="display:flex;gap:8px;">
                     <button type="submit" class="btn btn-primary">Search</button>
-                    <a class="btn btn-success" asp-page="Edit">＋ New Employee</a>
+                    @if (Model.IsHrAdmin)
+                    {
+                        <a class="btn btn-success" asp-page="Edit">＋ New Employee</a>
+                    }
                 </div>
             </div>
         </form>
@@ -44,7 +47,8 @@
     <thead>
         <tr>
             <th>Code</th><th>Name</th><th>Department</th><th>Section</th><th>Designation</th>
-            <th>Grade</th><th>Join Date</th><th>Direct Manager</th><th>Status</th><th>Source</th><th></th>
+            <th>Grade</th><th>Join Date</th><th>Direct Manager</th><th>Status</th><th>Source</th>
+            @if (Model.IsHrAdmin) { <th></th> }
         </tr>
     </thead>
     <tbody>
@@ -61,7 +65,10 @@
             <td>@r.ManagerLabel</td>
             <td>@(r.E.IsActive ? "Active" : $"Terminated {r.E.TermDate:dd/MM/yyyy}")</td>
             <td class="muted">@r.E.Source</td>
-            <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">Edit</a></td>
+            @if (Model.IsHrAdmin)
+            {
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">Edit</a></td>
+            }
         </tr>
     }
     </tbody>

@@ -15,7 +15,8 @@ the rebuild, including documented gaps in the legacy exports.
 src/Aic.Pm.Core/       Domain entities, EF Core DbContext + migrations, workflow/validation/
                         scoring/rating services, legacy CSV importer
 src/Aic.Pm.Web/        ASP.NET Core Razor Pages app (PM Form, PM Form Summary, Employee
-                        Master, Reference Master, cookie auth)
+                        Master, Reference Master, User Management, Login As impersonation,
+                        forced change-password flow, cookie auth)
 src/Aic.Pm.Importer/   Console tool that loads References/Database exports into PostgreSQL
 tests/Aic.Pm.Tests/    xUnit tests (SQLite in-memory) covering workflow, permissions,
                         scoring/validation, and import reconciliation
@@ -74,6 +75,37 @@ six legacy `adm22/adm12/adm4/adm2/adm16/adm10` accounts are **not** seeded. Inst
 **No production credentials, connection strings, or SMTP secrets are ever imported** — this is
 a hard rule from the export checklist and is enforced by keeping `References/` out of source
 control (`.gitignore`).
+
+## User Management, forced password change, and Login As
+
+**User Management** (`/Users`, administrator-only) is the primary account system. Creating a
+user first asks for a **User Type**:
+
+- **Employee** — pick an existing row from Employee Master; name/email auto-fill from that
+  record (server-authoritative, avoids duplicate data entry). Username is still freely chosen.
+- **Administrator** / **Viewer** — manually entered name, username, email. Administrator gets
+  the `HR_ADMIN` role (full access, including User Management and Login As); Viewer gets read-only
+  access to PM Form Summary, Employee Master, KPI/Competency/Reference Master (no create/edit,
+  enforced server-side, not just hidden in the nav).
+
+Every account has a password (custom, or the configurable default — `Security:DefaultUserPassword`,
+`Password123` by default) and an optional **force password change at first login** flag. A user
+with that flag set is redirected to `/Account/ChangePassword` before reaching anything else in
+the app (current password + new + confirm required); on success the flag clears and they land on
+the dashboard. Administrators can reset any user's password at any time from the Edit page —
+custom or default, with or without forcing a change — without needing to know the old one.
+
+**Login As** (`/Admin/LoginAs`, administrator-only) lets an admin impersonate another account for
+troubleshooting. It's gated by a **separate verification password**
+(`Security:LoginAsVerificationPassword`, default `Password*123` — change this in production),
+valid for 5 minutes per admin session. After verifying, the admin picks any active user and
+"Login As User" fully swaps their session to that user's real identity — same permissions, same
+nav, same pending-password-change state, exactly as that user would experience it. A persistent
+amber banner stays on every page while impersonating, with **Return to Administrator** always
+one click away (this remains reachable even if the impersonated account itself has a pending
+forced password change). Nested impersonation is blocked. Every session is audited in
+`ImpersonationLogs` (admin, impersonated user, start/end timestamps, IP, session id), visible in
+a history table on the same page.
 
 ## Email safety guardrail
 

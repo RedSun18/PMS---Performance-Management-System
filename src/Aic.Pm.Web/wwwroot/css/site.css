@@ -18,6 +18,7 @@ body { margin: 0; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; 
 .topnav-user { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .inline-form { display: inline; }
 .btn-link { background: none; border: none; color: #fff; text-decoration: underline; cursor: pointer; font-size: 13px; }
+.impersonation-banner { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(135deg,#92400e,#d97706); color: #fff; padding: 10px 24px; font-size: 13.5px; font-weight: 600; }
 
 .page-header { background: linear-gradient(135deg,#1a3f80 0%,#2560b8 60%,#2d66c0 100%); color: #fff; text-align: center; padding: 20px; margin-bottom: 20px; font-size: 20px; font-weight: 700; border-radius: 10px; box-shadow: 0 4px 14px rgba(42,47,80,.35); position: relative; }
 .lang-switch { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 13px; }

@@ -3,6 +3,7 @@ using System;
 using Aic.Pm.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Aic.Pm.Core.Data.Migrations
 {
     [DbContext(typeof(PmDbContext))]
-    partial class PmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713114227_AddImpersonationLog")]
+    partial class AddImpersonationLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

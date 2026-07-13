@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Aic.Pm.Core.Data;
+using Aic.Pm.Web.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -32,16 +32,12 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new("DisplayName", user.DisplayName),
-            new("EmpCode", user.EmpCode ?? "")
-        };
-        claims.AddRange(user.RolesList.Select(r => new Claim(ClaimTypes.Role, r.Role)));
-
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
+            AppUserClaims.ToPrincipal(AppUserClaims.Build(user), CookieAuthenticationDefaults.AuthenticationScheme));
+
+        // MustChangePassword takes precedence over any deep link — AppPageModel's forced
+        // redirect will catch it regardless, but skip the extra hop when we already know.
+        if (user.MustChangePassword) return RedirectToPage("/Account/ChangePassword");
 
         return LocalRedirect(returnUrl is { Length: > 0 } && Url.IsLocalUrl(returnUrl) ? returnUrl : "/PmForm");
     }

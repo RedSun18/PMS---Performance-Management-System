@@ -70,9 +70,24 @@ public static class PromotionRecommendation
 public static class Roles
 {
     /// <summary>
-    /// PM Form HR administrative access is explicit. Seeded for exactly:
-    /// adm22, adm12, adm4, adm2, adm16, adm10.
-    /// Other HR-department employees are regular employees for PM Form purposes.
+    /// PM Form HR administrative access ("Administrator" user type in User Management).
+    /// Explicit role membership only — never derived from username pattern or department.
     /// </summary>
     public const string HrAdmin = "HR_ADMIN";
+
+    /// <summary>Read-only access across HR-facing pages ("Viewer" user type). Never grants mutation.</summary>
+    public const string Viewer = "VIEWER";
+
+    /// <summary>Roles.HrAdmin and Roles.Viewer together — used to gate read-only pages to either.</summary>
+    public const string HrAdminOrViewer = HrAdmin + "," + Viewer;
+}
+
+/// <summary>User Management "user type" selector — maps to role assignment, not a stored column.</summary>
+public static class UserType
+{
+    public const string Administrator = "ADMINISTRATOR";
+    public const string Employee = "EMPLOYEE";
+    public const string Viewer = "VIEWER";
+
+    public static readonly string[] All = { Administrator, Employee, Viewer };
 }

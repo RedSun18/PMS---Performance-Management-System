@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aic.Pm.Web.Pages.Employees;
 
-[Authorize(Roles = Roles.HrAdmin)]
+[Authorize(Roles = Roles.HrAdminOrViewer)]
 public class IndexModel : AppPageModel
 {
     private readonly PmDbContext _db;

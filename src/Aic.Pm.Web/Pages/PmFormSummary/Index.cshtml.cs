@@ -11,7 +11,7 @@ namespace Aic.Pm.Web.Pages.PmFormSummary;
 /// HR tracking summary: one row per HDR per employee/year (never detail rows).
 /// HR administrators only — the explicit approved account list, not HR-department membership.
 /// </summary>
-[Authorize(Roles = Roles.HrAdmin)]
+[Authorize(Roles = Roles.HrAdminOrViewer)]
 public class IndexModel : AppPageModel
 {
     private readonly PmDbContext _db;

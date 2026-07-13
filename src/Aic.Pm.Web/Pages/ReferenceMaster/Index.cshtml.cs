@@ -12,7 +12,7 @@ namespace Aic.Pm.Web.Pages.ReferenceMaster;
 /// and the KPI reference codes (job families + rating scales). Legacy leave/loan/deduction
 /// tabs are outside PM scope.
 /// </summary>
-[Authorize(Roles = Roles.HrAdmin)]
+[Authorize(Roles = Roles.HrAdminOrViewer)]
 public class IndexModel : AppPageModel
 {
     private readonly PmDbContext _db;
@@ -79,6 +79,8 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostSaveKpiAsync(KpiMaster input)
     {
+        if (RequireHrAdmin() is { } denied) return denied;
+
         var id = input.KpiId.Trim();
         if (id.Length == 0 || string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.Perspective))
         {
@@ -116,6 +118,8 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostSaveCompAsync(CompetencyMaster input)
     {
+        if (RequireHrAdmin() is { } denied) return denied;
+
         var id = input.CompId.Trim();
         if (id.Length == 0 || string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.CompType))
         {
@@ -150,6 +154,8 @@ public class IndexModel : AppPageModel
 
     public async Task<IActionResult> OnPostSaveJobFamilyAsync(string code, string nameEn, string gradesCsv, int kpiWeight, int compWeight)
     {
+        if (RequireHrAdmin() is { } denied) return denied;
+
         var e = await _db.JobFamilies.FindAsync(code);
         if (e is null) { ErrorMessage = $"Job family {code} not found."; return RedirectToPage(new { Tab = "ref" }); }
         if (kpiWeight + compWeight != 100)

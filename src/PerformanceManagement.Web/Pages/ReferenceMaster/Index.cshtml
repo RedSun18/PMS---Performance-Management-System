@@ -1,0 +1,251 @@
+@page
+@model PerformanceManagement.Web.Pages.ReferenceMaster.IndexModel
+@{
+    ViewData["Title"] = "Reference Master";
+}
+<div class="page-header">Reference Master — KPI &amp; Competency Masters, KPI Reference Codes</div>
+
+@if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
+@if (Model.ErrorMessage is not null) { <div class="alert alert-error">@Model.ErrorMessage</div> }
+
+<div class="tabs">
+    <a href="?tab=kpi" class="@(Model.Tab == "kpi" ? "active" : "")">KPI Master</a>
+    <a href="?tab=comp" class="@(Model.Tab == "comp" ? "active" : "")">Competency Master</a>
+    <a href="?tab=ref" class="@(Model.Tab == "ref" ? "active" : "")">Job Families &amp; Rating Scales</a>
+</div>
+
+@if (Model.Tab == "kpi")
+{
+    var k = Model.KpiEdit;
+    <div class="card">
+        <div class="card-header">@(k is null ? $"Add KPI ({Model.NextKpiId})" : $"Edit KPI {k.KpiId}")</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="SaveKpi">
+                <input type="hidden" name="input.KpiId" value="@(k?.KpiId ?? Model.NextKpiId)" />
+                <div class="grid-4" style="margin-bottom:12px;">
+                    <div><label>KPI Code</label><input type="text" value="@(k?.KpiId ?? Model.NextKpiId)" readonly /></div>
+                    <div>
+                        <label>Perspective</label>
+                        <select name="input.Perspective">
+                            <option value="F" selected="@(k?.Perspective.Trim() == "F")">Financial</option>
+                            <option value="C" selected="@(k?.Perspective.Trim() == "C")">Customer</option>
+                            <option value="I" selected="@(k?.Perspective.Trim() == "I")">Internal Processes</option>
+                            <option value="L" selected="@(k?.Perspective.Trim() == "L")">Learning &amp; Growth</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Departments (comma list or * for all)</label>
+                        <input type="text" name="input.DeptCsv" value="@(k?.DeptCsv ?? "*")" />
+                    </div>
+                    <div>
+                        <label>Status</label>
+                        <select name="input.Status">
+                            <option value="A" selected="@(k?.Status != "I")">Active</option>
+                            <option value="I" selected="@(k?.Status == "I")">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-bottom:12px;">
+                    <div><label>KPI Name (English)</label><input type="text" name="input.Name" value="@k?.Name" maxlength="100" /></div>
+                    <div><label>KPI Name (Arabic)</label><input type="text" name="input.NameAr" value="@k?.NameAr" maxlength="100" dir="rtl" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:12px;">
+                    <div><label>Purpose / Definition (EN)</label><textarea name="input.Description" rows="2">@k?.Description</textarea></div>
+                    <div><label>Purpose / Definition (AR)</label><textarea name="input.DescriptionAr" rows="2" dir="rtl">@k?.DescriptionAr</textarea></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:12px;">
+                    <div><label>Formula / Metric (EN)</label><textarea name="input.Formula" rows="2">@k?.Formula</textarea></div>
+                    <div><label>Formula / Metric (AR)</label><textarea name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
+                </div>
+                <div class="grid-4" style="margin-bottom:14px;">
+                    <div><label>Min Weight %</label><input type="number" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label>Max Weight %</label><input type="number" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label>Remarks</label><input type="text" name="input.Remarks" value="@k?.Remarks" /></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">@(k is null ? "Save KPI" : "Update KPI")</button>
+                    <a class="btn btn-secondary" href="?tab=kpi">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="get" style="margin-bottom:10px;">
+        <input type="hidden" name="tab" value="kpi" />
+        <div class="filters">
+            <div>
+                <label>Perspective</label>
+                <select name="perspective" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="F" selected="@(Model.Perspective == "F")">Financial</option>
+                    <option value="C" selected="@(Model.Perspective == "C")">Customer</option>
+                    <option value="I" selected="@(Model.Perspective == "I")">Internal Processes</option>
+                    <option value="L" selected="@(Model.Perspective == "L")">Learning &amp; Growth</option>
+                </select>
+            </div>
+            <div>
+                <label>Department</label>
+                <select name="deptFilter" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    @foreach (var d in Model.Departments)
+                    {
+                        <option value="@d.Code" selected="@(d.Code == Model.DeptFilter)">@d.NameEn</option>
+                    }
+                </select>
+            </div>
+            <div></div><div></div><div></div>
+        </div>
+    </form>
+
+    <table class="grid">
+        <thead><tr><th>Code</th><th>Name</th><th>Perspective</th><th>Departments</th><th>Weight Range</th><th>Status</th><th>Modified</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Kpis)
+        {
+            <tr>
+                <td>@row.KpiId</td>
+                <td><strong>@row.Name</strong>@(string.IsNullOrEmpty(row.NameAr) ? "" : $" / {row.NameAr}")</td>
+                <td>@row.PerspectiveDesc</td>
+                <td>@row.DeptCsv</td>
+                <td>@row.MinWeight–@row.MaxWeight%</td>
+                <td>@(row.Status == "A" ? "Active" : "Inactive")</td>
+                <td>@row.ModifiedDate?.ToString("dd/MM/yyyy") @row.ModifiedBy</td>
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=kpi&editId=@row.KpiId">Edit</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="muted">@Model.Kpis.Count KPIs.</p>
+}
+else if (Model.Tab == "comp")
+{
+    var c = Model.CompEdit;
+    <div class="card">
+        <div class="card-header">@(c is null ? $"Add Competency ({Model.NextCompId})" : $"Edit Competency {c.CompId}")</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="SaveComp">
+                <input type="hidden" name="input.CompId" value="@(c?.CompId ?? Model.NextCompId)" />
+                <div class="grid-4" style="margin-bottom:12px;">
+                    <div><label>Competency Code</label><input type="text" value="@(c?.CompId ?? Model.NextCompId)" readonly /></div>
+                    <div>
+                        <label>Type</label>
+                        <select name="input.CompType">
+                            <option value="B" selected="@(c?.CompType.Trim() == "B")">Behavioral</option>
+                            <option value="T" selected="@(c?.CompType.Trim() == "T")">Technical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Departments (comma list or * for all)</label>
+                        <input type="text" name="input.DeptCsv" value="@(c?.DeptCsv ?? "*")" />
+                    </div>
+                    <div>
+                        <label>Status</label>
+                        <select name="input.Status">
+                            <option value="A" selected="@(c?.Status != "I")">Active</option>
+                            <option value="I" selected="@(c?.Status == "I")">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-bottom:12px;">
+                    <div><label>Name (English)</label><input type="text" name="input.Name" value="@c?.Name" maxlength="100" /></div>
+                    <div><label>Name (Arabic)</label><input type="text" name="input.NameAr" value="@c?.NameAr" maxlength="100" dir="rtl" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:12px;">
+                    <div><label>Description (EN)</label><textarea name="input.Description" rows="2">@c?.Description</textarea></div>
+                    <div><label>Description (AR)</label><textarea name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
+                </div>
+                <div class="grid-4" style="margin-bottom:14px;">
+                    <div><label>Min Weight %</label><input type="number" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label>Max Weight %</label><input type="number" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label>Remarks</label><input type="text" name="input.Remarks" value="@c?.Remarks" /></div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">@(c is null ? "Save Competency" : "Update Competency")</button>
+                    <a class="btn btn-secondary" href="?tab=comp">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="get" style="margin-bottom:10px;">
+        <input type="hidden" name="tab" value="comp" />
+        <div class="filters">
+            <div>
+                <label>Type</label>
+                <select name="compType" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="B" selected="@(Model.CompType == "B")">Behavioral</option>
+                    <option value="T" selected="@(Model.CompType == "T")">Technical</option>
+                </select>
+            </div>
+            <div></div><div></div><div></div><div></div>
+        </div>
+    </form>
+
+    <table class="grid">
+        <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Description</th><th>Weight Range</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var row in Model.Comps)
+        {
+            <tr>
+                <td>@row.CompId</td>
+                <td><strong>@row.Name</strong>@(string.IsNullOrEmpty(row.NameAr) ? "" : $" / {row.NameAr}")</td>
+                <td>@(row.CompType.Trim() == "T" ? "Technical" : "Behavioral")</td>
+                <td>@row.Description</td>
+                <td>@row.MinWeight–@row.MaxWeight%</td>
+                <td>@(row.Status == "A" ? "Active" : "Inactive")</td>
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=comp&editId=@row.CompId">Edit</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="muted">@Model.Comps.Count competencies.</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">Job Families (grade → KPI/Competency weight split)</div>
+        <div class="card-body">
+            <table class="grid">
+                <thead><tr><th>Code</th><th>Name</th><th>Grades</th><th>KPI Weight %</th><th>Competency Weight %</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var j in Model.JobFamilies)
+                {
+                    <tr>
+                        <form method="post" asp-page-handler="SaveJobFamily">
+                            <td>@j.Code<input type="hidden" name="code" value="@j.Code" /></td>
+                            <td><input type="text" name="nameEn" value="@j.NameEn" /></td>
+                            <td><input type="text" name="gradesCsv" value="@j.GradesCsv" style="max-width:120px;" /></td>
+                            <td><input type="number" name="kpiWeight" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><input type="number" name="compWeight" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">Save</button></td>
+                        </form>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Rating Scales (performance score → rating)</div>
+        <div class="card-body">
+            <table class="grid">
+                <thead><tr><th>Code</th><th>Rating (EN)</th><th>Rating (AR)</th><th>Score Range</th><th>Remarks</th></tr></thead>
+                <tbody>
+                @foreach (var r in Model.RatingScales)
+                {
+                    <tr>
+                        <td>@r.Code</td>
+                        <td><strong>@r.NameEn</strong></td>
+                        <td dir="rtl">@r.NameAr</td>
+                        <td>@r.MinScore–@r.MaxScore</td>
+                        <td>@r.Remarks</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <p class="muted">Rating bands are reference data imported from the legacy system; edit via the importer or database if HR policy changes.</p>
+        </div>
+    </div>
+}

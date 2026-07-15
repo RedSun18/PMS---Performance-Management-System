@@ -28,10 +28,10 @@ HDR status distribution in the export: `EMPLOYEE_ACKNOWLEDGE` 160, `DRAFT` 23,
 
 ## 3. Importer
 
-`src/Aic.Pm.Importer` (console, idempotent, upsert by natural key):
+`src/PerformanceManagement.Importer` (console, idempotent, upsert by natural key):
 
 ```
-dotnet run --project src/Aic.Pm.Importer -- --data "References/Database" [--wipe]
+dotnet run --project src/PerformanceManagement.Importer -- --data "References/Database" [--wipe]
 ```
 
 Order and keys:

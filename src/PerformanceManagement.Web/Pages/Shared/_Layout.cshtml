@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "Performance Management System")</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="layout-container">
+        <!-- Sidebar -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <aside class="sidebar" id="sidebar">
+                <nav class="sidebar-nav">
+                    <a asp-page="/Dashboard/Index" class="sidebar-link">🏠 Dashboard</a>
+                    <a asp-page="/PmForm/Index" class="sidebar-link">📋 PM Form</a>
+                    @if ((bool?)ViewData["IsHrAdmin"] == true || (bool?)ViewData["IsViewer"] == true)
+                    {
+                        <a asp-page="/PmFormSummary/Index" class="sidebar-link">📊 PM Form Summary</a>
+                        <a asp-page="/Employees/Index" class="sidebar-link">👥 Employee Master</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="kpi" class="sidebar-link">🎯 KPI Master</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="comp" class="sidebar-link">✓ Competency Master</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="ref" class="sidebar-link">📚 Reference Master</a>
+                    }
+                    @if ((bool?)ViewData["IsHrAdmin"] == true)
+                    {
+                        <hr class="sidebar-divider" />
+                        <a asp-page="/Users/Index" class="sidebar-link">👤 User Management</a>
+                        <a asp-page="/Admin/LoginAs" class="sidebar-link">🔐 Login As</a>
+                        <a asp-page="/Settings/Index" class="sidebar-link">⚙️ System Settings</a>
+                    }
+                </nav>
+            </aside>
+        }
+        
+        <!-- Main content area -->
+        <div class="main-area">
+            <header class="topnav">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                }
+                <a class="topnav-brand" asp-page="/Dashboard/Index" style="text-decoration:none;color:inherit;">Performance Management System</a>
+                <div class="topnav-user">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span>@User.FindFirst("DisplayName")?.Value (@User.Identity.Name)</span>
+                        <form method="post" asp-page="/Account/Logout" class="inline-form">
+                            <button type="submit" class="btn btn-link">Sign out</button>
+                        </form>
+                    }
+                </div>
+            </header>
+            @if ((bool?)ViewData["IsImpersonating"] == true)
+            {
+                <div class="impersonation-banner">
+                    <span>You are currently impersonating: <strong>@User.FindFirst("DisplayName")?.Value</strong>
+                        (@(string.IsNullOrEmpty(User.FindFirst("EmpCode")?.Value) ? User.Identity!.Name : $"Employee {User.FindFirst("EmpCode")!.Value}"))
+                        — signed in as @ViewData["OriginalAdminDisplayName"]</span>
+                    <form method="post" asp-page="/Admin/LoginAs" asp-page-handler="Return" class="inline-form">
+                        <button type="submit" class="btn btn-utility">Return to Administrator</button>
+                    </form>
+                </div>
+            }
+            <main class="page">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', document.getElementById('sidebar').classList.contains('collapsed'));
+        });
+        
+        // Restore sidebar state from localStorage
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.getElementById('sidebar')?.classList.add('collapsed');
+        }
+    </script>
+</body>
+</html>

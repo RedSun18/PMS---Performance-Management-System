@@ -1,0 +1,30 @@
+@page
+@model PerformanceManagement.Web.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+<div class="login-box card">
+    <div class="card-header">Sign in — Performance Management System</div>
+    <div class="card-body">
+        @if (Model.Error is not null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+        <form method="post">
+            <div style="margin-bottom:12px;">
+                <label>Username</label>
+                <input type="text" name="username" value="@Model.Username" autofocus />
+            </div>
+            <div style="margin-bottom:16px;">
+                <label>Password</label>
+                <input type="password" name="password" />
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Sign in</button>
+        </form>
+        <p class="muted" style="margin-top:14px;">
+            Development accounts: <code>admin</code> (administrator) and one account per
+            employee (4-digit employee code). See the README for initial passwords.
+        </p>
+    </div>
+</div>

@@ -5,13 +5,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aic.Pm.Core", "src\Aic.Pm.Core\Aic.Pm.Core.csproj", "{193CB7DE-75C6-4EC8-A001-963CC9A98419}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceManagement.Core", "src\PerformanceManagement.Core\PerformanceManagement.Core.csproj", "{193CB7DE-75C6-4EC8-A001-963CC9A98419}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aic.Pm.Web", "src\Aic.Pm.Web\Aic.Pm.Web.csproj", "{5976B8E3-69AA-4AD2-A041-9153536C3312}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceManagement.Web", "src\PerformanceManagement.Web\PerformanceManagement.Web.csproj", "{5976B8E3-69AA-4AD2-A041-9153536C3312}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aic.Pm.Importer", "src\Aic.Pm.Importer\Aic.Pm.Importer.csproj", "{C17C2FE6-E305-4234-B002-CCF9114D410F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceManagement.Importer", "src\PerformanceManagement.Importer\PerformanceManagement.Importer.csproj", "{C17C2FE6-E305-4234-B002-CCF9114D410F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aic.Pm.Tests", "tests\Aic.Pm.Tests\Aic.Pm.Tests.csproj", "{871BDF3F-DBF2-4BC2-9AC5-C33136D3769B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceManagement.Tests", "tests\PerformanceManagement.Tests\PerformanceManagement.Tests.csproj", "{871BDF3F-DBF2-4BC2-9AC5-C33136D3769B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

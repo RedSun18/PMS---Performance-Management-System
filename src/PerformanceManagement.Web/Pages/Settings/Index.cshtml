@@ -1,0 +1,84 @@
+@page
+@model PerformanceManagement.Web.Pages.Settings.IndexModel
+@{
+    ViewData["Title"] = "System Settings";
+}
+<div class="page-header">System Settings</div>
+
+@if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
+@if (Model.ErrorMessage is not null) { <div class="alert alert-error">@Model.ErrorMessage</div> }
+
+<form method="post" asp-page-handler="Save">
+    <div class="card">
+        <div class="card-header">Email Settings (SMTP)</div>
+        <div class="card-body">
+            <div class="grid-2" style="margin-bottom:14px;">
+                <div>
+                    <label>SMTP Host</label>
+                    <input type="text" name="Form.SmtpHost" value="@Model.Form.SmtpHost" placeholder="smtp.gmail.com" />
+                </div>
+                <div>
+                    <label>SMTP Port</label>
+                    <input type="number" name="Form.SmtpPort" value="@Model.Form.SmtpPort" placeholder="587" />
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:14px;">
+                <div>
+                    <label>Username</label>
+                    <input type="text" name="Form.SmtpUsername" value="@Model.Form.SmtpUsername" placeholder="user@example.com" />
+                </div>
+                <div>
+                    <label>Password</label>
+                    <input type="password" name="Form.NewPassword"
+                           placeholder="@(Model.HasPassword ? "•••••••• (leave blank to keep current password)" : "Not set")" />
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:14px;">
+                <div>
+                    <label>Sender Name</label>
+                    <input type="text" name="Form.SenderName" value="@Model.Form.SenderName" placeholder="Performance Management System" />
+                </div>
+                <div>
+                    <label>Sender Email</label>
+                    <input type="text" name="Form.SenderEmail" value="@Model.Form.SenderEmail" placeholder="user@example.com" />
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:14px;">
+                <div>
+                    <label style="text-transform:none;">
+                        <input type="checkbox" name="Form.EnableSsl" value="true" style="width:auto;" checked="@Model.Form.EnableSsl" /> Enable SSL / STARTTLS
+                    </label>
+                </div>
+                <div>
+                    <label style="text-transform:none;">
+                        <input type="checkbox" name="Form.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Form.EnableEmailNotifications" /> Enable Email Notifications
+                    </label>
+                </div>
+            </div>
+
+            <div class="grid-2" style="margin-bottom:14px;">
+                <div>
+                    <label>Development Redirect</label>
+                    <input type="text" name="Form.DevelopmentRedirectEmail" value="@Model.Form.DevelopmentRedirectEmail" placeholder="e.g. aryanbhandary@gmail.com" />
+                    <p class="muted" style="margin:4px 0 0;font-size:12px;">
+                        Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.
+                        Clear this only when the app is ready to email real employee inboxes.
+                    </p>
+                </div>
+            </div>
+
+            @if (Model.UpdatedAt is not null)
+            {
+                <p class="muted" style="margin:0;font-size:12px;">Last updated @Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") UTC by @Model.UpdatedBy</p>
+            }
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" asp-page-handler="TestEmail" class="btn btn-secondary">Send Test Email</button>
+    </div>
+</form>

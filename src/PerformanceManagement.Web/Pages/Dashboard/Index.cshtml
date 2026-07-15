@@ -1,0 +1,195 @@
+@page
+@using PerformanceManagement.Core.Domain
+@model PerformanceManagement.Web.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="page-header">Dashboard</div>
+
+@if (Model.DashboardKind == "employee")
+{
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">My @Model.EvalYear Performance Review</div>
+        <div class="card-body">
+            <div class="status-chip" style="margin-bottom:10px;">
+                <span class="status-dot"></span> Current Stage: <strong>@Model.MyStatusLabel</strong>
+            </div>
+            <div class="progress-outer">
+                <div class="progress-inner" style="width:@(Model.MyProgressPercent)%;">@Model.MyProgressPercent%</div>
+            </div>
+            @if (Model.MyDeadlineHint is not null)
+            {
+                <p class="muted" style="margin:12px 0 0;">⏰ @Model.MyDeadlineHint</p>
+            }
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">Completion Breakdown</div>
+        <div class="perf-metrics">
+            <div class="perf-metric">
+                <div class="label">Overall Progress</div>
+                <div class="value">@Model.MyProgressPercent%</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">KPI Completion</div>
+                <div class="value">@Model.MyKpiCompletionPercent%</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">Competency Completion</div>
+                <div class="value">@Model.MyCompCompletionPercent%</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">Items Recorded</div>
+                <div class="value">@(Model.MyForm?.Kpis.Count ?? 0) / @(Model.MyForm?.Competencies.Count ?? 0)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Recent Notifications</div>
+        <div class="card-body">
+            @if (Model.MyRecentNotifications.Count == 0)
+            {
+                <p class="muted" style="margin:0;">No notifications yet.</p>
+            }
+            else
+            {
+                @foreach (var n in Model.MyRecentNotifications)
+                {
+                    <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+                        <div style="font-weight:600;">@n.Subject</div>
+                        <div class="muted">@n.CreatedAt.ToString("dd MMM yyyy HH:mm")</div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:20px;">
+        <a class="btn btn-primary" asp-page="/PmForm/Index">Open My PM Form</a>
+    </div>
+}
+else if (Model.DashboardKind == "manager")
+{
+    <div class="summary-cards">
+        <div class="summary-card blue">
+            <div class="label">Team Members</div>
+            <div class="value">@Model.TeamCount</div>
+        </div>
+        <div class="summary-card grey">
+            <div class="label">Waiting for Your Review</div>
+            <div class="value">@Model.WaitingForReviewCount</div>
+        </div>
+        <div class="summary-card red">
+            <div class="label">Returned by HR</div>
+            <div class="value">@Model.ReturnedCount</div>
+        </div>
+        <div class="summary-card green">
+            <div class="label">Completed</div>
+            <div class="value">@Model.CompletedCount</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">My Team — @Model.EvalYear</div>
+        <div class="card-body" style="padding:0;">
+            <table class="grid">
+                <thead><tr><th>Employee</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.TeamRows)
+                    {
+                        <tr>
+                            <td>@r.EmpCode - @r.Name</td>
+                            <td>
+                                @if (r.NeedsAttention)
+                                {
+                                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span>@r.Status</span>
+                                }
+                                else
+                                {
+                                    @r.Status
+                                }
+                            </td>
+                            <td><a class="btn btn-secondary" asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode" asp-route-year="@Model.EvalYear">Open</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:20px;">
+        <a class="btn btn-primary" asp-page="/PmForm/Index">Go to PM Form</a>
+        <a class="btn btn-secondary" asp-page="/PmFormSummary/Index">View Team Summary</a>
+    </div>
+}
+else
+{
+    <div class="summary-cards">
+        <div class="summary-card blue">
+            <div class="label">Employees</div>
+            <div class="value">@Model.EmployeeCount</div>
+        </div>
+        <div class="summary-card grey">
+            <div class="label">Forms Generated (@Model.EvalYear)</div>
+            <div class="value">@Model.FormsGeneratedCount</div>
+        </div>
+        <div class="summary-card @(Model.OverallCompletionPercent >= 75 ? "green" : Model.OverallCompletionPercent >= 40 ? "blue" : "red")">
+            <div class="label">Overall Completion</div>
+            <div class="value">@Model.OverallCompletionPercent%</div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">Form Status Breakdown</div>
+        <div class="perf-metrics">
+            <div class="perf-metric">
+                <div class="label">Ready / Not Started</div>
+                <div class="value">@Model.ReadyCount</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">In Progress</div>
+                <div class="value">@Model.InProgressCount</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">Finalized</div>
+                <div class="value">@Model.FinalizedCount</div>
+            </div>
+            <div class="perf-metric">
+                <div class="label">Total</div>
+                <div class="value">@Model.FormsGeneratedCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Department Completion</div>
+        <div class="card-body">
+            @if (Model.DeptCompletion.Count == 0)
+            {
+                <p class="muted" style="margin:0;">No department data available.</p>
+            }
+            else
+            {
+                @foreach (var d in Model.DeptCompletion)
+                {
+                    <div style="margin-bottom:14px;">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                            <span><strong>@d.Name</strong></span>
+                            <span class="muted">@d.Finalized / @d.TotalEmployees finalized (@d.Percent%)</span>
+                        </div>
+                        <div class="progress-outer">
+                            <div class="progress-inner" style="width:@(d.Percent)%;"></div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:20px;">
+        <a class="btn btn-primary" asp-page="/PmFormSummary/Index">Open PM Form Summary</a>
+        <a class="btn btn-secondary" asp-page="/Employees/Index">Employee Master</a>
+    </div>
+}

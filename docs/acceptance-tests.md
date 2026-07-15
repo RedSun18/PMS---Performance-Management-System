@@ -1,6 +1,6 @@
 # Acceptance Tests
 
-Automated tests live in `tests/Aic.Pm.Tests` (xUnit). Sections marked **[auto]** are covered by
+Automated tests live in `tests/PerformanceManagement.Tests` (xUnit). Sections marked **[auto]** are covered by
 automated tests; **[manual]** are browser walkthroughs for release sign-off. Personas:
 
 | Persona | Seed account | Role |

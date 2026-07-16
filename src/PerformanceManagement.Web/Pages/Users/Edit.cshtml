@@ -14,7 +14,7 @@
         <form method="post" asp-page-handler="Save" asp-route-id="@Model.Id">
             <div class="grid-3" style="margin-bottom:14px;">
                 <div>
-                    <label>User Type</label>
+                    <label for="userType">User Type</label>
                     <select name="Form.UserType" id="userType" onchange="toggleUserType()">
                         <option value="@PerformanceManagement.Core.Domain.UserType.Employee" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Employee)">Employee</option>
                         <option value="@PerformanceManagement.Core.Domain.UserType.Administrator" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Administrator)">Administrator</option>
@@ -22,8 +22,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Username</label>
-                    <input type="text" name="Form.UserName" value="@Model.Form.UserName" maxlength="50" />
+                    <label for="userNameInput">Username</label>
+                    <input type="text" id="userNameInput" name="Form.UserName" value="@Model.Form.UserName" maxlength="50" />
                 </div>
                 <div>
                     <label style="text-transform:none;">
@@ -34,7 +34,7 @@
 
             <div id="employeeSection" class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Employee</label>
+                    <label for="empSelect">Employee</label>
                     <select name="Form.EmpCode" id="empSelect" onchange="fillFromEmployee()" data-selected="@Model.Form.EmpCode">
                         <option value="">-- Select Employee --</option>
                         @foreach (var (code, label, email) in Model.EmployeeOptions)
@@ -44,14 +44,14 @@
                     </select>
                 </div>
                 <div>
-                    <label>Name (from Employee Master)</label>
+                    <label for="empNameDisplay">Name (from Employee Master)</label>
                     <input type="text" id="empNameDisplay" readonly value="@Model.Form.FullName" />
                 </div>
             </div>
 
             <div id="manualNameSection" class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Full Name</label>
+                    <label for="fullNameInput">Full Name</label>
                     <input type="text" name="Form.FullName" id="fullNameInput" value="@Model.Form.FullName" maxlength="100" />
                 </div>
                 <div></div>
@@ -59,7 +59,7 @@
 
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Email Address</label>
+                    <label for="emailInput">Email Address</label>
                     <input type="text" name="Form.Email" id="emailInput" value="@Model.Form.Email" />
                 </div>
             </div>
@@ -70,8 +70,8 @@
                     <div class="card-body">
                         <div class="grid-3">
                             <div>
-                                <label>Password</label>
-                                <input type="text" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
+                                <label for="passwordInput">Password</label>
+                                <input type="text" id="passwordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
                             </div>
                             <div>
                                 <label style="text-transform:none;">
@@ -105,8 +105,8 @@
             <form method="post" asp-page-handler="ResetPassword" asp-route-id="@Model.Id">
                 <div class="grid-3">
                     <div>
-                        <label>New Password</label>
-                        <input type="text" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
+                        <label for="resetPasswordInput">New Password</label>
+                        <input type="text" id="resetPasswordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
                     </div>
                     <div>
                         <label style="text-transform:none;">

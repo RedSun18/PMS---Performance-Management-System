@@ -121,7 +121,7 @@ public class WorkflowService
                 TransitionTo(form, PmFormStatus.EmployeeAcknowledged, actor, "Employee acknowledged");
                 form.EmpAckBy = actor;
                 form.EmpAckDate = _clock.Today;
-                form.EmpAckSign = actorEmpCode.Trim();
+                form.EmpAckSign = (actorEmpCode ?? "").Trim();
                 form.EmpAckComments = comments;
                 form.IsLocked = false;
                 await Task.CompletedTask;

@@ -14,12 +14,12 @@
         <form method="post">
             <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
             <div style="margin-bottom:12px;">
-                <label>Username</label>
-                <input type="text" name="username" value="@Model.Username" autofocus />
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="@Model.Username" autofocus />
             </div>
             <div style="margin-bottom:16px;">
-                <label>Password</label>
-                <input type="password" name="password" />
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" />
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Sign in</button>
         </form>

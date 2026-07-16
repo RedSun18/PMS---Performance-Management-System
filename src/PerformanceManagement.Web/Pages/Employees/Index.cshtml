@@ -11,12 +11,12 @@
         <form method="get">
             <div class="filters">
                 <div>
-                    <label>Search (code or name)</label>
-                    <input type="text" name="q" value="@Model.Q" />
+                    <label for="empSearchQ">Search (code or name)</label>
+                    <input type="text" id="empSearchQ" name="q" value="@Model.Q" />
                 </div>
                 <div>
-                    <label>Department</label>
-                    <select name="dept" onchange="this.form.submit()">
+                    <label for="empSearchDept">Department</label>
+                    <select name="dept" id="empSearchDept" onchange="this.form.submit()">
                         <option value="">All Departments</option>
                         @foreach (var d in Model.Departments)
                         {

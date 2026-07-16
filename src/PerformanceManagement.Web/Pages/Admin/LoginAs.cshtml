@@ -18,8 +18,8 @@
             </p>
             <form method="post" asp-page-handler="Verify">
                 <div style="max-width:340px;">
-                    <label>Verification Password</label>
-                    <input type="password" name="verificationPassword" autofocus />
+                    <label for="verificationPassword">Verification Password</label>
+                    <input type="password" id="verificationPassword" name="verificationPassword" autofocus />
                 </div>
                 <div class="form-actions" style="margin-top:14px;">
                     <button type="submit" class="btn btn-primary">Continue</button>
@@ -36,7 +36,7 @@ else
             <form method="post" asp-page-handler="Impersonate">
                 <div class="grid-2" style="align-items:end;">
                     <div>
-                        <label>User</label>
+                        <label for="userSelect">User</label>
                         <select name="userId" id="userSelect">
                             @foreach (var u in Model.Users)
                             {

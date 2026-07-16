@@ -113,12 +113,12 @@ public class LoginAsModel : AppPageModel
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             AppUserClaims.ToPrincipal(claims, CookieAuthenticationDefaults.AuthenticationScheme));
 
-        return RedirectToPage("/PmForm/Index");
+        return RedirectToPage("/Dashboard/Index");
     }
 
     public async Task<IActionResult> OnPostReturnAsync()
     {
-        if (!IsImpersonating) return RedirectToPage("/PmForm/Index");
+        if (!IsImpersonating) return RedirectToPage("/Dashboard/Index");
 
         var sessionIdValue = User.FindFirst(AppUserClaims.ImpersonationSessionId)?.Value;
         if (Guid.TryParse(sessionIdValue, out var sessionId))
@@ -142,7 +142,7 @@ public class LoginAsModel : AppPageModel
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             AppUserClaims.ToPrincipal(AppUserClaims.Build(admin), CookieAuthenticationDefaults.AuthenticationScheme));
 
-        return RedirectToPage("/PmForm/Index");
+        return RedirectToPage("/Dashboard/Index");
     }
 
     private bool IsVerified()
@@ -153,8 +153,17 @@ public class LoginAsModel : AppPageModel
 
     private async Task LoadUsersAndHistoryAsync()
     {
-        Users = (await _db.AppUsers.AsNoTracking().Where(u => u.IsActive).OrderBy(u => u.DisplayName).ToListAsync())
-            .Select(u => (u.Id, u.UserName, u.DisplayName, u.EmpCode)).ToList();
+        // Project only the display fields actually needed — avoids pulling PasswordHash and
+        // every other column (including RolesList) over the wire just to list users. The
+        // anonymous type keeps this translatable to a plain multi-column SELECT; Npgsql
+        // can't materialize a ValueTuple projection directly (it tries to read it as a
+        // composite "record" type and throws), so the tuple itself is built client-side
+        // afterward from the already-fetched rows.
+        Users = (await _db.AppUsers.AsNoTracking().Where(u => u.IsActive).OrderBy(u => u.DisplayName)
+                .Select(u => new { u.Id, u.UserName, u.DisplayName, u.EmpCode })
+                .ToListAsync())
+            .Select(u => (u.Id, u.UserName, u.DisplayName, u.EmpCode))
+            .ToList();
         RecentHistory = await _db.ImpersonationLogs.AsNoTracking()
             .OrderByDescending(l => l.StartedAt).Take(50).ToListAsync();
     }

@@ -59,10 +59,13 @@ step 3.
 A single administrator account is seeded on startup: username/password come from the
 `AdminAccount:Username` / `AdminAccount:Password` configuration keys (or the
 `PM_ADMIN_USERNAME` / `PM_ADMIN_PASSWORD` environment variables), defaulting to
-**`admin` / `admin123`** for local development. Change this in production.
+**`admin` / `admin123`** for local development. **Change this in production** — `Program.cs`
+refuses to start with `ASPNETCORE_ENVIRONMENT=Production` if this, `Security:LoginAsVerificationPassword`,
+or `Security:DefaultUserPassword` are still at their checked-in defaults, so a deployment
+can't go live with them unchanged by accident.
 
 The importer additionally creates one login per employee (`AppUsers`, username = 4-digit
-padded employee code), sharing the development password `ChangeMe123!`
+padded employee code), sharing the development password `Password123`
 (see `DatabaseSeeder.DevPassword`), flagged `MustChangePassword`.
 
 Additional accounts (Administrator, Employee, or Viewer) can be created from the in-app

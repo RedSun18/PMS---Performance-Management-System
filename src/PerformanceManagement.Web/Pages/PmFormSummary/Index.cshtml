@@ -11,8 +11,8 @@
         <form method="get">
             <div class="filters">
                 <div>
-                    <label>Department</label>
-                    <select name="dept" onchange="this.form.empcd.value='';this.form.submit()">
+                    <label for="summaryDept">Department</label>
+                    <select name="dept" id="summaryDept" onchange="this.form.empcd.value='';this.form.submit()">
                         <option value="">All Departments</option>
                         @foreach (var d in Model.Departments)
                         {
@@ -21,8 +21,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Employee</label>
-                    <select name="empcd" onchange="this.form.submit()">
+                    <label for="summaryEmpcd">Employee</label>
+                    <select name="empcd" id="summaryEmpcd" onchange="this.form.submit()">
                         <option value="">All Employees</option>
                         @foreach (var (code, label) in Model.EmployeeOptions)
                         {
@@ -31,8 +31,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Evaluation Year</label>
-                    <select name="year" onchange="this.form.submit()">
+                    <label for="summaryYear">Evaluation Year</label>
+                    <select name="year" id="summaryYear" onchange="this.form.submit()">
                         <option value="">All Years</option>
                         @foreach (var y in Model.YearOptions)
                         {
@@ -41,8 +41,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Status</label>
-                    <select name="status" onchange="this.form.submit()">
+                    <label for="summaryStatus">Status</label>
+                    <select name="status" id="summaryStatus" onchange="this.form.submit()">
                         <option value="">All Statuses</option>
                         @foreach (var s in PmFormStatus.All)
                         {

@@ -68,6 +68,26 @@ var adminPassword = builder.Configuration["AdminAccount:Password"]
     ?? Environment.GetEnvironmentVariable("PM_ADMIN_PASSWORD")
     ?? DatabaseSeeder.DefaultAdminPassword;
 
+// appsettings.json ships convenience defaults for local development (admin password,
+// Login As verification password, default employee password). Refuse to start in
+// Production with any of them still unchanged — a checked-in default credential is a
+// real vulnerability the moment this app is deployed somewhere reachable.
+if (app.Environment.IsProduction())
+{
+    var unchanged = new List<string>();
+    if (adminPassword == DatabaseSeeder.DefaultAdminPassword) unchanged.Add("AdminAccount:Password");
+    if ((builder.Configuration["Security:LoginAsVerificationPassword"] ?? "Password*123") == "Password*123")
+        unchanged.Add("Security:LoginAsVerificationPassword");
+    if ((builder.Configuration["Security:DefaultUserPassword"] ?? DatabaseSeeder.DevPassword) == DatabaseSeeder.DevPassword)
+        unchanged.Add("Security:DefaultUserPassword");
+
+    if (unchanged.Count > 0)
+        throw new InvalidOperationException(
+            "Refusing to start in Production with unchanged default credential(s): " +
+            string.Join(", ", unchanged) +
+            ". Override these via environment variables or a Production-specific configuration source before deploying.");
+}
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PmDbContext>();

@@ -14,8 +14,8 @@
         <div class="card-body">
             <div class="grid-2">
                 <div>
-                    <label>Application Base URL</label>
-                    <input type="text" name="ApplicationBaseUrl" value="@Model.ApplicationBaseUrl" placeholder="https://pms.company.com" />
+                    <label for="applicationBaseUrl">Application Base URL</label>
+                    <input type="text" id="applicationBaseUrl" name="ApplicationBaseUrl" value="@Model.ApplicationBaseUrl" placeholder="https://pms.company.com" />
                     <p class="muted" style="margin:4px 0 0;font-size:12px;">
                         Used to build the action links inside outgoing email (e.g. "View Performance Form").
                         Use the address people actually reach this site at — e.g. <code>https://pms.company.com</code> in
@@ -36,35 +36,35 @@
         <div class="card-body">
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>SMTP Host</label>
-                    <input type="text" name="Form.SmtpHost" value="@Model.Form.SmtpHost" placeholder="smtp.gmail.com" />
+                    <label for="smtpHost">SMTP Host</label>
+                    <input type="text" id="smtpHost" name="Form.SmtpHost" value="@Model.Form.SmtpHost" placeholder="smtp.gmail.com" />
                 </div>
                 <div>
-                    <label>SMTP Port</label>
-                    <input type="number" name="Form.SmtpPort" value="@Model.Form.SmtpPort" placeholder="587" />
+                    <label for="smtpPort">SMTP Port</label>
+                    <input type="number" id="smtpPort" name="Form.SmtpPort" value="@Model.Form.SmtpPort" placeholder="587" />
                 </div>
             </div>
 
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Username</label>
-                    <input type="text" name="Form.SmtpUsername" value="@Model.Form.SmtpUsername" placeholder="user@example.com" />
+                    <label for="smtpUsername">Username</label>
+                    <input type="text" id="smtpUsername" name="Form.SmtpUsername" value="@Model.Form.SmtpUsername" placeholder="user@example.com" />
                 </div>
                 <div>
-                    <label>Password</label>
-                    <input type="password" name="Form.NewPassword"
+                    <label for="smtpNewPassword">Password</label>
+                    <input type="password" id="smtpNewPassword" name="Form.NewPassword"
                            placeholder="@(Model.HasPassword ? "•••••••• (leave blank to keep current password)" : "Not set")" />
                 </div>
             </div>
 
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Sender Name</label>
-                    <input type="text" name="Form.SenderName" value="@Model.Form.SenderName" placeholder="Performance Management System" />
+                    <label for="senderName">Sender Name</label>
+                    <input type="text" id="senderName" name="Form.SenderName" value="@Model.Form.SenderName" placeholder="Performance Management System" />
                 </div>
                 <div>
-                    <label>Sender Email</label>
-                    <input type="text" name="Form.SenderEmail" value="@Model.Form.SenderEmail" placeholder="user@example.com" />
+                    <label for="senderEmail">Sender Email</label>
+                    <input type="text" id="senderEmail" name="Form.SenderEmail" value="@Model.Form.SenderEmail" placeholder="user@example.com" />
                 </div>
             </div>
 
@@ -83,8 +83,8 @@
 
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label>Development Redirect</label>
-                    <input type="text" name="Form.DevelopmentRedirectEmail" value="@Model.Form.DevelopmentRedirectEmail" placeholder="e.g. aryanbhandary@gmail.com" />
+                    <label for="devRedirectEmail">Development Redirect</label>
+                    <input type="text" id="devRedirectEmail" name="Form.DevelopmentRedirectEmail" value="@Model.Form.DevelopmentRedirectEmail" placeholder="e.g. aryanbhandary@gmail.com" />
                     <p class="muted" style="margin:4px 0 0;font-size:12px;">
                         Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.
                         Clear this only when the app is ready to email real employee inboxes.

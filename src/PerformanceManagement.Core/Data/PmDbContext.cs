@@ -35,6 +35,7 @@ public class PmDbContext : DbContext
             e.Property(x => x.EmpCode).HasMaxLength(10);
             e.Property(x => x.LatinName).HasMaxLength(100);
             e.Property(x => x.Grade).HasMaxLength(10);
+            e.HasIndex(x => x.DeptCode);
         });
 
         b.Entity<Department>().HasKey(x => x.Code);
@@ -61,6 +62,9 @@ public class PmDbContext : DbContext
         {
             e.HasIndex(x => new { x.EmpCode, x.EvalYear }).IsUnique();
             e.HasIndex(x => x.LegacyRefNo).IsUnique();
+            // Dashboard/summary pages filter by year alone — (EmpCode, EvalYear) above doesn't
+            // help since EvalYear isn't the leading column.
+            e.HasIndex(x => x.EvalYear);
             e.Property(x => x.LegacyRefNo).HasMaxLength(20);
             e.Property(x => x.Status).HasMaxLength(20);
             e.Property(x => x.PreviousStatus).HasMaxLength(20);
@@ -98,13 +102,18 @@ public class PmDbContext : DbContext
         b.Entity<AppUser>(e =>
         {
             e.HasIndex(x => x.UserName).IsUnique();
+            e.HasIndex(x => x.EmpCode);
             e.HasMany(x => x.RolesList).WithOne(x => x.AppUser).HasForeignKey(x => x.AppUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<UserRole>().HasIndex(x => new { x.AppUserId, x.Role }).IsUnique();
 
-        b.Entity<EmailLog>().HasIndex(x => x.IdempotencyKey);
+        b.Entity<EmailLog>(e =>
+        {
+            e.HasIndex(x => x.IdempotencyKey);
+            e.HasIndex(x => x.FormLegacyRefNo);
+        });
 
         b.Entity<ImpersonationLog>(e =>
         {

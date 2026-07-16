@@ -1,5 +1,6 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
+using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,12 @@ public class EditModel : AppPageModel
             return Page();
         }
 
+        if (!string.IsNullOrWhiteSpace(Form.Email) && !InputValidation.IsValidEmail(Form.Email.Trim()))
+        {
+            Error = $"'{Form.Email}' is not a valid email address.";
+            return Page();
+        }
+
         AppUser user;
         var isNew = Id is null;
         if (isNew)
@@ -93,6 +100,11 @@ public class EditModel : AppPageModel
             if (string.IsNullOrWhiteSpace(Form.Password) && !Form.UseDefaultPassword)
             {
                 Error = "Enter a password or check 'Use default password'.";
+                return Page();
+            }
+            if (!Form.UseDefaultPassword && Form.Password!.Length < InputValidation.MinPasswordLength)
+            {
+                Error = $"Password must be at least {InputValidation.MinPasswordLength} characters.";
                 return Page();
             }
             user = new AppUser();
@@ -142,6 +154,13 @@ public class EditModel : AppPageModel
             await LoadEmployeeOptionsAsync();
             Form.UserType = UserTypes.Derive(await _db.AppUsers.Include(u => u.RolesList).FirstAsync(u => u.Id == id));
             Error = "Enter a password or check 'Use default password'.";
+            return Page();
+        }
+        if (!Form.UseDefaultPassword && Form.Password!.Length < InputValidation.MinPasswordLength)
+        {
+            await LoadEmployeeOptionsAsync();
+            Form.UserType = UserTypes.Derive(await _db.AppUsers.Include(u => u.RolesList).FirstAsync(u => u.Id == id));
+            Error = $"Password must be at least {InputValidation.MinPasswordLength} characters.";
             return Page();
         }
 

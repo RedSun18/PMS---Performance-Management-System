@@ -13,24 +13,24 @@
         <form method="post">
             <div class="grid-3" style="margin-bottom:12px;">
                 <div>
-                    <label>Employee Code</label>
+                    <label for="empCode">Employee Code</label>
                     @if (Model.IsNew)
                     {
-                        <input type="text" name="Form.EmpCode" value="@Model.Form.EmpCode" maxlength="10" />
+                        <input type="text" id="empCode" name="Form.EmpCode" value="@Model.Form.EmpCode" maxlength="10" />
                         <span class="muted">New records use padded 4-digit codes in PM reference numbers.</span>
                     }
                     else
                     {
-                        <input type="text" value="@Model.Empcd" readonly />
+                        <input type="text" id="empCode" value="@Model.Empcd" readonly />
                     }
                 </div>
-                <div><label>Latin Name</label><input type="text" name="Form.LatinName" value="@Model.Form.LatinName" maxlength="100" /></div>
-                <div><label>Arabic Name</label><input type="text" name="Form.ArabicName" value="@Model.Form.ArabicName" maxlength="100" dir="rtl" /></div>
+                <div><label for="latinName">Latin Name</label><input type="text" id="latinName" name="Form.LatinName" value="@Model.Form.LatinName" maxlength="100" /></div>
+                <div><label for="arabicName">Arabic Name</label><input type="text" id="arabicName" name="Form.ArabicName" value="@Model.Form.ArabicName" maxlength="100" dir="rtl" /></div>
             </div>
             <div class="grid-3" style="margin-bottom:12px;">
                 <div>
-                    <label>Department</label>
-                    <select name="Form.DeptCode">
+                    <label for="deptCode">Department</label>
+                    <select name="Form.DeptCode" id="deptCode">
                         <option value="">—</option>
                         @foreach (var d in Model.Departments)
                         {
@@ -39,8 +39,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Section</label>
-                    <select name="Form.SectionCode">
+                    <label for="sectionCode">Section</label>
+                    <select name="Form.SectionCode" id="sectionCode">
                         <option value="">—</option>
                         @foreach (var s in Model.Sections)
                         {
@@ -49,8 +49,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Designation</label>
-                    <select name="Form.DesignationCode">
+                    <label for="designationCode">Designation</label>
+                    <select name="Form.DesignationCode" id="designationCode">
                         <option value="">—</option>
                         @foreach (var d in Model.Designations)
                         {
@@ -60,15 +60,15 @@
                 </div>
             </div>
             <div class="grid-4" style="margin-bottom:12px;">
-                <div><label>Grade</label><input type="text" name="Form.Grade" value="@Model.Form.Grade" maxlength="10" /></div>
-                <div><label>Join Date</label><input type="date" name="Form.JoinDate" value="@Model.Form.JoinDate?.ToString("yyyy-MM-dd")" /></div>
-                <div><label>Termination Date</label><input type="date" name="Form.TermDate" value="@Model.Form.TermDate?.ToString("yyyy-MM-dd")" /></div>
-                <div><label>Email</label><input type="text" name="Form.Email" value="@Model.Form.Email" /></div>
+                <div><label for="grade">Grade</label><input type="text" id="grade" name="Form.Grade" value="@Model.Form.Grade" maxlength="10" /></div>
+                <div><label for="joinDate">Join Date</label><input type="date" id="joinDate" name="Form.JoinDate" value="@Model.Form.JoinDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label for="termDate">Termination Date</label><input type="date" id="termDate" name="Form.TermDate" value="@Model.Form.TermDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label for="empEmail">Email</label><input type="text" id="empEmail" name="Form.Email" value="@Model.Form.Email" /></div>
             </div>
             <div class="grid-2" style="margin-bottom:16px;">
                 <div>
-                    <label>Direct Manager (PM Form designation)</label>
-                    <select name="Form.ManagerEmpCode">
+                    <label for="managerEmpCode">Direct Manager (PM Form designation)</label>
+                    <select name="Form.ManagerEmpCode" id="managerEmpCode">
                         <option value="">— none —</option>
                         @foreach (var (code, label) in Model.ManagerOptions)
                         {

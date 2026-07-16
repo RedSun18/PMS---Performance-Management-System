@@ -1,5 +1,6 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Web.Security;
+using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -37,9 +38,9 @@ public class ChangePasswordModel : AppPageModel
             Error = "Current password is incorrect.";
             return Page();
         }
-        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < InputValidation.MinPasswordLength)
         {
-            Error = "New password must be at least 6 characters.";
+            Error = $"New password must be at least {InputValidation.MinPasswordLength} characters.";
             return Page();
         }
         if (newPassword != confirmPassword)

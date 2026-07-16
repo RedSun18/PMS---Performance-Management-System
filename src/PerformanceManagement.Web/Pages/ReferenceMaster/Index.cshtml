@@ -23,10 +23,10 @@
             <form method="post" asp-page-handler="SaveKpi">
                 <input type="hidden" name="input.KpiId" value="@(k?.KpiId ?? Model.NextKpiId)" />
                 <div class="grid-4" style="margin-bottom:12px;">
-                    <div><label>KPI Code</label><input type="text" value="@(k?.KpiId ?? Model.NextKpiId)" readonly /></div>
+                    <div><label for="kpiCodeRO">KPI Code</label><input type="text" id="kpiCodeRO" value="@(k?.KpiId ?? Model.NextKpiId)" readonly /></div>
                     <div>
-                        <label>Perspective</label>
-                        <select name="input.Perspective">
+                        <label for="kpiFormPerspective">Perspective</label>
+                        <select name="input.Perspective" id="kpiFormPerspective">
                             <option value="F" selected="@(k?.Perspective.Trim() == "F")">Financial</option>
                             <option value="C" selected="@(k?.Perspective.Trim() == "C")">Customer</option>
                             <option value="I" selected="@(k?.Perspective.Trim() == "I")">Internal Processes</option>
@@ -34,33 +34,33 @@
                         </select>
                     </div>
                     <div>
-                        <label>Departments (comma list or * for all)</label>
-                        <input type="text" name="input.DeptCsv" value="@(k?.DeptCsv ?? "*")" />
+                        <label for="kpiDeptCsv">Departments (comma list or * for all)</label>
+                        <input type="text" id="kpiDeptCsv" name="input.DeptCsv" value="@(k?.DeptCsv ?? "*")" />
                     </div>
                     <div>
-                        <label>Status</label>
-                        <select name="input.Status">
+                        <label for="kpiStatus">Status</label>
+                        <select name="input.Status" id="kpiStatus">
                             <option value="A" selected="@(k?.Status != "I")">Active</option>
                             <option value="I" selected="@(k?.Status == "I")">Inactive</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>KPI Name (English)</label><input type="text" name="input.Name" value="@k?.Name" maxlength="100" /></div>
-                    <div><label>KPI Name (Arabic)</label><input type="text" name="input.NameAr" value="@k?.NameAr" maxlength="100" dir="rtl" /></div>
+                    <div><label for="kpiNameEn">KPI Name (English)</label><input type="text" id="kpiNameEn" name="input.Name" value="@k?.Name" maxlength="100" /></div>
+                    <div><label for="kpiNameAr">KPI Name (Arabic)</label><input type="text" id="kpiNameAr" name="input.NameAr" value="@k?.NameAr" maxlength="100" dir="rtl" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>Purpose / Definition (EN)</label><textarea name="input.Description" rows="2">@k?.Description</textarea></div>
-                    <div><label>Purpose / Definition (AR)</label><textarea name="input.DescriptionAr" rows="2" dir="rtl">@k?.DescriptionAr</textarea></div>
+                    <div><label for="kpiDescEn">Purpose / Definition (EN)</label><textarea id="kpiDescEn" name="input.Description" rows="2">@k?.Description</textarea></div>
+                    <div><label for="kpiDescAr">Purpose / Definition (AR)</label><textarea id="kpiDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@k?.DescriptionAr</textarea></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>Formula / Metric (EN)</label><textarea name="input.Formula" rows="2">@k?.Formula</textarea></div>
-                    <div><label>Formula / Metric (AR)</label><textarea name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
+                    <div><label for="kpiFormulaEn">Formula / Metric (EN)</label><textarea id="kpiFormulaEn" name="input.Formula" rows="2">@k?.Formula</textarea></div>
+                    <div><label for="kpiFormulaAr">Formula / Metric (AR)</label><textarea id="kpiFormulaAr" name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
                 </div>
                 <div class="grid-4" style="margin-bottom:14px;">
-                    <div><label>Min Weight %</label><input type="number" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
-                    <div><label>Max Weight %</label><input type="number" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
-                    <div style="grid-column:span 2;"><label>Remarks</label><input type="text" name="input.Remarks" value="@k?.Remarks" /></div>
+                    <div><label for="kpiMinWeight">Min Weight %</label><input type="number" id="kpiMinWeight" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label for="kpiMaxWeight">Max Weight %</label><input type="number" id="kpiMaxWeight" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label for="kpiRemarks">Remarks</label><input type="text" id="kpiRemarks" name="input.Remarks" value="@k?.Remarks" /></div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">@(k is null ? "Save KPI" : "Update KPI")</button>
@@ -74,8 +74,8 @@
         <input type="hidden" name="tab" value="kpi" />
         <div class="filters">
             <div>
-                <label>Perspective</label>
-                <select name="perspective" onchange="this.form.submit()">
+                <label for="kpiFilterPerspective">Perspective</label>
+                <select name="perspective" id="kpiFilterPerspective" onchange="this.form.submit()">
                     <option value="">All</option>
                     <option value="F" selected="@(Model.Perspective == "F")">Financial</option>
                     <option value="C" selected="@(Model.Perspective == "C")">Customer</option>
@@ -84,8 +84,8 @@
                 </select>
             </div>
             <div>
-                <label>Department</label>
-                <select name="deptFilter" onchange="this.form.submit()">
+                <label for="kpiFilterDept">Department</label>
+                <select name="deptFilter" id="kpiFilterDept" onchange="this.form.submit()">
                     <option value="">All</option>
                     @foreach (var d in Model.Departments)
                     {
@@ -126,38 +126,38 @@ else if (Model.Tab == "comp")
             <form method="post" asp-page-handler="SaveComp">
                 <input type="hidden" name="input.CompId" value="@(c?.CompId ?? Model.NextCompId)" />
                 <div class="grid-4" style="margin-bottom:12px;">
-                    <div><label>Competency Code</label><input type="text" value="@(c?.CompId ?? Model.NextCompId)" readonly /></div>
+                    <div><label for="compCodeRO">Competency Code</label><input type="text" id="compCodeRO" value="@(c?.CompId ?? Model.NextCompId)" readonly /></div>
                     <div>
-                        <label>Type</label>
-                        <select name="input.CompType">
+                        <label for="compFormType">Type</label>
+                        <select name="input.CompType" id="compFormType">
                             <option value="B" selected="@(c?.CompType.Trim() == "B")">Behavioral</option>
                             <option value="T" selected="@(c?.CompType.Trim() == "T")">Technical</option>
                         </select>
                     </div>
                     <div>
-                        <label>Departments (comma list or * for all)</label>
-                        <input type="text" name="input.DeptCsv" value="@(c?.DeptCsv ?? "*")" />
+                        <label for="compDeptCsv">Departments (comma list or * for all)</label>
+                        <input type="text" id="compDeptCsv" name="input.DeptCsv" value="@(c?.DeptCsv ?? "*")" />
                     </div>
                     <div>
-                        <label>Status</label>
-                        <select name="input.Status">
+                        <label for="compStatus">Status</label>
+                        <select name="input.Status" id="compStatus">
                             <option value="A" selected="@(c?.Status != "I")">Active</option>
                             <option value="I" selected="@(c?.Status == "I")">Inactive</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>Name (English)</label><input type="text" name="input.Name" value="@c?.Name" maxlength="100" /></div>
-                    <div><label>Name (Arabic)</label><input type="text" name="input.NameAr" value="@c?.NameAr" maxlength="100" dir="rtl" /></div>
+                    <div><label for="compNameEn">Name (English)</label><input type="text" id="compNameEn" name="input.Name" value="@c?.Name" maxlength="100" /></div>
+                    <div><label for="compNameAr">Name (Arabic)</label><input type="text" id="compNameAr" name="input.NameAr" value="@c?.NameAr" maxlength="100" dir="rtl" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>Description (EN)</label><textarea name="input.Description" rows="2">@c?.Description</textarea></div>
-                    <div><label>Description (AR)</label><textarea name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
+                    <div><label for="compDescEn">Description (EN)</label><textarea id="compDescEn" name="input.Description" rows="2">@c?.Description</textarea></div>
+                    <div><label for="compDescAr">Description (AR)</label><textarea id="compDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
                 </div>
                 <div class="grid-4" style="margin-bottom:14px;">
-                    <div><label>Min Weight %</label><input type="number" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
-                    <div><label>Max Weight %</label><input type="number" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
-                    <div style="grid-column:span 2;"><label>Remarks</label><input type="text" name="input.Remarks" value="@c?.Remarks" /></div>
+                    <div><label for="compMinWeight">Min Weight %</label><input type="number" id="compMinWeight" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label for="compMaxWeight">Max Weight %</label><input type="number" id="compMaxWeight" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label for="compRemarks">Remarks</label><input type="text" id="compRemarks" name="input.Remarks" value="@c?.Remarks" /></div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">@(c is null ? "Save Competency" : "Update Competency")</button>
@@ -171,8 +171,8 @@ else if (Model.Tab == "comp")
         <input type="hidden" name="tab" value="comp" />
         <div class="filters">
             <div>
-                <label>Type</label>
-                <select name="compType" onchange="this.form.submit()">
+                <label for="compFilterType">Type</label>
+                <select name="compType" id="compFilterType" onchange="this.form.submit()">
                     <option value="">All</option>
                     <option value="B" selected="@(Model.CompType == "B")">Behavioral</option>
                     <option value="T" selected="@(Model.CompType == "T")">Technical</option>
@@ -214,10 +214,10 @@ else
                     <tr>
                         <form method="post" asp-page-handler="SaveJobFamily">
                             <td>@j.Code<input type="hidden" name="code" value="@j.Code" /></td>
-                            <td><input type="text" name="nameEn" value="@j.NameEn" /></td>
-                            <td><input type="text" name="gradesCsv" value="@j.GradesCsv" style="max-width:120px;" /></td>
-                            <td><input type="number" name="kpiWeight" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
-                            <td><input type="number" name="compWeight" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><input type="text" name="nameEn" aria-label="Name for job family @j.Code" value="@j.NameEn" /></td>
+                            <td><input type="text" name="gradesCsv" aria-label="Grades for job family @j.Code" value="@j.GradesCsv" style="max-width:120px;" /></td>
+                            <td><input type="number" name="kpiWeight" aria-label="KPI weight percent for job family @j.Code" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><input type="number" name="compWeight" aria-label="Competency weight percent for job family @j.Code" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
                             <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">Save</button></td>
                         </form>
                     </tr>

@@ -29,8 +29,8 @@
         <form method="post" asp-page-handler="Select" id="selectForm">
             <div class="grid-3">
                 <div>
-                    <label>Select Department</label>
-                    <select name="dept" onchange="this.form.empcd.value='';this.form.submit()" @(Model.CanChangeDept ? "" : "disabled")>
+                    <label for="deptSelect">Select Department</label>
+                    <select name="dept" id="deptSelect" onchange="this.form.empcd.value='';this.form.submit()" @(Model.CanChangeDept ? "" : "disabled")>
                         <option value="">(All)</option>
                         @foreach (var d in Model.Departments)
                         {
@@ -39,8 +39,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Select Employee</label>
-                    <select name="empcd" onchange="this.form.submit()" @(Model.CanChangeEmployee ? "" : "disabled")>
+                    <label for="empcdSelect">Select Employee</label>
+                    <select name="empcd" id="empcdSelect" onchange="this.form.submit()" @(Model.CanChangeEmployee ? "" : "disabled")>
                         <option value="">Select Employee</option>
                         @foreach (var (code, label) in Model.EmployeeOptions)
                         {
@@ -49,8 +49,8 @@
                     </select>
                 </div>
                 <div>
-                    <label>Evaluation Year</label>
-                    <select name="year" onchange="this.form.submit()" @(Model.SelectedEmployee is null ? "disabled" : "")>
+                    <label for="yearSelect">Evaluation Year</label>
+                    <select name="year" id="yearSelect" onchange="this.form.submit()" @(Model.SelectedEmployee is null ? "disabled" : "")>
                         @foreach (var y in Model.YearOptions.DefaultIfEmpty(Model.EvalYear))
                         {
                             <option value="@y" selected="@(y == Model.EvalYear)">@y</option>
@@ -188,7 +188,7 @@
                         <input type="hidden" name="editingSeq" value="@ek?.Seq" />
                         <div class="grid-3" style="margin-bottom:12px;">
                             <div>
-                                <label>Perspective</label>
+                                <label for="kpiPerspective">Perspective</label>
                                 <select name="perspective" id="kpiPerspective" onchange="filterKpis()">
                                     <option value="">-- Select --</option>
                                     <option value="F" selected="@(ek?.Kind == "F")">Financial</option>
@@ -198,44 +198,44 @@
                                 </select>
                             </div>
                             <div>
-                                <label>KPI Name</label>
+                                <label for="kpiSelect">KPI Name</label>
                                 <select name="kpiCode" id="kpiSelect" onchange="showKpiDetails()" data-selected="@ek?.Code"></select>
                             </div>
                             <div>
-                                <label>Target</label>
-                                <input type="text" name="target" maxlength="250" value="@ek?.Target" />
+                                <label for="kpiTarget">Target</label>
+                                <input type="text" name="target" id="kpiTarget" maxlength="250" value="@ek?.Target" />
                             </div>
                         </div>
                         <div class="grid-2" style="margin-bottom:12px;">
                             <div>
-                                <label>Purpose/Definition</label>
+                                <label for="kpiDefinition">Purpose/Definition</label>
                                 <textarea id="kpiDefinition" readonly>@ek?.Definition</textarea>
                             </div>
                             <div>
-                                <label>Formula/Metric Guide</label>
+                                <label for="kpiFormula">Formula/Metric Guide</label>
                                 <textarea id="kpiFormula" readonly>@ek?.Formula</textarea>
                             </div>
                         </div>
                         <div class="grid-4">
                             <div>
-                                <label>Weight (%)</label>
+                                <label for="kpiWeight">Weight (%)</label>
                                 <input type="number" name="weight" id="kpiWeight" min="0" max="100" value="@(ek?.Weight > 0 ? ek.Weight.ToString() : "")" placeholder="Enter weight %" oninput="calcKpiScore()" />
                                 <span class="muted" id="kpiWeightRange"></span>
                             </div>
                             <div>
-                                <label>Achievement (%)</label>
+                                <label for="kpiAchievement">Achievement (%)</label>
                                 <input type="number" name="achievement" id="kpiAchievement" min="0" max="100"
                                        value="@(ek?.Achievement > 0 ? ek.Achievement.ToString() : "")"
                                        placeholder="@(Model.AchievementOpen ? "To be entered at year end" : $"Locked until 01/12/{Model.EvalYear}")"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcKpiScore()" />
                             </div>
                             <div>
-                                <label>WT * Ach/100</label>
+                                <label for="kpiWeighted">WT * Ach/100</label>
                                 <input type="text" id="kpiWeighted" readonly />
                             </div>
                             <div>
-                                <label>Comments</label>
-                                <input type="text" name="comments" maxlength="1000" value="@ek?.Comments" />
+                                <label for="kpiComments">Comments</label>
+                                <input type="text" name="comments" id="kpiComments" maxlength="1000" value="@ek?.Comments" />
                             </div>
                         </div>
                         <div class="form-actions" style="margin-top:14px;">
@@ -346,7 +346,7 @@
                         <input type="hidden" name="editingSeq" value="@ec?.Seq" />
                         <div class="grid-4" style="margin-bottom:12px;">
                             <div>
-                                <label>Competency Type</label>
+                                <label for="compType">Competency Type</label>
                                 <select name="compType" id="compType" onchange="filterComps()">
                                     <option value="">-- Select --</option>
                                     <option value="B" selected="@(ec?.Kind == "B")">Behavioral</option>
@@ -354,37 +354,37 @@
                                 </select>
                             </div>
                             <div>
-                                <label>Competency Name</label>
+                                <label for="compSelect">Competency Name</label>
                                 <select name="compCode" id="compSelect" onchange="showCompDetails()" data-selected="@ec?.Code"></select>
                             </div>
                             <div>
-                                <label>Description/Definition</label>
+                                <label for="compDesc">Description/Definition</label>
                                 <textarea id="compDesc" readonly>@ec?.Definition</textarea>
                             </div>
                             <div>
-                                <label>Weight Range</label>
+                                <label for="compWeightRange">Weight Range</label>
                                 <textarea id="compWeightRange" readonly></textarea>
                             </div>
                         </div>
                         <div class="grid-4">
                             <div>
-                                <label>Weight (%)</label>
+                                <label for="compWeight">Weight (%)</label>
                                 <input type="number" name="weight" id="compWeight" min="0" max="100" value="@(ec?.Weight > 0 ? ec.Weight.ToString() : "")" placeholder="Enter weight %" oninput="calcCompScore()" />
                             </div>
                             <div>
-                                <label>Achievement (%)</label>
+                                <label for="compAchievement">Achievement (%)</label>
                                 <input type="number" name="achievement" id="compAchievement" min="0" max="100"
                                        value="@(ec?.Achievement > 0 ? ec.Achievement.ToString() : "")"
                                        placeholder="@(Model.AchievementOpen ? "To be entered at year end" : $"Locked until 01/12/{Model.EvalYear}")"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcCompScore()" />
                             </div>
                             <div>
-                                <label>Weight × Achievement</label>
+                                <label for="compWeighted">Weight × Achievement</label>
                                 <input type="text" id="compWeighted" readonly />
                             </div>
                             <div>
-                                <label>Comments</label>
-                                <input type="text" name="comments" maxlength="1000" value="@ec?.Comments" />
+                                <label for="compComments">Comments</label>
+                                <input type="text" name="comments" id="compComments" maxlength="1000" value="@ec?.Comments" />
                             </div>
                         </div>
                         <div class="form-actions" style="margin-top:14px;">
@@ -517,8 +517,8 @@
                         <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="BORDERLINE" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "BORDERLINE")" /> Borderline, some next-level behaviors, not consistent yet</label>
                         <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="NO" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "NO")" /> No, does not yet meet next-level expectations</label>
                     </div>
-                    <label>Manager Comments</label>
-                    <textarea name="fields.PromotionComments" rows="3">@Model.Work.PromotionComments</textarea>
+                    <label for="promotionComments">Manager Comments</label>
+                    <textarea name="fields.PromotionComments" id="promotionComments" rows="3">@Model.Work.PromotionComments</textarea>
                     <p class="muted" style="margin-bottom:0;">ⓘ Note: Only the manager/appraiser can view this section.</p>
                 </div>
             </div>
@@ -559,26 +559,26 @@
                 {
                     <form method="post" asp-page-handler="Acknowledge" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear">
                         <div class="grid-3" style="align-items:end;">
-                            <div><label>Employee Signature</label><input type="text" value="@Model.Empcd" readonly /></div>
-                            <div><label>Date</label><input type="text" value="@DateTime.Today.ToString("dd/MM/yyyy")" readonly /></div>
+                            <div><label for="empAckSign">Employee Signature</label><input type="text" id="empAckSign" value="@Model.Empcd" readonly /></div>
+                            <div><label for="empAckDate">Date</label><input type="text" id="empAckDate" value="@DateTime.Today.ToString("dd/MM/yyyy")" readonly /></div>
                             <div><button type="submit" class="btn btn-success">✓ Acknowledge</button></div>
                         </div>
                         <div style="margin-top:12px;">
-                            <label>Employee Comments (Optional)</label>
-                            <textarea name="ackComments" rows="2"></textarea>
+                            <label for="ackComments">Employee Comments (Optional)</label>
+                            <textarea name="ackComments" id="ackComments" rows="2"></textarea>
                         </div>
                     </form>
                 }
                 else
                 {
                     <div class="grid-3">
-                        <div><label>Employee Signature</label><input type="text" value="@Model.Form?.EmpAckSign" readonly /></div>
-                        <div><label>Date</label><input type="text" value="@Model.Form?.EmpAckDate?.ToString("dd/MM/yyyy")" readonly /></div>
-                        <div><label>Status</label><input type="text" value="@(status == PmFormStatus.PendingEmployeeAck ? "Pending Employee Acknowledgement" : "Employee Acknowledged")" readonly /></div>
+                        <div><label for="empAckSignRO">Employee Signature</label><input type="text" id="empAckSignRO" value="@Model.Form?.EmpAckSign" readonly /></div>
+                        <div><label for="empAckDateRO">Date</label><input type="text" id="empAckDateRO" value="@Model.Form?.EmpAckDate?.ToString("dd/MM/yyyy")" readonly /></div>
+                        <div><label for="empAckStatusRO">Status</label><input type="text" id="empAckStatusRO" value="@(status == PmFormStatus.PendingEmployeeAck ? "Pending Employee Acknowledgement" : "Employee Acknowledged")" readonly /></div>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Form?.EmpAckComments))
                     {
-                        <div style="margin-top:12px;"><label>Employee Comments</label><textarea readonly rows="2">@Model.Form!.EmpAckComments</textarea></div>
+                        <div style="margin-top:12px;"><label for="empAckCommentsRO">Employee Comments</label><textarea id="empAckCommentsRO" readonly rows="2">@Model.Form!.EmpAckComments</textarea></div>
                     }
                 }
             </div>
@@ -590,12 +590,12 @@
         <div class="card-header">✎ Signatures &amp; Approvals</div>
         <div class="card-body">
             <div class="grid-2" style="margin-bottom:12px;">
-                <div><label>Employee Name</label><input type="text" value="@e.LatinName" readonly /></div>
-                <div><label>Manager Name</label><input type="text" value="@Model.ManagerName" readonly /></div>
+                <div><label for="sigEmpName">Employee Name</label><input type="text" id="sigEmpName" value="@e.LatinName" readonly /></div>
+                <div><label for="sigMgrName">Manager Name</label><input type="text" id="sigMgrName" value="@Model.ManagerName" readonly /></div>
             </div>
             <div class="grid-2">
-                <div><label>Employee Signature</label><input type="text" value="@(Model.Form?.EmployeeSign ?? e.EmpCode)" readonly /></div>
-                <div><label>Manager Signature</label><input type="text" value="@(Model.Form?.ManagerSign ?? Model.ManagerCode)" readonly /></div>
+                <div><label for="sigEmpSign">Employee Signature</label><input type="text" id="sigEmpSign" value="@(Model.Form?.EmployeeSign ?? e.EmpCode)" readonly /></div>
+                <div><label for="sigMgrSign">Manager Signature</label><input type="text" id="sigMgrSign" value="@(Model.Form?.ManagerSign ?? Model.ManagerCode)" readonly /></div>
             </div>
         </div>
     </div>
@@ -605,12 +605,12 @@
         <div class="card-header">📋 HR Review — First Reviewer</div>
         <div class="card-body">
             <div class="grid-2" style="margin-bottom:12px;">
-                <div><label>HR Reviewer 1 Name *</label><input type="text" form="hrForm" name="hr1Name" value="@(Model.Form?.Hr1ReviewerName ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentDisplayName : ""))" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly") /></div>
-                <div><label>Review Date</label><input type="text" value="@(Model.Form?.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? (status == PmFormStatus.SubmittedToHr ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
+                <div><label for="hr1Name">HR Reviewer 1 Name *</label><input type="text" form="hrForm" id="hr1Name" name="hr1Name" value="@(Model.Form?.Hr1ReviewerName ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentDisplayName : ""))" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly") /></div>
+                <div><label for="hr1ReviewDate">Review Date</label><input type="text" id="hr1ReviewDate" value="@(Model.Form?.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? (status == PmFormStatus.SubmittedToHr ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
             </div>
             <div class="grid-2">
-                <div><label>Reviewer Signature</label><input type="text" value="@(Model.Form?.Hr1Sign ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentEmpCode : ""))" readonly /></div>
-                <div><label>HR Comments / Remarks</label><textarea form="hrForm" name="hr1Remarks" rows="2" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly")>@Model.Form?.Hr1Remarks</textarea></div>
+                <div><label for="hr1Sign">Reviewer Signature</label><input type="text" id="hr1Sign" value="@(Model.Form?.Hr1Sign ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentEmpCode : ""))" readonly /></div>
+                <div><label for="hr1Remarks">HR Comments / Remarks</label><textarea form="hrForm" id="hr1Remarks" name="hr1Remarks" rows="2" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly")>@Model.Form?.Hr1Remarks</textarea></div>
             </div>
         </div>
     </div>
@@ -625,12 +625,12 @@
                     <div class="alert alert-warn">You cannot perform the second HR review because you were the first HR reviewer. Another HR representative must complete the final review for segregation of duties compliance.</div>
                 }
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label>HR Reviewer 2 Name (Final) *</label><input type="text" form="hrForm" name="hr2Name" value="@(Model.Form?.Hr2ReviewerName ?? (canEditHr2 ? Model.CurrentDisplayName : ""))" @(canEditHr2 ? "" : "readonly") /></div>
-                    <div><label>Review Date</label><input type="text" value="@(Model.Form?.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? (canEditHr2 ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
+                    <div><label for="hr2Name">HR Reviewer 2 Name (Final) *</label><input type="text" form="hrForm" id="hr2Name" name="hr2Name" value="@(Model.Form?.Hr2ReviewerName ?? (canEditHr2 ? Model.CurrentDisplayName : ""))" @(canEditHr2 ? "" : "readonly") /></div>
+                    <div><label for="hr2ReviewDate">Review Date</label><input type="text" id="hr2ReviewDate" value="@(Model.Form?.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? (canEditHr2 ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
                 </div>
                 <div class="grid-2">
-                    <div><label>Reviewer Signature</label><input type="text" value="@(Model.Form?.Hr2Sign ?? (canEditHr2 ? Model.CurrentEmpCode : ""))" readonly /></div>
-                    <div><label>HR Comments / Remarks</label><textarea form="hrForm" name="hr2Remarks" rows="2" @(canEditHr2 ? "" : "readonly")>@Model.Form?.Hr2Remarks</textarea></div>
+                    <div><label for="hr2Sign">Reviewer Signature</label><input type="text" id="hr2Sign" value="@(Model.Form?.Hr2Sign ?? (canEditHr2 ? Model.CurrentEmpCode : ""))" readonly /></div>
+                    <div><label for="hr2Remarks">HR Comments / Remarks</label><textarea form="hrForm" id="hr2Remarks" name="hr2Remarks" rows="2" @(canEditHr2 ? "" : "readonly")>@Model.Form?.Hr2Remarks</textarea></div>
                 </div>
             </div>
         </div>
@@ -643,8 +643,8 @@
             <div class="card">
                 <div class="card-body" style="display:flex;gap:16px;align-items:end;">
                     <div style="flex:0 0 340px;">
-                        <label>HR Action *</label>
-                        <select name="hrAction">
+                        <label for="hrAction">HR Action *</label>
+                        <select name="hrAction" id="hrAction">
                             @if (status == PmFormStatus.SubmittedToHr)
                             {
                                 <option value="@PmFormStatus.HrReview1Approved">Approve (Send to HR 2)</option>

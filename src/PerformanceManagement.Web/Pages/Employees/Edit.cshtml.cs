@@ -1,5 +1,6 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
+using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,6 +65,11 @@ public class EditModel : AppPageModel
         if (code.Length == 0 || string.IsNullOrWhiteSpace(Form.LatinName))
         {
             Error = "Employee code and name are required.";
+            return Page();
+        }
+        if (!string.IsNullOrWhiteSpace(Form.Email) && !InputValidation.IsValidEmail(Form.Email.Trim()))
+        {
+            Error = $"'{Form.Email}' is not a valid email address.";
             return Page();
         }
 

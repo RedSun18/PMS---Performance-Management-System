@@ -17,10 +17,11 @@ public class LoginModel : PageModel
 
     public string? Error { get; set; }
     public string Username { get; set; } = "";
+    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
     public void OnGet() { }
 
-    public async Task<IActionResult> OnPostAsync(string username, string password, string? returnUrl)
+    public async Task<IActionResult> OnPostAsync(string username, string password)
     {
         Username = username?.Trim() ?? "";
         var user = await _db.AppUsers.Include(u => u.RolesList)
@@ -35,10 +36,10 @@ public class LoginModel : PageModel
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             AppUserClaims.ToPrincipal(AppUserClaims.Build(user), CookieAuthenticationDefaults.AuthenticationScheme));
 
-        // MustChangePassword takes precedence over any deep link — AppPageModel's forced
-        // redirect will catch it regardless, but skip the extra hop when we already know.
-        if (user.MustChangePassword) return RedirectToPage("/Account/ChangePassword");
+        // MustChangePassword takes precedence over any deep link, but the deep link itself
+        // survives the detour — ChangePassword forwards ReturnUrl again on success.
+        if (user.MustChangePassword) return RedirectToPage("/Account/ChangePassword", new { ReturnUrl });
 
-        return LocalRedirect(returnUrl is { Length: > 0 } && Url.IsLocalUrl(returnUrl) ? returnUrl : "/Dashboard");
+        return LocalRedirect(ReturnUrl is { Length: > 0 } && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/Dashboard");
     }
 }

@@ -48,12 +48,13 @@ public class SettingsService
         var row = await _db.SystemSettings.FirstOrDefaultAsync(x => x.Id == 1);
         if (row is not null) return row;
 
-        // First run: seed from configuration (Email:* section) so a dev machine with
-        // User Secrets configured works immediately, with no manual DB step.
+        // First run: seed from configuration (Email:*/General:* sections) so a dev machine
+        // with User Secrets/appsettings configured works immediately, with no manual DB step.
         var section = _config.GetSection("Email");
         row = new Domain.SystemSettings
         {
             Id = 1,
+            ApplicationBaseUrl = _config["General:ApplicationBaseUrl"],
             SmtpHost = section["SmtpHost"],
             SmtpPort = int.TryParse(section["SmtpPort"], out var p) ? p : 587,
             SmtpUsername = section["SmtpUsername"],
@@ -68,6 +69,23 @@ public class SettingsService
         _db.SystemSettings.Add(row);
         await _db.SaveChangesAsync();
         return row;
+    }
+
+    /// <summary>Public origin used to build absolute links in outgoing email. Falls back to the local dev URL if unset.</summary>
+    public async Task<string> GetApplicationBaseUrlAsync()
+    {
+        var row = await GetOrCreateAsync();
+        return string.IsNullOrWhiteSpace(row.ApplicationBaseUrl)
+            ? "http://localhost:5273" : row.ApplicationBaseUrl.Trim().TrimEnd('/');
+    }
+
+    public async Task SaveApplicationBaseUrlAsync(string? baseUrl, string updatedBy)
+    {
+        var row = await GetOrCreateAsync();
+        row.ApplicationBaseUrl = string.IsNullOrWhiteSpace(baseUrl) ? null : baseUrl.Trim().TrimEnd('/');
+        row.UpdatedAt = DateTime.UtcNow;
+        row.UpdatedBy = updatedBy;
+        await _db.SaveChangesAsync();
     }
 
     public async Task<EmailSettingsView> GetEmailSettingsAsync()

@@ -48,7 +48,11 @@ public abstract class AppPageModel : PageModel
             this is not PerformanceManagement.Web.Pages.Account.ChangePasswordModel &&
             !isReturnToAdminHandler)
         {
-            context.Result = new RedirectToPageResult("/Account/ChangePassword");
+            // Preserve the page the user was actually trying to reach (e.g. an /OpenForm
+            // email deep link for an already-authenticated session) so it survives the
+            // detour through the forced password change.
+            var returnUrl = Request.Path + Request.QueryString;
+            context.Result = new RedirectToPageResult("/Account/ChangePassword", new { ReturnUrl = returnUrl.ToString() });
             return;
         }
 

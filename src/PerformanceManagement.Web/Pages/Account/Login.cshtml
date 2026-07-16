@@ -12,6 +12,7 @@
             <div class="alert alert-error">@Model.Error</div>
         }
         <form method="post">
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
             <div style="margin-bottom:12px;">
                 <label>Username</label>
                 <input type="text" name="username" value="@Model.Username" autofocus />

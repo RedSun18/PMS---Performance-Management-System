@@ -298,7 +298,7 @@ public class WorkflowTests : IAsyncLifetime
         // transparent background — the white heading text sits on an explicit navy
         // background-color (with a gradient fallback), so it is always legible.
         var f = new PerformanceManagement.Core.Domain.PmForm { EmpNameSnapshot = "X", LegacyRefNo = "PM20260907HDR01", EvalYear = 2026 };
-        var (_, body) = EmailTemplates.AcknowledgementRequest(f, "Mgr", new DateTime(2026, 9, 7, 10, 0, 0));
+        var (_, body) = EmailTemplates.AcknowledgementRequest(f, "Mgr", "https://pms.example.com/OpenForm?token=abc", new DateTime(2026, 9, 7, 10, 0, 0));
         Assert.Contains("background-color:#0f2b5c", body);
         Assert.Contains("color:#fff", body);
     }

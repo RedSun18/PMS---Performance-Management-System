@@ -322,6 +322,9 @@ public class SystemSettings
 {
     public int Id { get; set; } = 1;
 
+    /// <summary>Public origin used to build absolute links in outgoing email, e.g. "https://pms.company.com".</summary>
+    public string? ApplicationBaseUrl { get; set; }
+
     public string? SmtpHost { get; set; }
     public int? SmtpPort { get; set; }
     public string? SmtpUsername { get; set; }

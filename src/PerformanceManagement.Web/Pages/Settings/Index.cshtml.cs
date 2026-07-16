@@ -16,6 +16,7 @@ public class IndexModel : AppPageModel
     public IndexModel(SettingsService settings) => _settings = settings;
 
     [BindProperty] public EmailForm Form { get; set; } = new();
+    [BindProperty] public string? ApplicationBaseUrl { get; set; }
     public bool HasPassword { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
@@ -37,6 +38,13 @@ public class IndexModel : AppPageModel
     }
 
     public async Task OnGetAsync() => await LoadAsync();
+
+    public async Task<IActionResult> OnPostSaveGeneralAsync()
+    {
+        await _settings.SaveApplicationBaseUrlAsync(ApplicationBaseUrl, CurrentUserName);
+        Message = "General settings saved.";
+        return RedirectToPage();
+    }
 
     public async Task<IActionResult> OnPostSaveAsync()
     {
@@ -74,6 +82,7 @@ public class IndexModel : AppPageModel
 
     private async Task LoadAsync()
     {
+        ApplicationBaseUrl = await _settings.GetApplicationBaseUrlAsync();
         var s = await _settings.GetEmailSettingsAsync();
         Form = new EmailForm
         {

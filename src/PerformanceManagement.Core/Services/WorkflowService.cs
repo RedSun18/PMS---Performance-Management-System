@@ -19,12 +19,13 @@ public class WorkflowService
     private readonly PermissionService _permissions;
     private readonly EmailService _email;
     private readonly RatingService _rating;
+    private readonly FormLinkService _links;
 
     public WorkflowService(PmDbContext db, IClock clock, AchievementGate gate,
-        PermissionService permissions, EmailService email, RatingService rating)
+        PermissionService permissions, EmailService email, RatingService rating, FormLinkService links)
     {
         _db = db; _clock = clock; _gate = gate;
-        _permissions = permissions; _email = email; _rating = rating;
+        _permissions = permissions; _email = email; _rating = rating; _links = links;
     }
 
     public async Task<PmForm?> FindFormAsync(string empCode, int evalYear, bool track = false)
@@ -98,7 +99,8 @@ public class WorkflowService
             email: async form =>
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
-                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, _clock.Now);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.EmpCode));
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "ACK_REQUEST")));
@@ -128,7 +130,8 @@ public class WorkflowService
             email: async form =>
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
-                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, _clock.Now);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.ManagerEmpCode));
+                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "EMP_ACKNOWLEDGED")));
@@ -166,7 +169,9 @@ public class WorkflowService
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
-                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), _clock.Now);
+                // Role-based recipient (any current HR admin) — no single intended username to bind to.
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
+                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("SUBMIT_TO_HR",
                     To: await HrAdminEmailsAsync(), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "SUBMIT_TO_HR")));
@@ -196,7 +201,8 @@ public class WorkflowService
             },
             email: async form =>
             {
-                var (subject, body) = EmailTemplates.Hr1Approved(form, _clock.Now);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
+                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("HR1_APPROVED",
                     To: await HrAdminEmailsAsync(exceptEmpCode: form.Hr1Sign), Cc: Array.Empty<string>(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR1_APPROVED")));
@@ -235,7 +241,8 @@ public class WorkflowService
             email: async form =>
             {
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
-                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), _clock.Now);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.EmpCode));
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "FINAL_APPROVED")));
@@ -259,7 +266,9 @@ public class WorkflowService
             },
             email: async form =>
             {
-                var (subject, body) = EmailTemplates.Reverted(form, hrComments ?? form.Hr1Remarks ?? "", _clock.Now);
+                var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.ManagerEmpCode));
+                var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("HR_REVERTED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await HrAdminEmailsAsync(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR_REVERTED")));
@@ -468,6 +477,16 @@ public class WorkflowService
         if (string.IsNullOrWhiteSpace(empCode)) return "";
         var e = await _db.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim());
         return e?.LatinName ?? empCode;
+    }
+
+    /// <summary>Login username of the account linked to an employee code, for binding a form deep-link
+    /// to its intended recipient. Empty when no account exists — the link then relies solely on the
+    /// caller's normal permissions (see OpenFormModel) rather than a specific recipient match.</summary>
+    private async Task<string> UserNameForEmpCodeAsync(string? empCode)
+    {
+        if (string.IsNullOrWhiteSpace(empCode)) return "";
+        var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim() && x.IsActive);
+        return u?.UserName ?? "";
     }
 
     private async Task<IReadOnlyList<string>> EmailsAsync(string? empCode)

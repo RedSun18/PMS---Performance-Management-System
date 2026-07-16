@@ -40,6 +40,7 @@ public sealed class TestHost : IDisposable
     public RatingService Ratings { get; }
     public JobFamilyService JobFamilies { get; }
     public SettingsService Settings { get; }
+    public FormLinkService Links { get; }
     public EmailService Email { get; }
     public WorkflowService Workflow { get; }
 
@@ -57,8 +58,9 @@ public sealed class TestHost : IDisposable
         // Empty configuration ⇒ SettingsService.GetSmtpCredentialsAsync() returns null ⇒
         // EmailService logs (Status=LOGGED) instead of attempting a real SMTP send.
         Settings = new SettingsService(Db, new ConfigurationBuilder().Build(), new FakeDataProtectionProvider());
+        Links = new FormLinkService(new FakeDataProtectionProvider(), Settings, Clock);
         Email = new EmailService(Db, Clock, Settings, NullLogger<EmailService>.Instance);
-        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings);
+        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links);
     }
 
     public PmDbContext NewContext() =>

@@ -8,6 +8,28 @@
 @if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
 @if (Model.ErrorMessage is not null) { <div class="alert alert-error">@Model.ErrorMessage</div> }
 
+<form method="post" asp-page-handler="SaveGeneral">
+    <div class="card" style="margin-bottom:20px;">
+        <div class="card-header">General</div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div>
+                    <label>Application Base URL</label>
+                    <input type="text" name="ApplicationBaseUrl" value="@Model.ApplicationBaseUrl" placeholder="https://pms.company.com" />
+                    <p class="muted" style="margin:4px 0 0;font-size:12px;">
+                        Used to build the action links inside outgoing email (e.g. "View Performance Form").
+                        Use the address people actually reach this site at — e.g. <code>https://pms.company.com</code> in
+                        production, or <code>https://localhost:5273</code> for local testing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-actions" style="margin-bottom:28px;">
+        <button type="submit" class="btn btn-primary">Save General Settings</button>
+    </div>
+</form>
+
 <form method="post" asp-page-handler="Save">
     <div class="card">
         <div class="card-header">Email Settings (SMTP)</div>

@@ -168,13 +168,28 @@ public class EmailService
 }
 
 /// <summary>
-/// Branded HTML email bodies. Headings always use an explicit dark colour — white
-/// headings become invisible in light-mode Outlook (legacy incident).
+/// Branded, actionable HTML email bodies. Headings always use an explicit dark colour —
+/// white headings become invisible in light-mode Outlook (legacy incident). Every template
+/// carries a primary action button (deep-links to <c>/OpenForm?token=...</c> — see
+/// <see cref="FormLinkService"/> — never a raw empcd/year query string) plus a plain-text
+/// fallback link, and states current status / required action / who acted previously / who
+/// must act next, so the email is actionable on its own without opening the app first.
 /// </summary>
 public static class EmailTemplates
 {
+    /// <summary>Progressive-enhancement hover state for the action button — ignored gracefully
+    /// by email clients that strip &lt;style&gt; blocks, applied by those that don't (kept out of
+    /// the interpolated template body so its literal braces don't need raw-string escaping).</summary>
+    private const string ButtonHoverStyle = ".pms-btn:hover { background: #16336b !important; }";
+
     private static string Wrap(string appHeading, string title, string inner, DateTime sentAt) => $"""
-        <html><body style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+        <html>
+        <head>
+          <style>
+            {ButtonHoverStyle}
+          </style>
+        </head>
+        <body style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
         <div style="max-width:640px;margin:0 auto;padding:24px 16px;">
           <div style="background-color:#0f2b5c;background:linear-gradient(135deg,#0f2b5c 0%,#1e3a8a 100%);border-radius:12px 12px 0 0;padding:20px 28px;">
             <div style="color:#fff;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;">{appHeading}</div>
@@ -199,77 +214,107 @@ public static class EmailTemplates
         return $"<table style='width:100%;border-collapse:collapse;margin:15px 0;'>{trs}</table>";
     }
 
-    public static (string Subject, string Body) AcknowledgementRequest(PmForm f, string managerName, DateTime sentAt) =>
-        ($"ACTION REQUIRED: Review Your Performance Objectives | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Objectives Review Required",
-              $"<p>Dear <strong>{f.EmpNameSnapshot}</strong>,</p>" +
-              "<p><strong>Action required:</strong> your manager has set your performance objectives. Please review and acknowledge them.</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()), ("Manager", managerName),
-                        ("Action Performed", "Sent to Employee for Acknowledgement"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
-                        ("KPIs Set", f.Kpis.Count.ToString()), ("Competencies", f.Competencies.Count.ToString())) +
-              "<p><strong>Note:</strong> please acknowledge within 7 days.</p>", sentAt));
+    /// <summary>Prominent, centered, mobile-friendly call-to-action button plus a plain-text fallback link.</summary>
+    private static string ActionButton(string url, string label) => $"""
+        <div style="text-align:center;margin:30px 0 14px;">
+          <a href="{url}" class="pms-btn"
+             style="display:inline-block;background-color:#0f2b5c;color:#ffffff !important;text-decoration:none;
+                    font-weight:700;font-size:16px;padding:16px 36px;border-radius:8px;min-width:240px;
+                    text-align:center;line-height:1.2;">{label}</a>
+        </div>
+        <p style="text-align:center;color:#8a93a6;font-size:11.5px;margin:0 0 22px;">
+          If the button does not work, copy and paste this link into your browser:<br/>
+          <a href="{url}" style="color:#2f5fd6;word-break:break-all;">{url}</a>
+        </p>
+        """;
 
-    public static (string Subject, string Body) EmployeeAcknowledged(PmForm f, string managerName, DateTime sentAt) =>
-        ($"Employee Acknowledged Objectives: {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Objectives Acknowledged",
-              $"<p>Dear <strong>{managerName}</strong>,</p>" +
-              $"<p><strong>Acknowledgement received:</strong> {f.EmpNameSnapshot} has acknowledged their objectives for {f.EvalYear}.</p>" +
+    public static (string Subject, string Body) AcknowledgementRequest(
+        PmForm f, string managerName, string actionUrl, DateTime sentAt) =>
+        ($"ACTION REQUIRED: Review Your Performance Objectives | {f.EmpNameSnapshot} | {f.EvalYear}",
+         Wrap("Performance Management System", "Performance Objectives Ready for Review",
+              $"<p>Dear <strong>{f.EmpNameSnapshot}</strong>,</p>" +
+              "<p>Your manager has set your performance objectives. Please review and acknowledge them within 7 days.</p>" +
               InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         ("Review Year", f.EvalYear.ToString()),
-                        ("Action Performed", "Employee Acknowledged Objectives"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "Review and acknowledge your objectives"),
+                        ("Previous Action By", $"{managerName} (Manager)"),
+                        ("Next Action Required By", $"{f.EmpNameSnapshot} (You)"),
+                        ("KPIs Set", f.Kpis.Count.ToString()), ("Competencies", f.Competencies.Count.ToString())) +
+              ActionButton(actionUrl, "View Performance Form"), sentAt));
+
+    public static (string Subject, string Body) EmployeeAcknowledged(
+        PmForm f, string managerName, string actionUrl, DateTime sentAt) =>
+        ($"Employee Acknowledged Objectives: {f.EmpNameSnapshot} | {f.EvalYear}",
+         Wrap("Performance Management System", "Employee Submitted Performance Review",
+              $"<p>Dear <strong>{managerName}</strong>,</p>" +
+              $"<p>{f.EmpNameSnapshot} has acknowledged their objectives for {f.EvalYear}.</p>" +
+              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        ("Review Year", f.EvalYear.ToString()),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "Review the acknowledged objectives; achievement scoring opens 1 December"),
+                        ("Previous Action By", $"{f.EmpNameSnapshot} (Employee)"),
+                        ("Next Action Required By", $"{managerName} (You, Manager)"),
                         ("Acknowledged On", f.EmpAckDate?.ToString("dd/MM/yyyy") ?? "")) +
               (string.IsNullOrWhiteSpace(f.EmpAckComments) ? "" :
                $"<p><strong>Employee comments:</strong> {f.EmpAckComments}</p>") +
-              "<p>At year-end, add achievement scores and submit to HR.</p>", sentAt));
+              ActionButton(actionUrl, "Review Employee Submission"), sentAt));
 
-    public static (string Subject, string Body) SubmittedToHr(PmForm f, string managerName, string rating, DateTime sentAt) =>
+    public static (string Subject, string Body) SubmittedToHr(
+        PmForm f, string managerName, string rating, string actionUrl, DateTime sentAt) =>
         ($"PM Form Ready for HR Review | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Management Form — Ready for HR Review",
+         Wrap("Performance Management System", "Performance Review Ready for HR",
               "<p>Dear HR Team,</p><p>A Performance Management form has been completed by the manager and is ready for your review:</p>" +
               InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         ("Review Year", f.EvalYear.ToString()),
-                        ("Action Performed", "Submitted to HR"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "Complete first HR review"),
+                        ("Previous Action By", $"{managerName} (Manager)"),
+                        ("Next Action Required By", "HR Reviewer 1"),
                         ("KPI Score", f.KpiScore.ToString("F2")), ("Competency Score", f.CompScore.ToString("F2")),
-                        ("Overall Score", f.PerformanceScore.ToString("F2")), ("Rating", rating),
-                        ("Reviewed by Manager", managerName)), sentAt));
+                        ("Overall Score", f.PerformanceScore.ToString("F2")), ("Rating", rating)) +
+              ActionButton(actionUrl, "Open HR Review"), sentAt));
 
-    public static (string Subject, string Body) Hr1Approved(PmForm f, DateTime sentAt) =>
+    public static (string Subject, string Body) Hr1Approved(PmForm f, string actionUrl, DateTime sentAt) =>
         ($"PM Form - Ready for Final HR Review (HR Rep 2) | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "First HR Review Complete — Ready for Final Review",
+         Wrap("Performance Management System", "Final HR Review Required",
               "<p>Dear HR Team,</p>" +
               InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         ("Review Year", f.EvalYear.ToString()),
-                        ("Action Performed", "HR Review 1 Approved"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
-                        ("First HR Reviewer", f.Hr1ReviewerName ?? "")) +
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "Complete final HR review and approval"),
+                        ("Previous Action By", $"{f.Hr1ReviewerName} (HR Reviewer 1)"),
+                        ("Next Action Required By", "HR Reviewer 2 (Final Approval)")) +
               (string.IsNullOrWhiteSpace(f.Hr1Remarks) ? "" : $"<p><strong>HR remarks:</strong> {f.Hr1Remarks}</p>") +
-              "<p><strong>Awaiting final HR approval (HR Rep 2).</strong></p>", sentAt));
+              ActionButton(actionUrl, "Open HR Review"), sentAt));
 
-    public static (string Subject, string Body) FinalApproved(PmForm f, string rating, DateTime sentAt) =>
+    public static (string Subject, string Body) FinalApproved(
+        PmForm f, string rating, string actionUrl, DateTime sentAt) =>
         ($"PM Form - APPROVED (Final) | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Management Form — Final Approval",
-              "<p>Dear Team,</p>" +
+         Wrap("Performance Management System", "Performance Review Finalized",
+              "<p>Dear Team,</p><p>This Performance Management form is now finalized and archived.</p>" +
               InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         ("Review Year", f.EvalYear.ToString()),
-                        ("Action Performed", "Final HR Approval"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "None — this review is complete"),
+                        ("Previous Action By", $"{f.Hr2ReviewerName} (HR Reviewer 2)"),
+                        ("Next Action Required By", "None"),
                         ("Reviewed By", f.Hr1ReviewerName ?? ""), ("Approved By", f.Hr2ReviewerName ?? ""),
                         ("Score", f.PerformanceScore.ToString("F2")), ("Rating", rating)) +
               (string.IsNullOrWhiteSpace(f.Hr2Remarks) ? "" : $"<p><strong>HR remarks:</strong> {f.Hr2Remarks}</p>") +
-              "<p>The form is now locked and archived.</p>", sentAt));
+              ActionButton(actionUrl, "View Final Performance Review"), sentAt));
 
-    public static (string Subject, string Body) Reverted(PmForm f, string hrComments, DateTime sentAt) =>
+    public static (string Subject, string Body) Reverted(
+        PmForm f, string managerName, string hrComments, string actionUrl, DateTime sentAt) =>
         ($"PM Form Requires Revision | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "PM Form Requires Revision",
-              "<p>Dear Manager,</p><p>The Performance Management form below has been reviewed by HR and requires revisions:</p>" +
+         Wrap("Performance Management System", "Performance Form Requires Revision",
+              $"<p>Dear <strong>{managerName}</strong>,</p><p>The Performance Management form below has been reviewed by HR and requires revisions:</p>" +
               InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         ("Review Year", f.EvalYear.ToString()),
-                        ("Action Performed", "Reverted to Manager by HR"),
-                        ("Workflow Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", "Revise the form per HR's comments and resubmit"),
+                        ("Previous Action By", string.IsNullOrWhiteSpace(f.Hr1ReviewerName) ? "HR Team" : $"{f.Hr1ReviewerName} (HR)"),
+                        ("Next Action Required By", $"{managerName} (You, Manager)"),
                         ("HR Comments", string.IsNullOrWhiteSpace(hrComments) ? "No specific comments provided." : hrComments)) +
-              $"<p>The form has been returned to <strong>{PmFormStatus.DisplayName(PmFormStatus.EmployeeAcknowledged)}</strong>. Please make the changes and resubmit to HR.</p>", sentAt));
+              ActionButton(actionUrl, "Revise Performance Form"), sentAt));
 }

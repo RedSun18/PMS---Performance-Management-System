@@ -22,6 +22,7 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<RatingService>();
 builder.Services.AddScoped<JobFamilyService>();
 builder.Services.AddScoped<SettingsService>();
+builder.Services.AddScoped<FormLinkService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<WorkflowService>();
 

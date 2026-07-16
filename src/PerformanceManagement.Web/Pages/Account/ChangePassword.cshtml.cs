@@ -20,6 +20,7 @@ public class ChangePasswordModel : AppPageModel
     public string? Error { get; set; }
     /// <summary>True when the user was forced here (vs. a voluntary password change from settings).</summary>
     public bool IsForced { get; set; }
+    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
     public void OnGet() => IsForced = MustChangePassword;
 
@@ -55,6 +56,6 @@ public class ChangePasswordModel : AppPageModel
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
             AppUserClaims.ToPrincipal(AppUserClaims.Build(user), CookieAuthenticationDefaults.AuthenticationScheme));
 
-        return RedirectToPage("/PmForm/Index");
+        return LocalRedirect(ReturnUrl is { Length: > 0 } && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/Dashboard");
     }
 }

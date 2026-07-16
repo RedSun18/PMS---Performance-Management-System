@@ -147,6 +147,28 @@ dotnet user-secrets set "Email:SenderEmail" "you@example.com" --project src/Perf
 dotnet user-secrets set "Email:DevelopmentRedirectEmail" "you@example.com" --project src/PerformanceManagement.Web
 ```
 
+### Actionable emails and secure deep links
+
+Every workflow email carries a prominent action button (e.g. "View Performance Form", "Open HR
+Review") plus a plain-text fallback link, and states Current Status / Required Action / Previous
+Action By / Next Action Required By / Review Year / Reference / timestamp — the email is actionable
+without opening the app first (see `EmailTemplates` in `EmailService.cs`).
+
+The button never links to a raw `?empcd=&year=` URL. Instead `FormLinkService`
+(`src/PerformanceManagement.Core/Services/FormLinkService.cs`) issues a signed, expiring token
+(ASP.NET Core Data Protection, 30-day default lifetime) encoding the employee code, review year,
+and intended recipient username, built into a `{ApplicationBaseUrl}/OpenForm?token=...` link. The
+base URL is a System Settings field ("General" section) — set it to `https://pms.company.com` in
+production or `https://localhost:5273` for local testing.
+
+`Pages/OpenForm` resolves the token: invalid/tampered/expired tokens and requests from a user who
+is neither the intended recipient nor otherwise authorized (admin/direct manager/HR/branch viewer,
+via the same `PermissionService` check `PmForm` itself uses) land on Access Denied with a friendly
+message; everyone else is redirected straight to the right PM Form. Because `/OpenForm` requires
+authentication like any other page, an unauthenticated click goes through the standard ASP.NET Core
+cookie-auth challenge → Login (`?ReturnUrl=...`) → back to `/OpenForm` flow; `ReturnUrl` also
+survives a forced password change if the account has one pending.
+
 ## Running tests
 
 ```bash

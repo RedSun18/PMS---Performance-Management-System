@@ -1,0 +1,139 @@
+@page
+@model PerformanceManagement.Web.Pages.Reports.IndexModel
+@{
+    ViewData["Title"] = "Reports";
+}
+<div class="page-header">Reports</div>
+
+@if (Model.ReportError is not null) { <div class="alert alert-error">@Model.ReportError</div> }
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header">Employee Performance Report</div>
+    <div class="card-body">
+        <p class="muted" style="margin-top:0;">Full record for one employee: scores, KPI/competency breakdown, comments,
+            development plan, workflow history and approval history.</p>
+        <form method="get">
+            <div class="filters">
+                <div>
+                    <label for="repEmpcd">Employee</label>
+                    <select name="empcd" id="repEmpcd" required>
+                        <option value="">-- Select Employee --</option>
+                        @foreach (var (code, label) in Model.EmployeeOptions)
+                        {
+                            <option value="@code">@label</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="repEmpYear">Review Year</label>
+                    <select name="year" id="repEmpYear">
+                        @foreach (var y in Model.YearOptions)
+                        {
+                            <option value="@y" selected="@(y == Model.DefaultYear)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div></div><div></div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" name="handler" value="EmployeePdf" class="btn btn-primary">📄 Export PDF</button>
+                    <button type="submit" name="handler" value="EmployeeExcel" class="btn btn-secondary">📊 Export Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header">Department Summary</div>
+    <div class="card-body">
+        <p class="muted" style="margin-top:0;">All employees in one department for a review year, with scores, ratings and completion.</p>
+        <form method="get">
+            <div class="filters">
+                <div>
+                    <label for="repDept">Department</label>
+                    <select name="dept" id="repDept" required>
+                        <option value="">-- Select Department --</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            <option value="@d.Code">@d.NameEn</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="repDeptYear">Review Year</label>
+                    <select name="year" id="repDeptYear">
+                        @foreach (var y in Model.YearOptions)
+                        {
+                            <option value="@y" selected="@(y == Model.DefaultYear)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div></div><div></div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" name="handler" value="DepartmentPdf" class="btn btn-primary">📄 Export PDF</button>
+                    <button type="submit" name="handler" value="DepartmentExcel" class="btn btn-secondary">📊 Export Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header">Manager Summary</div>
+    <div class="card-body">
+        <p class="muted" style="margin-top:0;">A manager's direct reports for a review year, with scores, ratings and completion.</p>
+        <form method="get">
+            <div class="filters">
+                <div>
+                    <label for="repManager">Manager</label>
+                    <select name="manager" id="repManager" required>
+                        <option value="">-- Select Manager --</option>
+                        @foreach (var (code, label) in Model.ManagerOptions)
+                        {
+                            <option value="@code">@label</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="repMgrYear">Review Year</label>
+                    <select name="year" id="repMgrYear">
+                        @foreach (var y in Model.YearOptions)
+                        {
+                            <option value="@y" selected="@(y == Model.DefaultYear)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div></div><div></div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" name="handler" value="ManagerPdf" class="btn btn-primary">📄 Export PDF</button>
+                    <button type="submit" name="handler" value="ManagerExcel" class="btn btn-secondary">📊 Export Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Overall Organization Summary</div>
+    <div class="card-body">
+        <p class="muted" style="margin-top:0;">Org-wide totals and a department-by-department breakdown for a review year.</p>
+        <form method="get">
+            <div class="filters">
+                <div>
+                    <label for="repOrgYear">Review Year</label>
+                    <select name="year" id="repOrgYear">
+                        @foreach (var y in Model.YearOptions)
+                        {
+                            <option value="@y" selected="@(y == Model.DefaultYear)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div></div><div></div><div></div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" name="handler" value="OverallPdf" class="btn btn-primary">📄 Export PDF</button>
+                    <button type="submit" name="handler" value="OverallExcel" class="btn btn-secondary">📊 Export Excel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

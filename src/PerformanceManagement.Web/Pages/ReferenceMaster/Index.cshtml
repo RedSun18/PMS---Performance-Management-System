@@ -11,6 +11,7 @@
 <div class="tabs">
     <a href="?tab=kpi" class="@(Model.Tab == "kpi" ? "active" : "")">KPI Master</a>
     <a href="?tab=comp" class="@(Model.Tab == "comp" ? "active" : "")">Competency Master</a>
+    <a href="?tab=dept" class="@(Model.Tab == "dept" ? "active" : "")">Departments</a>
     <a href="?tab=ref" class="@(Model.Tab == "ref" ? "active" : "")">Job Families &amp; Rating Scales</a>
 </div>
 
@@ -74,6 +75,10 @@
         <input type="hidden" name="tab" value="kpi" />
         <div class="filters">
             <div>
+                <label for="kpiFilterQuery">Search (code or name)</label>
+                <input type="text" name="kpiQuery" id="kpiFilterQuery" value="@Model.KpiQuery" placeholder="e.g. KPI005 or Reinsurance" />
+            </div>
+            <div>
                 <label for="kpiFilterPerspective">Perspective</label>
                 <select name="perspective" id="kpiFilterPerspective" onchange="this.form.submit()">
                     <option value="">All</option>
@@ -93,13 +98,18 @@
                     }
                 </select>
             </div>
-            <div></div><div></div><div></div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div></div>
         </div>
     </form>
 
     <table class="grid">
         <thead><tr><th>Code</th><th>Name</th><th>Perspective</th><th>Departments</th><th>Weight Range</th><th>Status</th><th>Modified</th><th></th></tr></thead>
         <tbody>
+        @if (Model.Kpis.Count == 0)
+        {
+            <tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">No KPIs match your search.</td></tr>
+        }
         @foreach (var row in Model.Kpis)
         {
             <tr>
@@ -171,6 +181,10 @@ else if (Model.Tab == "comp")
         <input type="hidden" name="tab" value="comp" />
         <div class="filters">
             <div>
+                <label for="compFilterQuery">Search (code or name)</label>
+                <input type="text" name="compQuery" id="compFilterQuery" value="@Model.CompQuery" placeholder="e.g. COM001 or Leadership" />
+            </div>
+            <div>
                 <label for="compFilterType">Type</label>
                 <select name="compType" id="compFilterType" onchange="this.form.submit()">
                     <option value="">All</option>
@@ -178,13 +192,18 @@ else if (Model.Tab == "comp")
                     <option value="T" selected="@(Model.CompType == "T")">Technical</option>
                 </select>
             </div>
-            <div></div><div></div><div></div><div></div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div></div><div></div>
         </div>
     </form>
 
     <table class="grid">
         <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Description</th><th>Weight Range</th><th>Status</th><th></th></tr></thead>
         <tbody>
+        @if (Model.Comps.Count == 0)
+        {
+            <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">No competencies match your search.</td></tr>
+        }
         @foreach (var row in Model.Comps)
         {
             <tr>
@@ -200,6 +219,87 @@ else if (Model.Tab == "comp")
         </tbody>
     </table>
     <p class="muted">@Model.Comps.Count competencies.</p>
+}
+else if (Model.Tab == "dept")
+{
+    var d = Model.DeptEdit;
+    <div class="card">
+        <div class="card-header">@(d is null ? "Add Department" : $"Edit Department {d.Code}")</div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="SaveDepartment">
+                <input type="hidden" name="isNew" value="@(d is null ? "true" : "false")" />
+                <div class="grid-3" style="margin-bottom:12px;">
+                    <div>
+                        <label for="deptCode">Department Code</label>
+                        <input type="text" id="deptCode" name="code" value="@d?.Code" maxlength="10" readonly="@(d is not null)" />
+                    </div>
+                    <div>
+                        <label for="deptName">Department Name</label>
+                        <input type="text" id="deptName" name="nameEn" value="@d?.NameEn" maxlength="100" />
+                    </div>
+                    <div>
+                        <label style="text-transform:none;">
+                            <input type="checkbox" name="isActive" value="true" style="width:auto;" checked="@(d?.IsActive ?? true)" /> Active
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label for="deptDescription">Description</label><textarea id="deptDescription" name="description" rows="2">@d?.Description</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">@(d is null ? "Create Department" : "Save Changes")</button>
+                    <a class="btn btn-secondary" href="?tab=dept">Clear</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="get" style="margin-bottom:10px;">
+        <input type="hidden" name="tab" value="dept" />
+        <div class="filters">
+            <div>
+                <label for="deptFilterQuery">Search (code, name or description)</label>
+                <input type="text" name="deptQuery" id="deptFilterQuery" value="@Model.DeptQuery" placeholder="e.g. FIN or Finance" />
+            </div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div></div><div></div><div></div>
+        </div>
+    </form>
+
+    <table class="grid">
+        <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        @if (Model.DeptRows.Count == 0)
+        {
+            <tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">No departments match your search.</td></tr>
+        }
+        @foreach (var row in Model.DeptRows)
+        {
+            <tr>
+                <td>@row.Code</td>
+                <td><strong>@row.NameEn</strong></td>
+                <td>@row.Description</td>
+                <td>
+                    <span class="status-chip">
+                        <span class="status-dot" style="background:@(row.IsActive ? "var(--green)" : "var(--text-muted)");"></span>
+                        @(row.IsActive ? "Active" : "Disabled")
+                    </span>
+                </td>
+                <td style="display:flex;gap:6px;">
+                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=dept&deptEditCode=@row.Code">Edit</a>
+                    <form method="post" asp-page-handler="ToggleDepartment" class="inline-form">
+                        <input type="hidden" name="code" value="@row.Code" />
+                        <button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                                onclick="return confirm('@(row.IsActive ? $"Disable {row.NameEn}? It will remain assigned to existing employees but can no longer be selected for new employees." : $"Re-enable {row.NameEn}?")');">
+                            @(row.IsActive ? "Disable" : "Enable")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <p class="muted">@Model.DeptRows.Count departments. Departments are never deleted — disable them instead to preserve history for existing employees.</p>
 }
 else
 {

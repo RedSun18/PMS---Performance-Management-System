@@ -24,14 +24,20 @@ public class IndexModel : AppPageModel
     [BindProperty(SupportsGet = true)] public string? DeptFilter { get; set; }
     [BindProperty(SupportsGet = true)] public string? CompType { get; set; }
     [BindProperty(SupportsGet = true)] public string? EditId { get; set; }
+    [BindProperty(SupportsGet = true)] public string? KpiQuery { get; set; }
+    [BindProperty(SupportsGet = true)] public string? CompQuery { get; set; }
+    [BindProperty(SupportsGet = true)] public string? DeptQuery { get; set; }
+    [BindProperty(SupportsGet = true)] public string? DeptEditCode { get; set; }
 
     public List<KpiMaster> Kpis { get; set; } = new();
     public List<CompetencyMaster> Comps { get; set; } = new();
     public List<JobFamily> JobFamilies { get; set; } = new();
     public List<RatingScale> RatingScales { get; set; } = new();
     public List<Department> Departments { get; set; } = new();
+    public List<Department> DeptRows { get; set; } = new();
     public KpiMaster? KpiEdit { get; set; }
     public CompetencyMaster? CompEdit { get; set; }
+    public Department? DeptEdit { get; set; }
     public string NextKpiId { get; set; } = "";
     public string NextCompId { get; set; } = "";
 
@@ -47,6 +53,11 @@ public class IndexModel : AppPageModel
             case "kpi":
                 var kq = _db.KpiMasters.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrEmpty(Perspective)) kq = kq.Where(k => k.Perspective == Perspective);
+                if (!string.IsNullOrWhiteSpace(KpiQuery))
+                {
+                    var term = KpiQuery.Trim().ToLower();
+                    kq = kq.Where(k => k.KpiId.ToLower().Contains(term) || k.Name.ToLower().Contains(term));
+                }
                 Kpis = (await kq.OrderByDescending(k => k.ModifiedDate).ThenBy(k => k.KpiId).ToListAsync())
                     .Where(k => string.IsNullOrEmpty(DeptFilter) || k.AppliesToDept(DeptFilter)).ToList();
                 KpiEdit = EditId is null ? null : await _db.KpiMasters.AsNoTracking().FirstOrDefaultAsync(k => k.KpiId == EditId);
@@ -55,9 +66,25 @@ public class IndexModel : AppPageModel
             case "comp":
                 var cq = _db.CompetencyMasters.AsNoTracking().AsQueryable();
                 if (!string.IsNullOrEmpty(CompType)) cq = cq.Where(c => c.CompType == CompType);
+                if (!string.IsNullOrWhiteSpace(CompQuery))
+                {
+                    var term = CompQuery.Trim().ToLower();
+                    cq = cq.Where(c => c.CompId.ToLower().Contains(term) || c.Name.ToLower().Contains(term));
+                }
                 Comps = await cq.OrderByDescending(c => c.ModifiedDate).ThenBy(c => c.CompId).ToListAsync();
                 CompEdit = EditId is null ? null : await _db.CompetencyMasters.AsNoTracking().FirstOrDefaultAsync(c => c.CompId == EditId);
                 NextCompId = await NextIdAsync("COM", _db.CompetencyMasters.Select(c => c.CompId));
+                break;
+            case "dept":
+                var dq = _db.Departments.AsNoTracking().AsQueryable();
+                if (!string.IsNullOrWhiteSpace(DeptQuery))
+                {
+                    var term = DeptQuery.Trim().ToLower();
+                    dq = dq.Where(d => d.Code.ToLower().Contains(term) || d.NameEn.ToLower().Contains(term)
+                        || (d.Description != null && d.Description.ToLower().Contains(term)));
+                }
+                DeptRows = await dq.OrderBy(d => d.NameEn).ToListAsync();
+                DeptEdit = DeptEditCode is null ? null : await _db.Departments.AsNoTracking().FirstOrDefaultAsync(d => d.Code == DeptEditCode);
                 break;
             default:
                 JobFamilies = await _db.JobFamilies.AsNoTracking().OrderBy(j => j.Code).ToListAsync();
@@ -150,6 +177,60 @@ public class IndexModel : AppPageModel
         await _db.SaveChangesAsync();
         Message = isNew ? "Competency Successfully Saved!" : "Competency Successfully Updated!";
         return RedirectToPage(new { Tab = "comp" });
+    }
+
+    public async Task<IActionResult> OnPostSaveDepartmentAsync(string code, string nameEn, string? description, bool isActive, bool isNew)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        code = (code ?? "").Trim().ToUpperInvariant();
+        if (code.Length == 0 || string.IsNullOrWhiteSpace(nameEn))
+        {
+            ErrorMessage = "Department code and name are required.";
+            return RedirectToPage(new { Tab = "dept" });
+        }
+
+        var dept = await _db.Departments.FindAsync(code);
+        if (isNew)
+        {
+            if (dept is not null)
+            {
+                ErrorMessage = $"Department code '{code}' is already in use.";
+                return RedirectToPage(new { Tab = "dept" });
+            }
+            dept = new Department { Code = code };
+            _db.Departments.Add(dept);
+        }
+        else if (dept is null)
+        {
+            ErrorMessage = $"Department '{code}' not found.";
+            return RedirectToPage(new { Tab = "dept" });
+        }
+
+        dept.NameEn = nameEn.Trim();
+        dept.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        dept.IsActive = isActive;
+
+        await _db.SaveChangesAsync();
+        Message = isNew ? $"Department '{code}' created." : $"Department '{code}' updated.";
+        return RedirectToPage(new { Tab = "dept" });
+    }
+
+    public async Task<IActionResult> OnPostToggleDepartmentAsync(string code)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        var dept = await _db.Departments.FindAsync(code);
+        if (dept is null)
+        {
+            ErrorMessage = "Department not found.";
+            return RedirectToPage(new { Tab = "dept" });
+        }
+
+        dept.IsActive = !dept.IsActive;
+        await _db.SaveChangesAsync();
+        Message = $"Department '{code}' {(dept.IsActive ? "enabled" : "disabled")}.";
+        return RedirectToPage(new { Tab = "dept" });
     }
 
     public async Task<IActionResult> OnPostSaveJobFamilyAsync(string code, string nameEn, string gradesCsv, int kpiWeight, int compWeight)

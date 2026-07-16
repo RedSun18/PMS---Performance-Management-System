@@ -9,7 +9,7 @@
     <div class="card-header">Filters</div>
     <div class="card-body">
         <form method="get">
-            <div class="filters">
+            <div class="filters-6">
                 <div>
                     <label for="summaryDept">Department</label>
                     <select name="dept" id="summaryDept" onchange="this.form.empcd.value='';this.form.submit()">
@@ -47,6 +47,16 @@
                         @foreach (var s in PmFormStatus.All)
                         {
                             <option value="@s" selected="@(s == Model.Status)">@PmFormStatus.DisplayName(s)</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="summaryManager">Manager</label>
+                    <select name="manager" id="summaryManager" onchange="this.form.submit()">
+                        <option value="">All Managers</option>
+                        @foreach (var (code, label) in Model.ManagerOptions)
+                        {
+                            <option value="@code" selected="@(code == Model.Manager)">@label</option>
                         }
                     </select>
                 </div>

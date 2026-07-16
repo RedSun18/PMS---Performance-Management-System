@@ -40,7 +40,7 @@ public class IndexModel : AppPageModel
     public int ReturnedCount { get; private set; }
     public int CompletedCount { get; private set; }
     public List<TeamRow> TeamRows { get; private set; } = new();
-    public record TeamRow(string EmpCode, string Name, string Status, bool NeedsAttention);
+    public record TeamRow(string EmpCode, string Name, string DeptName, string Status, bool NeedsAttention);
 
     // ---- Administrator view --------------------------------------------------
     public int EmployeeCount { get; private set; }
@@ -50,7 +50,8 @@ public class IndexModel : AppPageModel
     public int FinalizedCount { get; private set; }
     public int OverallCompletionPercent { get; private set; }
     public List<DeptRow> DeptCompletion { get; private set; } = new();
-    public record DeptRow(string Name, int TotalEmployees, int Finalized, int Percent);
+    public record DeptRow(string Code, string Name, int TotalEmployees, int FormCount, int Started, int Finalized,
+        decimal AverageScore, int CompletionPercent, int ProgressPercent);
 
     public async Task OnGetAsync()
     {
@@ -144,7 +145,8 @@ public class IndexModel : AppPageModel
         if (assigned.Count == 0) return;
 
         var employees = await _db.Employees.AsNoTracking()
-            .Where(e => assigned.Contains(e.EmpCode)).ToDictionaryAsync(e => e.EmpCode, e => e.LatinName);
+            .Where(e => assigned.Contains(e.EmpCode)).ToDictionaryAsync(e => e.EmpCode, e => e);
+        var deptNames = await _db.Departments.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.NameEn);
 
         var forms = await _db.PmForms.AsNoTracking()
             .Include(f => f.History)
@@ -154,10 +156,13 @@ public class IndexModel : AppPageModel
 
         foreach (var empCode in assigned)
         {
-            var name = employees.GetValueOrDefault(empCode, empCode);
+            var emp = employees.GetValueOrDefault(empCode);
+            var name = emp?.LatinName ?? empCode;
+            var deptName = deptNames.GetValueOrDefault(emp?.DeptCode ?? "", "Unassigned");
+
             if (!formsByEmp.TryGetValue(empCode, out var form))
             {
-                TeamRows.Add(new TeamRow(empCode, name, "Not started", true));
+                TeamRows.Add(new TeamRow(empCode, name, deptName, "Not started", true));
                 WaitingForReviewCount++;
                 continue;
             }
@@ -166,7 +171,7 @@ public class IndexModel : AppPageModel
             var wasReverted = form.Status == PmFormStatus.EmployeeAcknowledged && lastNote == "HR reverted to manager";
 
             var needsAttention = form.Status is PmFormStatus.Draft or PmFormStatus.Ready || wasReverted;
-            TeamRows.Add(new TeamRow(empCode, name,
+            TeamRows.Add(new TeamRow(empCode, name, deptName,
                 wasReverted ? "Returned by HR" : PmFormStatus.DisplayName(form.Status), needsAttention));
 
             if (wasReverted) ReturnedCount++;
@@ -174,7 +179,7 @@ public class IndexModel : AppPageModel
             if (form.Status == PmFormStatus.Approved) CompletedCount++;
         }
 
-        TeamRows = TeamRows.OrderByDescending(r => r.NeedsAttention).ThenBy(r => r.Name).ToList();
+        TeamRows = TeamRows.OrderBy(r => r.DeptName).ThenByDescending(r => r.NeedsAttention).ThenBy(r => r.Name).ToList();
     }
 
     // ======================================================================
@@ -184,7 +189,7 @@ public class IndexModel : AppPageModel
 
         var forms = await _db.PmForms.AsNoTracking()
             .Where(f => f.EvalYear == EvalYear)
-            .Select(f => new { f.Status, f.DeptCode })
+            .Select(f => new { f.Status, f.DeptCode, f.PerformanceScore })
             .ToListAsync();
         FormsGeneratedCount = forms.Count;
         ReadyCount = forms.Count(f => f.Status is PmFormStatus.Draft or PmFormStatus.Ready);
@@ -193,20 +198,29 @@ public class IndexModel : AppPageModel
         FinalizedCount = forms.Count(f => f.Status == PmFormStatus.Approved);
         OverallCompletionPercent = EmployeeCount == 0 ? 0 : FinalizedCount * 100 / EmployeeCount;
 
-        var depts = await _db.Departments.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.NameEn);
+        // Real Department Master join: an employee's DeptCode only groups into a department
+        // row here if it matches an actual Department Master record (never a raw legacy code).
+        var depts = await _db.Departments.AsNoTracking().ToListAsync();
         var employeesByDept = await _db.Employees.AsNoTracking()
             .Where(e => e.TermDate == null && e.DeptCode != null)
             .GroupBy(e => e.DeptCode!)
             .Select(g => new { Dept = g.Key, Count = g.Count() })
             .ToListAsync();
-        var finalizedByDept = forms.Where(f => f.Status == PmFormStatus.Approved && f.DeptCode != null)
-            .GroupBy(f => f.DeptCode!).ToDictionary(g => g.Key, g => g.Count());
+        var employeeCountByDept = employeesByDept.ToDictionary(x => x.Dept, x => x.Count);
 
-        DeptCompletion = employeesByDept
-            .Select(d => new DeptRow(
-                depts.GetValueOrDefault(d.Dept, d.Dept), d.Count,
-                finalizedByDept.GetValueOrDefault(d.Dept, 0),
-                d.Count == 0 ? 0 : finalizedByDept.GetValueOrDefault(d.Dept, 0) * 100 / d.Count))
+        DeptCompletion = depts
+            .Where(d => employeeCountByDept.ContainsKey(d.Code))
+            .Select(d =>
+            {
+                var deptForms = forms.Where(f => f.DeptCode == d.Code).ToList();
+                var empCount = employeeCountByDept.GetValueOrDefault(d.Code, 0);
+                var started = deptForms.Count(f => f.Status is not (PmFormStatus.Draft or PmFormStatus.Ready));
+                var finalized = deptForms.Count(f => f.Status == PmFormStatus.Approved);
+                var avgScore = deptForms.Count == 0 ? 0 : Math.Round(deptForms.Average(f => f.PerformanceScore), 2);
+                var completionPercent = empCount == 0 ? 0 : finalized * 100 / empCount;
+                var progressPercent = empCount == 0 ? 0 : started * 100 / empCount;
+                return new DeptRow(d.Code, d.NameEn, empCount, deptForms.Count, started, finalized, avgScore, completionPercent, progressPercent);
+            })
             .OrderByDescending(d => d.TotalEmployees)
             .ToList();
     }

@@ -11,8 +11,8 @@
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="empSearchQ">Search (code or name)</label>
-                    <input type="text" id="empSearchQ" name="q" value="@Model.Q" />
+                    <label for="empSearchQ">Search (code, name, username or email)</label>
+                    <input type="text" id="empSearchQ" name="q" value="@Model.Q" placeholder="e.g. 1504, Alfahad, 0854, name@company.com" />
                 </div>
                 <div>
                     <label for="empSearchDept">Department</label>
@@ -25,10 +25,12 @@
                     </select>
                 </div>
                 <div>
-                    <label style="text-transform:none;">
-                        <input type="checkbox" name="showInactive" value="true" style="width:auto;" checked="@Model.ShowInactive"
-                               onchange="this.form.submit()" /> Include terminated
-                    </label>
+                    <label for="empSearchStatus">Active Status</label>
+                    <select name="activeStatus" id="empSearchStatus" onchange="this.form.submit()">
+                        <option value="active" selected="@(Model.ActiveStatus == "active")">Active only</option>
+                        <option value="inactive" selected="@(Model.ActiveStatus == "inactive")">Terminated only</option>
+                        <option value="all" selected="@(Model.ActiveStatus == "all")">All</option>
+                    </select>
                 </div>
                 <div></div>
                 <div style="display:flex;gap:8px;">
@@ -46,17 +48,22 @@
 <table class="grid">
     <thead>
         <tr>
-            <th>Code</th><th>Name</th><th>Department</th><th>Section</th><th>Designation</th>
+            <th>Code</th><th>Name</th><th>Username</th><th>Department</th><th>Section</th><th>Designation</th>
             <th>Grade</th><th>Join Date</th><th>Direct Manager</th><th>Status</th><th>Source</th>
             @if (Model.IsHrAdmin) { <th></th> }
         </tr>
     </thead>
     <tbody>
+    @if (Model.Rows.Count == 0)
+    {
+        <tr><td colspan="12" class="muted" style="text-align:center;padding:24px;">No employees match your search.</td></tr>
+    }
     @foreach (var r in Model.Rows)
     {
         <tr>
             <td>@r.E.EmpCode</td>
             <td><strong>@r.E.LatinName</strong>@(string.IsNullOrEmpty(r.E.ArabicName) ? "" : $" / {r.E.ArabicName}")</td>
+            <td>@(r.UserName ?? "—")</td>
             <td>@r.DeptName</td>
             <td>@r.E.SectionCode</td>
             <td>@r.DesigName</td>

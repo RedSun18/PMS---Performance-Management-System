@@ -91,33 +91,36 @@ else if (Model.DashboardKind == "manager")
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">My Team — @Model.EvalYear</div>
-        <div class="card-body" style="padding:0;">
-            <table class="grid">
-                <thead><tr><th>Employee</th><th>Status</th><th></th></tr></thead>
-                <tbody>
-                    @foreach (var r in Model.TeamRows)
-                    {
-                        <tr>
-                            <td>@r.EmpCode - @r.Name</td>
-                            <td>
-                                @if (r.NeedsAttention)
-                                {
-                                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span>@r.Status</span>
-                                }
-                                else
-                                {
-                                    @r.Status
-                                }
-                            </td>
-                            <td><a class="btn btn-secondary" asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode" asp-route-year="@Model.EvalYear">Open</a></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    @foreach (var deptGroup in Model.TeamRows.GroupBy(r => r.DeptName))
+    {
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">@deptGroup.Key — @Model.EvalYear (@deptGroup.Count())</div>
+            <div class="card-body" style="padding:0;">
+                <table class="grid">
+                    <thead><tr><th>Employee</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var r in deptGroup)
+                        {
+                            <tr>
+                                <td>@r.EmpCode - @r.Name</td>
+                                <td>
+                                    @if (r.NeedsAttention)
+                                    {
+                                        <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span>@r.Status</span>
+                                    }
+                                    else
+                                    {
+                                        @r.Status
+                                    }
+                                </td>
+                                <td><a class="btn btn-secondary" asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode" asp-route-year="@Model.EvalYear">Open</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    }
 
     <div class="form-actions" style="margin-top:20px;">
         <a class="btn btn-primary" asp-page="/PmForm/Index">Go to PM Form</a>
@@ -164,26 +167,51 @@ else
     </div>
 
     <div class="card">
-        <div class="card-header">Department Completion</div>
-        <div class="card-body">
+        <div class="card-header">Department Completion, Progress &amp; Performance</div>
+        <div class="card-body" style="padding:0;">
             @if (Model.DeptCompletion.Count == 0)
             {
-                <p class="muted" style="margin:0;">No department data available.</p>
+                <p class="muted" style="margin:0;padding:16px;">No department data available. Employees must be assigned
+                    to a department in Employee Master, matched to a Department Master record in Reference Master.</p>
             }
             else
             {
-                @foreach (var d in Model.DeptCompletion)
-                {
-                    <div style="margin-bottom:14px;">
-                        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-                            <span><strong>@d.Name</strong></span>
-                            <span class="muted">@d.Finalized / @d.TotalEmployees finalized (@d.Percent%)</span>
-                        </div>
-                        <div class="progress-outer">
-                            <div class="progress-inner" style="width:@(d.Percent)%;"></div>
-                        </div>
-                    </div>
-                }
+                <table class="grid">
+                    <thead>
+                        <tr>
+                            <th>Department</th><th>Employees</th><th>Progress</th><th>Completion</th><th>Avg. Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.DeptCompletion)
+                        {
+                            <tr>
+                                <td><strong>@d.Name</strong></td>
+                                <td>@d.TotalEmployees</td>
+                                <td>
+                                    <div class="progress-outer" style="max-width:160px;">
+                                        <div class="progress-inner" style="width:@(d.ProgressPercent)%;">@d.ProgressPercent%</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="progress-outer" style="max-width:160px;">
+                                        <div class="progress-inner" style="width:@(d.CompletionPercent)%;">@d.CompletionPercent%</div>
+                                    </div>
+                                </td>
+                                @if (d.FormCount == 0)
+                                {
+                                    <td class="muted">—</td>
+                                }
+                                else
+                                {
+                                    <td style="font-weight:700;color:@(d.AverageScore >= 90 ? "var(--green)" : d.AverageScore >= 70 ? "var(--amber)" : "var(--red)");">
+                                        @d.AverageScore.ToString("F2")
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
         </div>
     </div>
@@ -191,5 +219,6 @@ else
     <div class="form-actions" style="margin-top:20px;">
         <a class="btn btn-primary" asp-page="/PmFormSummary/Index">Open PM Form Summary</a>
         <a class="btn btn-secondary" asp-page="/Employees/Index">Employee Master</a>
+        <a class="btn btn-secondary" asp-page="/Reports/Index">Reports</a>
     </div>
 }

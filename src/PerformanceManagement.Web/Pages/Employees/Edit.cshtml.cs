@@ -41,7 +41,7 @@ public class EditModel : AppPageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        await LoadListsAsync();
+        string? currentDeptCode = null;
         if (!IsNew)
         {
             var e = await _db.Employees.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == Empcd);
@@ -54,13 +54,15 @@ public class EditModel : AppPageModel
                 Grade = e.Grade, JoinDate = e.JoinDate, TermDate = e.TermDate, Email = e.Email,
                 ManagerEmpCode = mgr?.ManagerEmpCode
             };
+            currentDeptCode = e.DeptCode;
         }
+        await LoadListsAsync(currentDeptCode);
         return Page();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
-        await LoadListsAsync();
+        await LoadListsAsync(Form.DeptCode);
         var code = (IsNew ? Form.EmpCode : Empcd)?.Trim() ?? "";
         if (code.Length == 0 || string.IsNullOrWhiteSpace(Form.LatinName))
         {
@@ -88,6 +90,18 @@ public class EditModel : AppPageModel
         else if (e.Source == "HDR_SNAPSHOT")
         {
             e.Source = "MANUAL"; // reviewed & corrected by HR
+        }
+
+        // Disabled departments may keep an existing assignment but can never be newly assigned —
+        // re-checked server-side since the dropdown is client-editable.
+        if (!string.IsNullOrEmpty(Form.DeptCode) && Form.DeptCode != e.DeptCode)
+        {
+            var targetDept = await _db.Departments.AsNoTracking().FirstOrDefaultAsync(x => x.Code == Form.DeptCode);
+            if (targetDept is not null && !targetDept.IsActive)
+            {
+                Error = $"Department '{targetDept.NameEn}' is disabled and cannot be assigned to an employee.";
+                return Page();
+            }
         }
 
         e.LatinName = Form.LatinName.Trim();
@@ -123,9 +137,14 @@ public class EditModel : AppPageModel
         return RedirectToPage("Index");
     }
 
-    private async Task LoadListsAsync()
+    /// <summary>Active departments plus <paramref name="currentDeptCode"/> even if it has since
+    /// been disabled (so an existing assignment still displays correctly) — disabled departments
+    /// otherwise cannot be selected, per Reference Master &gt; Departments.</summary>
+    private async Task LoadListsAsync(string? currentDeptCode = null)
     {
-        Departments = await _db.Departments.AsNoTracking().OrderBy(d => d.NameEn).ToListAsync();
+        Departments = await _db.Departments.AsNoTracking()
+            .Where(d => d.IsActive || d.Code == currentDeptCode)
+            .OrderBy(d => d.NameEn).ToListAsync();
         Designations = await _db.Designations.AsNoTracking().OrderBy(d => d.Code).ToListAsync();
         Sections = await _db.Sections.AsNoTracking().OrderBy(s => s.Code).ToListAsync();
         ManagerOptions = (await _db.Employees.AsNoTracking().Where(e => e.TermDate == null)

@@ -117,7 +117,28 @@ selected from the authenticated identity, not a query parameter:
 - **Direct manager** (`PermissionService.IsAManagerAsync`): team size, forms waiting on the
   manager's action, forms returned by HR, completed forms, and a per-employee status table.
 - **Administrator / Viewer**: org-wide employee/forms counts, a Ready/In Progress/Finalized
-  breakdown, and a department-by-department completion chart.
+  breakdown, and a department-by-department table (employee count, Progress — % of forms moved
+  past Draft/Ready — Completion — % finalized — and average score), joined against real
+  Department Master records rather than raw legacy department codes.
+
+## Department Master
+
+Reference Master's **Departments** tab is the source of truth for department codes — Employee
+Master's Department field is a dropdown populated from it, never free text. Departments are never
+hard-deleted (existing employees may reference them); disable them instead. A disabled department
+still displays correctly on any employee already assigned to it, but cannot be selected for a new
+employee or a department change (enforced server-side, not just by hiding the dropdown option).
+
+## Reports
+
+The admin-only **Reports** page (`ReportDataService` + `ReportExportService`) generates four
+report types, each exportable to PDF and Excel: Employee Performance Report, Department Summary,
+Manager Summary, and Overall Organization Summary. PDF rendering uses PdfSharp/MigraDoc (MIT,
+unrestricted — chosen over QuestPDF specifically to avoid its revenue-gated Community license,
+since this is a real production system) with a bundled font (`ReportFontResolver`,
+DejaVu Sans — Bitstream Vera licensed, see `Assets/Fonts/LICENSE.txt`) so PDFs render identically
+on any host OS, including Linux containers with no system font enumeration. Excel export uses
+ClosedXML (MIT).
 
 ## Email
 

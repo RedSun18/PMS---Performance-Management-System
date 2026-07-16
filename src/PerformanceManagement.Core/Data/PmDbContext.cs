@@ -38,7 +38,11 @@ public class PmDbContext : DbContext
             e.HasIndex(x => x.DeptCode);
         });
 
-        b.Entity<Department>().HasKey(x => x.Code);
+        b.Entity<Department>(e =>
+        {
+            e.HasKey(x => x.Code);
+            e.Property(x => x.IsActive).HasDefaultValue(true);
+        });
         b.Entity<Designation>().HasKey(x => x.Code);
         b.Entity<Section>().HasKey(x => x.Code);
         b.Entity<JobFamily>().HasKey(x => x.Code);

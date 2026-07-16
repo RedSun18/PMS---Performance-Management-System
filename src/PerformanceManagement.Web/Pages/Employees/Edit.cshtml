@@ -34,9 +34,15 @@
                         <option value="">—</option>
                         @foreach (var d in Model.Departments)
                         {
-                            <option value="@d.Code" selected="@(d.Code == Model.Form.DeptCode)">@d.Code — @d.NameEn</option>
+                            <option value="@d.Code" selected="@(d.Code == Model.Form.DeptCode)">@d.Code — @d.NameEn@(d.IsActive ? "" : " (disabled)")</option>
                         }
                     </select>
+                    @if (Model.Departments.Any(d => d.Code == Model.Form.DeptCode && !d.IsActive))
+                    {
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">
+                            This employee's current department has been disabled and cannot be re-selected for other employees.
+                        </p>
+                    }
                 </div>
                 <div>
                     <label for="sectionCode">Section</label>

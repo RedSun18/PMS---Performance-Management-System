@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.1" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.11" />
@@ -19,6 +20,14 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.11" />
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Bundled so PDF report generation works headlessly on any host OS (Linux containers
+         have no GDI/system font enumeration) — see ReportFontResolver. DejaVu Sans is
+         Bitstream Vera licensed; freely redistributable — see Assets/Fonts/LICENSE.txt. -->
+    <EmbeddedResource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
 
 </Project>

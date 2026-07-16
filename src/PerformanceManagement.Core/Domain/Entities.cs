@@ -26,6 +26,11 @@ public class Department
     public string Code { get; set; } = "";
     public string NameEn { get; set; } = "";
     public string? NameAr { get; set; }
+    public string? Description { get; set; }
+    /// <summary>Disabled departments stay visible on existing employee records but cannot be
+    /// assigned to new employees or on department change — see Employees/Edit. Departments are
+    /// never hard-deleted (employees may already reference them).</summary>
+    public bool IsActive { get; set; } = true;
 }
 
 public class Designation

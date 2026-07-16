@@ -21,9 +21,11 @@ public class IndexModel : AppPageModel
     [BindProperty(SupportsGet = true)] public string? Empcd { get; set; }
     [BindProperty(SupportsGet = true)] public string? Year { get; set; }
     [BindProperty(SupportsGet = true)] public string? Status { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Manager { get; set; }
 
     public List<Department> Departments { get; set; } = new();
     public List<(string Code, string Label)> EmployeeOptions { get; set; } = new();
+    public List<(string Code, string Label)> ManagerOptions { get; set; } = new();
     public List<int> YearOptions { get; set; } = new();
     public List<Row> Rows { get; set; } = new();
     public string Title { get; set; } = "PM Summary for All Departments";
@@ -43,6 +45,12 @@ public class IndexModel : AppPageModel
         EmployeeOptions = (await empQ.OrderBy(e => e.JoinDate).ToListAsync())
             .Select(e => (e.EmpCode, $"{e.EmpCode} - {e.LatinName}")).ToList();
 
+        var employeeNames = await _db.Employees.AsNoTracking().ToDictionaryAsync(e => e.EmpCode, e => e.LatinName);
+        ManagerOptions = (await _db.ManagerAssignments.AsNoTracking()
+                .Select(m => m.ManagerEmpCode).Distinct().ToListAsync())
+            .OrderBy(m => employeeNames.GetValueOrDefault(m, m))
+            .Select(m => (m, $"{m} - {employeeNames.GetValueOrDefault(m, m)}")).ToList();
+
         var q = from f in _db.PmForms.AsNoTracking()
                 join e in _db.Employees.AsNoTracking() on f.EmpCode equals e.EmpCode
                 where e.TermDate == null
@@ -52,6 +60,12 @@ public class IndexModel : AppPageModel
         if (!string.IsNullOrEmpty(Empcd)) q = q.Where(x => x.f.EmpCode == Empcd);
         if (int.TryParse(Year, out var yr)) q = q.Where(x => x.f.EvalYear == yr);
         if (!string.IsNullOrEmpty(Status)) q = q.Where(x => x.f.Status == Status);
+        if (!string.IsNullOrEmpty(Manager))
+        {
+            var managedEmpCodes = await _db.ManagerAssignments.AsNoTracking()
+                .Where(m => m.ManagerEmpCode == Manager).Select(m => m.EmpCode).ToListAsync();
+            q = q.Where(x => managedEmpCodes.Contains(x.f.EmpCode));
+        }
 
         var data = await q.OrderBy(x => x.e.DeptCode).ThenBy(x => x.e.LatinName).ToListAsync();
 

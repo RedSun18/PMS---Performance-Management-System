@@ -26,6 +26,7 @@
                     @if ((bool?)ViewData["IsHrAdmin"] == true)
                     {
                         <hr class="sidebar-divider" />
+                        <a asp-page="/Reports/Index" class="sidebar-link">🧾 Reports</a>
                         <a asp-page="/Users/Index" class="sidebar-link">👤 User Management</a>
                         <a asp-page="/Admin/LoginAs" class="sidebar-link">🔐 Login As</a>
                         <a asp-page="/Settings/Index" class="sidebar-link">⚙️ System Settings</a>

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
+// PdfSharp/MigraDoc has no font enumeration on Linux — register a bundled font resolver
+// before any report is generated (see ReportFontResolver for why).
+ReportFontResolver.Register();
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connection = builder.Configuration.GetConnectionString("Pm")
@@ -23,6 +27,7 @@ builder.Services.AddScoped<RatingService>();
 builder.Services.AddScoped<JobFamilyService>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<FormLinkService>();
+builder.Services.AddScoped<ReportDataService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<WorkflowService>();
 

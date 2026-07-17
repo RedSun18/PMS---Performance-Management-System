@@ -11,7 +11,7 @@
         {
             <div class="alert alert-error">@Model.Error</div>
         }
-        <form method="post">
+        <form method="post" data-no-dirty-check>
             <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
             <div style="margin-bottom:12px;">
                 <label for="username">Username</label>
@@ -20,6 +20,9 @@
             <div style="margin-bottom:16px;">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" />
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="text-transform:none;"><input type="checkbox" id="rememberMe" name="rememberMe" value="true" style="width:auto;" /> Remember me on this device</label>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;">Sign in</button>
         </form>

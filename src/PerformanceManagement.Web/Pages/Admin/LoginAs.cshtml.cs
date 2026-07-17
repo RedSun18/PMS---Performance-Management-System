@@ -33,7 +33,7 @@ public class LoginAsModel : AppPageModel
     public List<(int Id, string UserName, string DisplayName, string? EmpCode)> Users { get; set; } = new();
     public List<ImpersonationLog> RecentHistory { get; set; } = new();
 
-    private string VerificationPassword => _config["Security:LoginAsVerificationPassword"] ?? "Password*123";
+    private string VerificationPassword => _config["Security:LoginAsVerificationPassword"] ?? "Password123";
 
     public async Task<IActionResult> OnGetAsync()
     {

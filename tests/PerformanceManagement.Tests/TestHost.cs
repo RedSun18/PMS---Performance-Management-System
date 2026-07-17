@@ -42,6 +42,7 @@ public sealed class TestHost : IDisposable
     public SettingsService Settings { get; }
     public FormLinkService Links { get; }
     public EmailService Email { get; }
+    public NotificationService Notifications { get; }
     public WorkflowService Workflow { get; }
 
     public TestHost()
@@ -60,7 +61,8 @@ public sealed class TestHost : IDisposable
         Settings = new SettingsService(Db, new ConfigurationBuilder().Build(), new FakeDataProtectionProvider());
         Links = new FormLinkService(new FakeDataProtectionProvider(), Settings, Clock);
         Email = new EmailService(Db, Clock, Settings, NullLogger<EmailService>.Instance);
-        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links);
+        Notifications = new NotificationService(Db, Clock);
+        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links, Notifications);
     }
 
     public PmDbContext NewContext() =>

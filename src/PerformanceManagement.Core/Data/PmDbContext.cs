@@ -26,6 +26,9 @@ public class PmDbContext : DbContext
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
     public DbSet<ImpersonationLog> ImpersonationLogs => Set<ImpersonationLog>();
     public DbSet<SystemSettings> SystemSettings => Set<SystemSettings>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ScheduledJobRun> ScheduledJobRuns => Set<ScheduledJobRun>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -125,7 +128,38 @@ public class PmDbContext : DbContext
             e.HasIndex(x => x.StartedAt);
         });
 
+        b.Entity<AuditLog>(e =>
+        {
+            e.HasIndex(x => x.OccurredAt);
+            e.HasIndex(x => x.EmpCode);
+            e.HasIndex(x => x.DeptCode);
+            e.HasIndex(x => x.Action);
+        });
+
+        b.Entity<ScheduledJobRun>(e =>
+        {
+            e.HasIndex(x => new { x.JobName, x.StartedAt });
+        });
+
+        b.Entity<Notification>(e =>
+        {
+            e.HasIndex(x => new { x.UserName, x.IsRead, x.CreatedAt });
+        });
+
         // Singleton row: Id is always 1, set explicitly by SettingsService (never DB-generated).
-        b.Entity<SystemSettings>(e => e.Property(x => x.Id).ValueGeneratedNever());
+        // Every non-zero/non-false default is spelled out explicitly — AddColumn/AlterColumn
+        // migrations don't infer a DB-side default from a C# property initializer (only
+        // CreateTable does), so leaving these off would silently reset existing rows to
+        // 0/false the moment a new column is added (see AddDepartmentDescriptionAndIsActive).
+        b.Entity<SystemSettings>(e =>
+        {
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.Property(x => x.MinimumPasswordLength).HasDefaultValue(6);
+            e.Property(x => x.SessionTimeoutMinutes).HasDefaultValue(480);
+            e.Property(x => x.MaxLoginAttempts).HasDefaultValue(5);
+            e.Property(x => x.EnableAuditLogging).HasDefaultValue(true);
+            e.Property(x => x.AccountLockoutMinutes).HasDefaultValue(15);
+            e.Property(x => x.RememberMeDurationDays).HasDefaultValue(30);
+        });
     }
 }

@@ -317,4 +317,58 @@ public static class EmailTemplates
                         ("Next Action Required By", $"{managerName} (You, Manager)"),
                         ("HR Comments", string.IsNullOrWhiteSpace(hrComments) ? "No specific comments provided." : hrComments)) +
               ActionButton(actionUrl, "Revise Performance Form"), sentAt));
+
+    /// <summary>Daily scheduled nudge for a form that has been sitting in the same actionable status too long.</summary>
+    public static (string Subject, string Body) Reminder(
+        PmForm f, string recipientLabel, string requiredAction, int daysWaiting, string actionUrl, DateTime sentAt) =>
+        ($"REMINDER: Action Needed | {f.EmpNameSnapshot} | {f.EvalYear}",
+         Wrap("Performance Management System", "Reminder: Action Needed",
+              $"<p>Dear {recipientLabel},</p>" +
+              $"<p>The performance review below has been waiting for action for {daysWaiting} day(s).</p>" +
+              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        ("Review Year", f.EvalYear.ToString()),
+                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
+                        ("Required Action", requiredAction),
+                        ("Days Waiting", daysWaiting.ToString())) +
+              ActionButton(actionUrl, "View Performance Form"), sentAt));
+
+    /// <summary>One row in the weekly escalation digest — a single HR-facing summary email rather
+    /// than one email per overdue form, so a large backlog can't turn into dozens of separate sends.</summary>
+    public record EscalationRow(string LegacyRefNo, string EmpNameSnapshot, string EvalYear,
+        string Status, string RequiredAction, string Owner, int DaysWaiting, string ActionUrl);
+
+    /// <summary>Weekly digest for HR: every form that has been outstanding beyond the escalation
+    /// threshold, one row each, in a single email rather than one send per form.</summary>
+    public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt)
+    {
+        var trs = string.Join("", rows.Select(r => $"""
+            <tr>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'><a href="{r.ActionUrl}" style="color:#2f5fd6;">{r.LegacyRefNo}</a></td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.EmpNameSnapshot}</td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.EvalYear}</td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.Status}</td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.RequiredAction}</td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.Owner}</td>
+              <td style='padding:8px;border-bottom:1px solid #e0e0e0;text-align:center;'>{r.DaysWaiting}</td>
+            </tr>
+            """));
+        var table = $"""
+            <table style='width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;'>
+              <thead><tr style='text-align:left;color:#666;'>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Reference</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Employee</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Year</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Status</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Required Action</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;'>Awaiting</th>
+                <th style='padding:8px;border-bottom:2px solid #ccc;text-align:center;'>Days</th>
+              </tr></thead>
+              <tbody>{trs}</tbody>
+            </table>
+            """;
+        return ($"ESCALATION: {rows.Count} Overdue Performance Review(s)",
+            Wrap("Performance Management System", "Weekly Escalation: Overdue Reviews",
+                 $"<p>Dear HR Team,</p><p>{rows.Count} performance review(s) have been outstanding beyond the normal window and require escalation:</p>" +
+                 table, sentAt));
+    }
 }

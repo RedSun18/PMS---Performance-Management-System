@@ -20,12 +20,15 @@ public class WorkflowService
     private readonly EmailService _email;
     private readonly RatingService _rating;
     private readonly FormLinkService _links;
+    private readonly NotificationService _notifications;
 
     public WorkflowService(PmDbContext db, IClock clock, AchievementGate gate,
-        PermissionService permissions, EmailService email, RatingService rating, FormLinkService links)
+        PermissionService permissions, EmailService email, RatingService rating, FormLinkService links,
+        NotificationService notifications)
     {
         _db = db; _clock = clock; _gate = gate;
         _permissions = permissions; _email = email; _rating = rating; _links = links;
+        _notifications = notifications;
     }
 
     public async Task<PmForm?> FindFormAsync(string empCode, int evalYear, bool track = false)
@@ -99,11 +102,14 @@ public class WorkflowService
             email: async form =>
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
-                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.EmpCode));
+                var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
                 var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "ACK_REQUEST")));
+                await _notifications.CreateAsync(recipientUserName, "Performance Objectives Ready for Review",
+                    $"{form.EvalYear} review — please review and acknowledge your objectives.", "ReviewAssigned", actionUrl);
             });
     }
 
@@ -130,11 +136,14 @@ public class WorkflowService
             email: async form =>
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
-                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.ManagerEmpCode));
+                var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
                 var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "EMP_ACKNOWLEDGED")));
+                await _notifications.CreateAsync(managerUserName, "Employee Acknowledged Objectives",
+                    $"{form.EmpNameSnapshot} acknowledged their {form.EvalYear} objectives.", "EmployeeAcknowledged", actionUrl);
             });
     }
 
@@ -175,6 +184,8 @@ public class WorkflowService
                 await _email.DispatchAsync(new EmailSpec("SUBMIT_TO_HR",
                     To: await HrAdminEmailsAsync(), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "SUBMIT_TO_HR")));
+                await NotifyAllAsync(await HrAdminUserNamesAsync(), "PM Form Ready for HR Review",
+                    $"{form.EmpNameSnapshot} ({form.EvalYear}) is ready for first HR review.", "SubmittedToHr", actionUrl);
             });
     }
 
@@ -206,6 +217,8 @@ public class WorkflowService
                 await _email.DispatchAsync(new EmailSpec("HR1_APPROVED",
                     To: await HrAdminEmailsAsync(exceptEmpCode: form.Hr1Sign), Cc: Array.Empty<string>(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR1_APPROVED")));
+                await NotifyAllAsync(await HrAdminUserNamesAsync(exceptEmpCode: form.Hr1Sign), "Final HR Review Required",
+                    $"{form.EmpNameSnapshot} ({form.EvalYear}) needs final HR review and approval.", "HrReview1Approved", actionUrl);
             });
     }
 
@@ -241,11 +254,17 @@ public class WorkflowService
             email: async form =>
             {
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
-                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.EmpCode));
+                var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
                 var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "FINAL_APPROVED")));
+
+                var title = $"Performance Review Finalized ({form.EvalYear})";
+                var message = $"{form.EmpNameSnapshot}'s {form.EvalYear} performance review is finalized.";
+                await _notifications.CreateAsync(empUserName, title, message, "Finalized", actionUrl);
+                await _notifications.CreateAsync(await UserNameForEmpCodeAsync(form.ManagerEmpCode), title, message, "Finalized", actionUrl);
             });
     }
 
@@ -267,11 +286,14 @@ public class WorkflowService
             email: async form =>
             {
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
-                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, await UserNameForEmpCodeAsync(form.ManagerEmpCode));
+                var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
                 var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now);
                 await _email.DispatchAsync(new EmailSpec("HR_REVERTED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await HrAdminEmailsAsync(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR_REVERTED")));
+                await _notifications.CreateAsync(managerUserName, "Performance Form Requires Revision",
+                    $"HR returned {form.EmpNameSnapshot}'s {form.EvalYear} review for revision.", "HrReturned", actionUrl);
             });
     }
 
@@ -510,5 +532,19 @@ public class WorkflowService
             .Select(u => u.Email!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    /// <summary>Login usernames of every active HR admin — for fanning an in-app Notification out
+    /// to each of them individually (a notification has exactly one recipient row per person).</summary>
+    private async Task<IReadOnlyList<string>> HrAdminUserNamesAsync(string? exceptEmpCode = null) =>
+        await _db.UserRoles.AsNoTracking().Where(r => r.Role == Roles.HrAdmin).Include(r => r.AppUser)
+            .Select(r => r.AppUser!)
+            .Where(u => u.IsActive && (exceptEmpCode == null || (u.EmpCode ?? "") != exceptEmpCode))
+            .Select(u => u.UserName).Distinct().ToListAsync();
+
+    private async Task NotifyAllAsync(IEnumerable<string> userNames, string title, string? message, string type, string? link)
+    {
+        foreach (var userName in userNames)
+            await _notifications.CreateAsync(userName, title, message, type, link);
     }
 }

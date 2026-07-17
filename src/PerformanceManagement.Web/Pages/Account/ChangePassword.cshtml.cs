@@ -1,4 +1,5 @@
 using PerformanceManagement.Core.Data;
+using PerformanceManagement.Core.Services;
 using PerformanceManagement.Web.Security;
 using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authentication;
@@ -16,18 +17,26 @@ namespace PerformanceManagement.Web.Pages.Account;
 public class ChangePasswordModel : AppPageModel
 {
     private readonly PmDbContext _db;
-    public ChangePasswordModel(PmDbContext db) => _db = db;
+    private readonly SettingsService _settings;
+    public ChangePasswordModel(PmDbContext db, SettingsService settings) { _db = db; _settings = settings; }
 
     public string? Error { get; set; }
     /// <summary>True when the user was forced here (vs. a voluntary password change from settings).</summary>
     public bool IsForced { get; set; }
+    public string PasswordRuleHint { get; set; } = "";
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
 
-    public void OnGet() => IsForced = MustChangePassword;
+    public async Task OnGetAsync()
+    {
+        IsForced = MustChangePassword;
+        PasswordRuleHint = await BuildPasswordRuleHintAsync();
+    }
 
     public async Task<IActionResult> OnPostAsync(string currentPassword, string newPassword, string confirmPassword)
     {
         IsForced = MustChangePassword;
+        var rules = await _settings.GetSecurityRulesAsync();
+        PasswordRuleHint = BuildPasswordRuleHint(rules);
 
         var user = await _db.AppUsers.Include(u => u.RolesList)
             .FirstOrDefaultAsync(u => u.UserName == CurrentUserName);
@@ -38,9 +47,10 @@ public class ChangePasswordModel : AppPageModel
             Error = "Current password is incorrect.";
             return Page();
         }
-        if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < InputValidation.MinPasswordLength)
+        var passwordError = InputValidation.ValidatePassword(newPassword ?? "", rules.MinimumPasswordLength, rules.PasswordComplexityRequired);
+        if (passwordError is not null)
         {
-            Error = $"New password must be at least {InputValidation.MinPasswordLength} characters.";
+            Error = passwordError;
             return Page();
         }
         if (newPassword != confirmPassword)
@@ -49,8 +59,9 @@ public class ChangePasswordModel : AppPageModel
             return Page();
         }
 
-        user.PasswordHash = DatabaseSeeder.HashPassword(user, newPassword);
+        user.PasswordHash = DatabaseSeeder.HashPassword(user, newPassword!);
         user.MustChangePassword = false;
+        user.PasswordChangedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
         // Re-issue the cookie so MustChangePassword clears immediately (no re-login required).
@@ -59,4 +70,11 @@ public class ChangePasswordModel : AppPageModel
 
         return LocalRedirect(ReturnUrl is { Length: > 0 } && Url.IsLocalUrl(ReturnUrl) ? ReturnUrl : "/Dashboard");
     }
+
+    private async Task<string> BuildPasswordRuleHintAsync() => BuildPasswordRuleHint(await _settings.GetSecurityRulesAsync());
+
+    private static string BuildPasswordRuleHint(SecurityRules rules) =>
+        rules.PasswordComplexityRequired
+            ? $"At least {rules.MinimumPasswordLength} characters, including a letter and a number."
+            : $"At least {rules.MinimumPasswordLength} characters.";
 }

@@ -5,9 +5,6 @@
 }
 <div class="page-header">Reference Master — KPI &amp; Competency Masters, KPI Reference Codes</div>
 
-@if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
-@if (Model.ErrorMessage is not null) { <div class="alert alert-error">@Model.ErrorMessage</div> }
-
 <div class="tabs">
     <a href="?tab=kpi" class="@(Model.Tab == "kpi" ? "active" : "")">KPI Master</a>
     <a href="?tab=comp" class="@(Model.Tab == "comp" ? "active" : "")">Competency Master</a>

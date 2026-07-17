@@ -1,0 +1,54 @@
+@page
+@model PerformanceManagement.Web.Pages.Notifications.IndexModel
+@{
+    ViewData["Title"] = "Notifications";
+}
+<div class="page-header">Notifications</div>
+
+<div class="form-actions" style="margin-bottom:16px;">
+    <form method="post" asp-page-handler="MarkAllRead" class="inline-form">
+        <button type="submit" class="btn btn-secondary">Mark all read</button>
+    </form>
+</div>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="card"><div class="card-body"><p class="muted" style="margin:0;">No notifications yet.</p></div></div>
+}
+else
+{
+    <table class="grid">
+        <thead><tr><th></th><th>Title</th><th>Message</th><th>Received</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var n in Model.Items)
+        {
+            <tr style="@(n.IsRead ? "" : "background:#eef3ff;")">
+                <td>@(n.IsRead ? "" : "●")</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(n.Link))
+                    {
+                        <a href="@n.Link">@n.Title</a>
+                    }
+                    else
+                    {
+                        @n.Title
+                    }
+                </td>
+                <td>@n.Message</td>
+                <td>@n.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                <td style="white-space:nowrap;">
+                    @if (!n.IsRead)
+                    {
+                        <form method="post" asp-page-handler="MarkRead" asp-route-id="@n.Id" class="inline-form">
+                            <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">Mark read</button>
+                        </form>
+                    }
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@n.Id" class="inline-form">
+                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

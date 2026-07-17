@@ -1,10 +1,46 @@
+@inject SettingsService Settings
+@inject NotificationService Notifications
+@{
+    var branding = await Settings.GetBrandingSettingsAsync();
+    var general = await Settings.GetGeneralSettingsAsync();
+    var appName = string.IsNullOrWhiteSpace(general.ApplicationName) ? "Performance Management System" : general.ApplicationName;
+
+    var unreadCount = 0;
+    var recentNotifications = new List<Notification>();
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        unreadCount = await Notifications.UnreadCountAsync(User.Identity.Name ?? "");
+        recentNotifications = await Notifications.GetRecentAsync(User.Identity.Name ?? "");
+    }
+
+    // Standard flash-message keys used by [TempData] Message/ErrorMessage properties across
+    // the app (Users, Departments, Settings, Jobs, PM Form, …) — read once here so every page
+    // gets a toast for free instead of its own static <div class="alert"> after a redirect.
+    var toastSuccess = TempData["Message"] as string;
+    var toastError = TempData["ErrorMessage"] as string;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@(ViewData["Title"] ?? "Performance Management System")</title>
+    <title>@(ViewData["Title"] is null ? appName : $"{ViewData["Title"]} — {appName}")</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (branding.PrimaryColorHex is not null || branding.SecondaryColorHex is not null)
+    {
+        <style>
+            :root {
+                @if (branding.PrimaryColorHex is not null)
+                {
+                    @:--navy: @branding.PrimaryColorHex;
+                }
+                @if (branding.SecondaryColorHex is not null)
+                {
+                    @:--accent: @branding.SecondaryColorHex;
+                }
+            }
+        </style>
+    }
 </head>
 <body>
     <div class="layout-container">
@@ -29,6 +65,7 @@
                         <a asp-page="/Reports/Index" class="sidebar-link">🧾 Reports</a>
                         <a asp-page="/Users/Index" class="sidebar-link">👤 User Management</a>
                         <a asp-page="/Admin/LoginAs" class="sidebar-link">🔐 Login As</a>
+                        <a asp-page="/Jobs/Index" class="sidebar-link">⏱️ Scheduled Jobs</a>
                         <a asp-page="/Settings/Index" class="sidebar-link">⚙️ System Settings</a>
                     }
                 </nav>
@@ -46,10 +83,52 @@
                         <span></span>
                     </button>
                 }
-                <a class="topnav-brand" asp-page="/Dashboard/Index" style="text-decoration:none;color:inherit;">Performance Management System</a>
+                <a class="topnav-brand" asp-page="/Dashboard/Index" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:10px;">
+                    @if (!string.IsNullOrEmpty(branding.CompanyLogoPath))
+                    {
+                        <img src="@branding.CompanyLogoPath" alt="@appName logo" style="height:28px;max-width:160px;object-fit:contain;" />
+                    }
+                    @appName
+                </a>
                 <div class="topnav-user">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
+                        <div class="notif-bell-wrap">
+                            <button type="button" class="notif-bell" id="notifBellBtn" aria-label="Notifications">
+                                🔔
+                                @if (unreadCount > 0)
+                                {
+                                    <span class="notif-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
+                                }
+                            </button>
+                            <div class="notif-dropdown" id="notifDropdown">
+                                <div class="notif-dropdown-header">
+                                    <strong>Notifications</strong>
+                                    <form method="post" asp-page="/Notifications/Index" asp-page-handler="MarkAllRead" class="inline-form">
+                                        <button type="submit" class="btn btn-link" style="font-size:12px;padding:2px 6px;">Mark all read</button>
+                                    </form>
+                                </div>
+                                @if (recentNotifications.Count == 0)
+                                {
+                                    <p class="muted" style="padding:14px;margin:0;">No notifications yet.</p>
+                                }
+                                else
+                                {
+                                    foreach (var n in recentNotifications)
+                                    {
+                                        <a class="notif-item @(n.IsRead ? "" : "unread")" href="@(n.Link ?? "/Notifications/Index")">
+                                            <div class="notif-item-title">@n.Title</div>
+                                            @if (!string.IsNullOrWhiteSpace(n.Message))
+                                            {
+                                                <div class="notif-item-message">@n.Message</div>
+                                            }
+                                            <div class="notif-item-time">@n.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                        </a>
+                                    }
+                                }
+                                <a href="/Notifications/Index" class="notif-dropdown-footer">View all</a>
+                            </div>
+                        </div>
                         <span>@User.FindFirst("DisplayName")?.Value (@User.Identity.Name)</span>
                         <form method="post" asp-page="/Account/Logout" class="inline-form">
                             <button type="submit" class="btn btn-link">Sign out</button>
@@ -71,19 +150,105 @@
             <main class="page">
                 @RenderBody()
             </main>
+            @if (!string.IsNullOrWhiteSpace(branding.FooterText))
+            {
+                <footer class="app-footer">@branding.FooterText</footer>
+            }
         </div>
     </div>
-    
+
+    <div class="toast-stack" id="toastStack"></div>
+
     <script>
+        function showToast(text, type) {
+            var stack = document.getElementById('toastStack');
+            if (!stack || !text) return;
+            var toast = document.createElement('div');
+            toast.className = 'toast' + (type === 'error' ? ' error' : '');
+            var icon = document.createElement('span');
+            icon.className = 'toast-icon';
+            icon.textContent = type === 'error' ? '⚠️' : '✅';
+            var span = document.createElement('span');
+            span.className = 'toast-text';
+            span.textContent = text;
+            var close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'toast-close';
+            close.setAttribute('aria-label', 'Dismiss');
+            close.textContent = '✕';
+            var remove = function() {
+                toast.classList.add('leaving');
+                setTimeout(function() { toast.remove(); }, 200);
+            };
+            close.addEventListener('click', remove);
+            toast.append(icon, span, close);
+            stack.appendChild(toast);
+            setTimeout(remove, 5000);
+        }
+
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('collapsed');
             localStorage.setItem('sidebarCollapsed', document.getElementById('sidebar').classList.contains('collapsed'));
         });
-        
+
         // Restore sidebar state from localStorage
         if (localStorage.getItem('sidebarCollapsed') === 'true') {
             document.getElementById('sidebar')?.classList.add('collapsed');
         }
+
+        document.getElementById('notifBellBtn')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('notifDropdown')?.classList.toggle('open');
+        });
+        document.addEventListener('click', function(e) {
+            var dropdown = document.getElementById('notifDropdown');
+            var btn = document.getElementById('notifBellBtn');
+            if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target) && e.target !== btn) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        @if (!string.IsNullOrEmpty(toastSuccess))
+        {
+            @:showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastSuccess)), 'success');
+        }
+        @if (!string.IsNullOrEmpty(toastError))
+        {
+            @:showToast(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(toastError)), 'error');
+        }
+
+        // ---- Prevent duplicate submissions ---------------------------------
+        // Disables every submit button in a form the instant it's submitted, so a slow
+        // request (or an impatient double-click) can't fire the same POST twice. The page
+        // navigates away right after anyway, so there's no need to re-enable on success;
+        // native browser validation (required/pattern) still runs first and blocks invalid
+        // submissions, which never reach this handler.
+        document.addEventListener('submit', function(e) {
+            var form = e.target;
+            if (!(form instanceof HTMLFormElement) || form.dataset.noDupeGuard) return;
+            form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function(btn) {
+                btn.disabled = true;
+                btn.classList.add('is-submitting');
+            });
+        }, true);
+
+        // ---- Unsaved-changes warning ----------------------------------------
+        // Any edit to a text/select/checkbox/textarea field inside a POST form marks the
+        // page dirty; navigating away (closing the tab, following a link, refreshing)
+        // then prompts the browser's native confirmation. Submitting the form that made the
+        // change is treated as an intentional save, not a loss, so the flag clears first.
+        var formsDirty = false;
+        document.querySelectorAll('form').forEach(function(form) {
+            if (form.method.toLowerCase() !== 'post' || form.dataset.noDirtyCheck) return;
+            form.addEventListener('input', function() { formsDirty = true; });
+            form.addEventListener('change', function() { formsDirty = true; });
+            form.addEventListener('submit', function() { formsDirty = false; });
+        });
+        window.addEventListener('beforeunload', function(e) {
+            if (!formsDirty) return;
+            e.preventDefault();
+            e.returnValue = '';
+        });
     </script>
 </body>
 </html>

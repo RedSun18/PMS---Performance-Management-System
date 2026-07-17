@@ -289,6 +289,14 @@ public class AppUser
     public string? Email { get; set; }
     public bool MustChangePassword { get; set; }
     public bool IsActive { get; set; } = true;
+
+    /// <summary>Reset to 0 on any successful login; incremented on each failed attempt.</summary>
+    public int FailedLoginAttempts { get; set; }
+    /// <summary>Set when failed attempts reach Security:MaxLoginAttempts; login is blocked until this passes.</summary>
+    public DateTime? LockedOutUntil { get; set; }
+    /// <summary>Drives Security:PasswordExpiryDays — null (never set) never expires.</summary>
+    public DateTime? PasswordChangedAt { get; set; }
+
     public List<UserRole> RolesList { get; set; } = new();
 }
 
@@ -327,9 +335,25 @@ public class SystemSettings
 {
     public int Id { get; set; } = 1;
 
+    // ---- General --------------------------------------------------------
+    public string? CompanyName { get; set; }
+    public string? ApplicationName { get; set; }
+    /// <summary>Relative path under wwwroot (e.g. "/uploads/branding/logo.png"), set by the Branding tab's upload.</summary>
+    public string? CompanyLogoPath { get; set; }
+    public string? CompanyAddress { get; set; }
+    public string? ContactEmail { get; set; }
     /// <summary>Public origin used to build absolute links in outgoing email, e.g. "https://pms.company.com".</summary>
     public string? ApplicationBaseUrl { get; set; }
 
+    // ---- Performance Review ----------------------------------------------
+    /// <summary>Informational default only — workflow gating (AchievementGate etc.) still uses the calendar year.</summary>
+    public int? CurrentReviewYear { get; set; }
+    public DateOnly? MidYearStart { get; set; }
+    public DateOnly? MidYearEnd { get; set; }
+    public DateOnly? EndYearStart { get; set; }
+    public DateOnly? EndYearEnd { get; set; }
+
+    // ---- Email -------------------------------------------------------------
     public string? SmtpHost { get; set; }
     public int? SmtpPort { get; set; }
     public string? SmtpUsername { get; set; }
@@ -341,6 +365,32 @@ public class SystemSettings
     public bool EnableEmailNotifications { get; set; } = true;
     /// <summary>Safety redirect: every outgoing email is sent here instead of the real recipient. Empty ⇒ send to real recipients.</summary>
     public string? DevelopmentRedirectEmail { get; set; }
+
+    // ---- Authentication ----------------------------------------------------
+    public string? DefaultUserPassword { get; set; }
+    public bool PasswordComplexityRequired { get; set; }
+    public int MinimumPasswordLength { get; set; } = 6;
+    public int SessionTimeoutMinutes { get; set; } = 480;
+    /// <summary>Encrypted at rest, like the SMTP password. Falls back to a hardcoded dev default when unset.</summary>
+    public string? LoginAsVerificationPasswordProtected { get; set; }
+    /// <summary>0 = lockout disabled.</summary>
+    public int MaxLoginAttempts { get; set; } = 5;
+
+    // ---- Security ------------------------------------------------------------
+    public bool EnableAuditLogging { get; set; } = true;
+    public int AccountLockoutMinutes { get; set; } = 15;
+    /// <summary>0 = password never expires.</summary>
+    public int PasswordExpiryDays { get; set; }
+    public int RememberMeDurationDays { get; set; } = 30;
+
+    // ---- Dashboard -----------------------------------------------------------
+    public string? WelcomeMessage { get; set; }
+    public string? AnnouncementBanner { get; set; }
+
+    // ---- Branding ------------------------------------------------------------
+    public string? PrimaryColorHex { get; set; }
+    public string? SecondaryColorHex { get; set; }
+    public string? FooterText { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
@@ -364,4 +414,64 @@ public class ImpersonationLog
     public string? IpAddress { get; set; }
     /// <summary>Correlates the running session's claim back to this row so Return can close it.</summary>
     public Guid SessionId { get; set; }
+}
+
+/// <summary>
+/// Append-only record of significant administrator/system actions (user management,
+/// department changes, impersonation, settings changes, report generation, …) — the source
+/// of truth for the Audit Viewer. Writes are gated by SystemSettings.EnableAuditLogging via
+/// AuditService, but existing rows are never deleted even if logging is later disabled.
+/// </summary>
+public class AuditLog
+{
+    public int Id { get; set; }
+    public DateTime OccurredAt { get; set; }
+    /// <summary>Short verb phrase, e.g. "User Created", "Department Disabled", "Password Reset".</summary>
+    public string Action { get; set; } = "";
+    public string PerformedBy { get; set; } = "";
+    /// <summary>Employee the action concerns, if any — drives the Employee filter on the Audit Viewer.</summary>
+    public string? EmpCode { get; set; }
+    /// <summary>Department the action concerns, if any — drives the Department filter on the Audit Viewer.</summary>
+    public string? DeptCode { get; set; }
+    public string? EntityType { get; set; }
+    public string? EntityId { get; set; }
+    public string? Details { get; set; }
+}
+
+/// <summary>
+/// One row per execution of a Quartz scheduled job — Quartz's own in-memory RAMJobStore
+/// doesn't retain run history across restarts, so this is the durable record the Job
+/// Management page reads for Previous Run/Duration/Status/Result. Written by JobHistoryListener.
+/// </summary>
+public class ScheduledJobRun
+{
+    public int Id { get; set; }
+    public string JobName { get; set; } = "";
+    public DateTime StartedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    /// <summary>RUNNING, SUCCEEDED, FAILED.</summary>
+    public string Status { get; set; } = "RUNNING";
+    public string? ResultSummary { get; set; }
+    public string? ErrorMessage { get; set; }
+}
+
+/// <summary>In-app notification for the bell-icon Notification Centre. UserName is the recipient's
+/// login username (AppUser.UserName) — every notification is addressed to exactly one account;
+/// events that concern several people (e.g. a department update) are fanned out into one row per
+/// recipient at creation time rather than modeled as a broadcast.</summary>
+public class Notification
+{
+    public int Id { get; set; }
+    public string UserName { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string? Message { get; set; }
+    /// <summary>Short machine type — ReviewAssigned, EmployeeAcknowledged, SubmittedToHr,
+    /// HrReview1Approved, Finalized, HrReturned, PasswordReset, UserCreated, DepartmentUpdated,
+    /// ReportGenerated. Informational only (icon/grouping), never branched on for authorization.</summary>
+    public string Type { get; set; } = "";
+    /// <summary>URL to open when the notification is clicked, if any — usually the same signed
+    /// deep link used in the corresponding email (absolute), occasionally a relative in-app path.</summary>
+    public string? Link { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

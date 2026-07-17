@@ -21,7 +21,7 @@ public static class DatabaseSeeder
 
     /// <summary>Default single-admin dev credentials, overridable via configuration (see Program.cs).</summary>
     public const string DefaultAdminUsername = "admin";
-    public const string DefaultAdminPassword = "admin123";
+    public const string DefaultAdminPassword = "Password123";
 
     private static readonly PasswordHasher<AppUser> Hasher = new();
 
@@ -67,6 +67,12 @@ public static class DatabaseSeeder
         }
         if (!admin.RolesList.Any(r => r.Role == Roles.HrAdmin))
             admin.RolesList.Add(new UserRole { Role = Roles.HrAdmin });
+
+        // Password is set once at creation only — re-hashing it on every startup would silently
+        // revert any password the admin has since changed via Change Password / User Management
+        // back to the seed default, defeating the point of ever changing it.
+        admin.FailedLoginAttempts = 0;
+        admin.LockedOutUntil = null;
 
         await db.SaveChangesAsync();
     }

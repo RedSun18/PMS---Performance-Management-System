@@ -16,14 +16,17 @@ public class IndexModel : AppPageModel
     private readonly IClock _clock;
     private readonly PermissionService _permissions;
     private readonly AchievementGate _gate;
+    private readonly SettingsService _settings;
 
-    public IndexModel(PmDbContext db, IClock clock, PermissionService permissions, AchievementGate gate)
+    public IndexModel(PmDbContext db, IClock clock, PermissionService permissions, AchievementGate gate, SettingsService settings)
     {
-        _db = db; _clock = clock; _permissions = permissions; _gate = gate;
+        _db = db; _clock = clock; _permissions = permissions; _gate = gate; _settings = settings;
     }
 
     public int EvalYear => _clock.Today.Year;
     public string DashboardKind { get; private set; } = "employee";
+    public string? WelcomeMessage { get; private set; }
+    public string? AnnouncementBanner { get; private set; }
 
     // ---- Employee view ----------------------------------------------------
     public PerformanceManagement.Core.Domain.PmForm? MyForm { get; private set; }
@@ -53,8 +56,18 @@ public class IndexModel : AppPageModel
     public record DeptRow(string Code, string Name, int TotalEmployees, int FormCount, int Started, int Finalized,
         decimal AverageScore, int CompletionPercent, int ProgressPercent);
 
+    // ---- Recent Activity (all three views) -----------------------------------
+    /// <summary>Administrator: every recent admin action (AuditLog). Manager: recent workflow
+    /// events for the team's forms. Employee: recent workflow events for their own form.</summary>
+    public List<ActivityRow> RecentActivity { get; private set; } = new();
+    public record ActivityRow(DateTime When, string Text, string By);
+
     public async Task OnGetAsync()
     {
+        var dashboardSettings = await _settings.GetDashboardSettingsAsync();
+        WelcomeMessage = dashboardSettings.WelcomeMessage;
+        AnnouncementBanner = dashboardSettings.AnnouncementBanner;
+
         if (IsHrAdmin || IsViewer)
         {
             DashboardKind = "admin";
@@ -91,6 +104,13 @@ public class IndexModel : AppPageModel
         MyRecentNotifications = await _db.EmailLogs.AsNoTracking()
             .Where(e => e.FormLegacyRefNo != null && myRefNos.Contains(e.FormLegacyRefNo))
             .OrderByDescending(e => e.CreatedAt).Take(5).ToListAsync();
+
+        var myHistory = await _db.PmFormStatusHistory.AsNoTracking()
+            .Where(h => h.PmForm!.EmpCode == CurrentEmpCode)
+            .OrderByDescending(h => h.ChangedAt).Take(8).ToListAsync();
+        RecentActivity = myHistory
+            .Select(h => new ActivityRow(h.ChangedAt, h.Note ?? PmFormStatus.DisplayName(h.ToStatus), h.ChangedBy))
+            .ToList();
     }
 
     private static (int Progress, int Kpi, int Comp) ComputeProgress(PerformanceManagement.Core.Domain.PmForm? form)
@@ -180,6 +200,15 @@ public class IndexModel : AppPageModel
         }
 
         TeamRows = TeamRows.OrderBy(r => r.DeptName).ThenByDescending(r => r.NeedsAttention).ThenBy(r => r.Name).ToList();
+
+        var teamHistory = await _db.PmFormStatusHistory.AsNoTracking()
+            .Where(h => assigned.Contains(h.PmForm!.EmpCode))
+            .OrderByDescending(h => h.ChangedAt).Take(8)
+            .Select(h => new { h.ChangedAt, h.ChangedBy, h.Note, h.ToStatus, EmpName = h.PmForm!.EmpNameSnapshot })
+            .ToListAsync();
+        RecentActivity = teamHistory
+            .Select(h => new ActivityRow(h.ChangedAt, $"{h.EmpName}: {h.Note ?? PmFormStatus.DisplayName(h.ToStatus)}", h.ChangedBy))
+            .ToList();
     }
 
     // ======================================================================
@@ -223,5 +252,11 @@ public class IndexModel : AppPageModel
             })
             .OrderByDescending(d => d.TotalEmployees)
             .ToList();
+
+        RecentActivity = await _db.AuditLogs.AsNoTracking()
+            .OrderByDescending(a => a.OccurredAt).Take(8)
+            .Select(a => new ActivityRow(a.OccurredAt,
+                a.Details == null ? a.Action : (a.Action + ": " + a.Details), a.PerformedBy))
+            .ToListAsync();
     }
 }

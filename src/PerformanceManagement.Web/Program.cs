@@ -1,8 +1,10 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Services;
+using PerformanceManagement.Web.Jobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
 
 // PdfSharp/MigraDoc has no font enumeration on Linux — register a bundled font resolver
 // before any report is generated (see ReportFontResolver for why).
@@ -26,10 +28,30 @@ builder.Services.AddScoped<PermissionService>();
 builder.Services.AddScoped<RatingService>();
 builder.Services.AddScoped<JobFamilyService>();
 builder.Services.AddScoped<SettingsService>();
+builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<FormLinkService>();
 builder.Services.AddScoped<ReportDataService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<WorkflowService>();
+
+// Scheduled jobs (Job Registry: GenerateAnnualForms, OpenMidYearReview, OpenEndYearReview,
+// DailyReminder, WeeklyEscalation, MonthlyCleanup) — see Jobs/ScheduledJobs.cs. Job/trigger keys
+// are stable strings in JobRegistry.Group/.All so the Job Management page can pause/resume/trigger
+// them by name without depending on Quartz's in-memory scheduler surviving a restart.
+builder.Services.AddQuartz(q =>
+{
+    foreach (var (name, jobType, cron, description) in JobRegistry.All)
+    {
+        var jobKey = new JobKey(name, JobRegistry.Group);
+        q.AddJob(jobType, jobKey, j => j.WithDescription(description));
+        q.AddTrigger(t => t.ForJob(jobKey)
+            .WithIdentity($"{name}-trigger", JobRegistry.Group)
+            .WithCronSchedule(cron));
+    }
+    q.AddJobListener<JobHistoryListener>();
+});
+builder.Services.AddQuartzHostedService(o => o.WaitForJobsToComplete = true);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(o =>
@@ -38,8 +60,22 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         // Role-based [Authorize] failures (e.g. non-admin hitting an admin page) land on
         // the same explicit Access Denied page used by PM Form's per-record authorization.
         o.AccessDeniedPath = "/AccessDenied";
-        o.ExpireTimeSpan = TimeSpan.FromHours(8);
+        o.ExpireTimeSpan = TimeSpan.FromHours(8); // overridden below once Settings:Authentication is readable
         o.SlidingExpiration = true;
+    });
+
+// The admin-configured Session Timeout (Settings > Authentication) overrides the fallback
+// above. This Configure delegate is resolved lazily on first use (after startup migrations
+// have run), not at registration time, so the DB read here is safe — but it's still only
+// read once per process, matching the "takes effect after the app restarts" note on the
+// Settings page.
+builder.Services.AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
+    .Configure<IServiceScopeFactory>((o, scopeFactory) =>
+    {
+        using var scope = scopeFactory.CreateScope();
+        var settings = scope.ServiceProvider.GetRequiredService<SettingsService>();
+        var minutes = settings.GetAuthenticationSettingsAsync().GetAwaiter().GetResult().SessionTimeoutMinutes;
+        o.ExpireTimeSpan = TimeSpan.FromMinutes(minutes);
     });
 builder.Services.AddAuthorization(o =>
 {
@@ -81,7 +117,7 @@ if (app.Environment.IsProduction())
 {
     var unchanged = new List<string>();
     if (adminPassword == DatabaseSeeder.DefaultAdminPassword) unchanged.Add("AdminAccount:Password");
-    if ((builder.Configuration["Security:LoginAsVerificationPassword"] ?? "Password*123") == "Password*123")
+    if ((builder.Configuration["Security:LoginAsVerificationPassword"] ?? "Password123") == "Password123")
         unchanged.Add("Security:LoginAsVerificationPassword");
     if ((builder.Configuration["Security:DefaultUserPassword"] ?? DatabaseSeeder.DevPassword) == DatabaseSeeder.DevPassword)
         unchanged.Add("Security:DefaultUserPassword");

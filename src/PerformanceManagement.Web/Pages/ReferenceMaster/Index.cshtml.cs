@@ -17,7 +17,12 @@ public class IndexModel : AppPageModel
 {
     private readonly PmDbContext _db;
     private readonly IClock _clock;
-    public IndexModel(PmDbContext db, IClock clock) { _db = db; _clock = clock; }
+    private readonly AuditService _audit;
+    private readonly NotificationService _notifications;
+    public IndexModel(PmDbContext db, IClock clock, AuditService audit, NotificationService notifications)
+    {
+        _db = db; _clock = clock; _audit = audit; _notifications = notifications;
+    }
 
     [BindProperty(SupportsGet = true)] public string Tab { get; set; } = "kpi";
     [BindProperty(SupportsGet = true)] public string? Perspective { get; set; }
@@ -212,6 +217,10 @@ public class IndexModel : AppPageModel
         dept.IsActive = isActive;
 
         await _db.SaveChangesAsync();
+        await _audit.LogAsync(isNew ? "Department Created" : "Department Updated", CurrentUserName,
+            deptCode: code, entityType: "Department", entityId: code, details: dept.NameEn);
+        await NotifyHrAdminsAsync(isNew ? "Department Created" : "Department Updated",
+            $"{code} — {dept.NameEn}", "DepartmentUpdated");
         Message = isNew ? $"Department '{code}' created." : $"Department '{code}' updated.";
         return RedirectToPage(new { Tab = "dept" });
     }
@@ -229,8 +238,21 @@ public class IndexModel : AppPageModel
 
         dept.IsActive = !dept.IsActive;
         await _db.SaveChangesAsync();
+        await _audit.LogAsync(dept.IsActive ? "Department Enabled" : "Department Disabled", CurrentUserName,
+            deptCode: code, entityType: "Department", entityId: code, details: dept.NameEn);
+        await NotifyHrAdminsAsync(dept.IsActive ? "Department Enabled" : "Department Disabled",
+            $"{code} — {dept.NameEn}", "DepartmentUpdated");
         Message = $"Department '{code}' {(dept.IsActive ? "enabled" : "disabled")}.";
         return RedirectToPage(new { Tab = "dept" });
+    }
+
+    private async Task NotifyHrAdminsAsync(string title, string? message, string type)
+    {
+        var userNames = await _db.UserRoles.AsNoTracking().Where(r => r.Role == Roles.HrAdmin)
+            .Include(r => r.AppUser).Select(r => r.AppUser!)
+            .Where(u => u.IsActive).Select(u => u.UserName).Distinct().ToListAsync();
+        foreach (var userName in userNames)
+            await _notifications.CreateAsync(userName, title, message, type);
     }
 
     public async Task<IActionResult> OnPostSaveJobFamilyAsync(string code, string nameEn, string gradesCsv, int kpiWeight, int compWeight)

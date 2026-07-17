@@ -1,0 +1,93 @@
+@page
+@model PerformanceManagement.Web.Pages.Jobs.IndexModel
+@{
+    ViewData["Title"] = "Scheduled Jobs";
+}
+<div class="page-header">Scheduled Jobs</div>
+
+<table class="grid">
+    <thead>
+        <tr><th>Job</th><th>Status</th><th>Next Run</th><th>Previous Run</th><th>Duration</th><th>Result</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var j in Model.Jobs)
+    {
+        <tr>
+            <td>
+                <strong>@j.Name</strong>
+                <div class="muted" style="font-size:12px;">@j.Description</div>
+            </td>
+            <td>
+                @if (j.IsPaused)
+                {
+                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> Disabled</span>
+                }
+                else if (j.LastRun?.Status == "RUNNING")
+                {
+                    <span class="status-chip"><span class="status-dot" style="background:var(--amber);"></span> Running</span>
+                }
+                else if (j.LastRun?.Status == "FAILED")
+                {
+                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> Failed last run</span>
+                }
+                else
+                {
+                    <span class="status-chip"><span class="status-dot"></span> Enabled</span>
+                }
+            </td>
+            <td>@(j.NextFireUtc is { } next ? next.LocalDateTime.ToString("dd/MM/yyyy HH:mm") : "—")</td>
+            <td>@(j.LastRun is null ? "Never run" : j.LastRun.StartedAt.ToString("dd/MM/yyyy HH:mm"))</td>
+            <td>@(j.LastRun?.CompletedAt is { } done ? $"{(done - j.LastRun.StartedAt).TotalSeconds:F1}s" : "—")</td>
+            <td style="max-width:280px;">@(j.LastRun?.ErrorMessage ?? j.LastRun?.ResultSummary ?? "—")</td>
+            <td style="white-space:nowrap;">
+                <form method="post" asp-page-handler="RunNow" asp-route-name="@j.Name" class="inline-form">
+                    <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">Run Now</button>
+                </form>
+                @if (j.IsPaused)
+                {
+                    <form method="post" asp-page-handler="Resume" asp-route-name="@j.Name" class="inline-form">
+                        <button type="submit" class="btn btn-success" style="padding:4px 10px;font-size:12px;">Enable</button>
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-page-handler="Pause" asp-route-name="@j.Name" class="inline-form">
+                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">Disable</button>
+                    </form>
+                }
+                <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" asp-page="Index" asp-route-ViewLog="@j.Name">View Log</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (!string.IsNullOrWhiteSpace(Model.ViewLog))
+{
+    <div class="card" style="margin-top:20px;">
+        <div class="card-header">Recent Runs — @Model.ViewLog</div>
+        <div class="card-body">
+            @if (Model.LogRuns.Count == 0)
+            {
+                <p class="muted" style="margin:0;">No runs recorded yet.</p>
+            }
+            else
+            {
+                <table class="grid">
+                    <thead><tr><th>Started</th><th>Completed</th><th>Status</th><th>Result / Error</th></tr></thead>
+                    <tbody>
+                    @foreach (var r in Model.LogRuns)
+                    {
+                        <tr>
+                            <td>@r.StartedAt.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td>@(r.CompletedAt?.ToString("dd/MM/yyyy HH:mm:ss") ?? "—")</td>
+                            <td>@r.Status</td>
+                            <td>@(r.ErrorMessage ?? r.ResultSummary ?? "—")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}

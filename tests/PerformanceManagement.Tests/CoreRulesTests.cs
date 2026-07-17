@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
 using PerformanceManagement.Core.Services;
 
@@ -6,6 +8,47 @@ namespace PerformanceManagement.Tests;
 /// <summary>Acceptance tests §C (scoring/validation) and §D.1–3 (reference numbers).</summary>
 public class CoreRulesTests
 {
+    [Fact]
+    public async Task SeedCore_creates_admin_with_configured_password_when_absent()
+    {
+        using var host = new TestHost();
+
+        await DatabaseSeeder.SeedCoreAsync(host.Db, DatabaseSeeder.DefaultAdminUsername, "Password123");
+
+        var admin = await host.Db.AppUsers.SingleAsync(u => u.UserName == DatabaseSeeder.DefaultAdminUsername);
+        Assert.True(DatabaseSeeder.VerifyPassword(admin, "Password123"));
+        Assert.Contains(admin.RolesList, r => r.Role == Roles.HrAdmin);
+    }
+
+    /// <summary>Regression test: seeding must never re-hash an existing admin's password back to
+    /// the configured default — that would silently undo any real password change (self-service
+    /// or admin reset) the moment the app restarts.</summary>
+    [Fact]
+    public async Task SeedCore_does_not_overwrite_an_existing_admin_password_but_still_clears_lockout()
+    {
+        using var host = new TestHost();
+        var admin = new AppUser
+        {
+            UserName = DatabaseSeeder.DefaultAdminUsername,
+            DisplayName = "Administrator",
+            EmpCode = DatabaseSeeder.DefaultAdminUsername,
+            FailedLoginAttempts = 9,
+            LockedOutUntil = DateTime.UtcNow.AddMinutes(10)
+        };
+        admin.PasswordHash = DatabaseSeeder.HashPassword(admin, "MyRealChangedPassword1");
+        admin.RolesList.Add(new UserRole { Role = Roles.HrAdmin });
+        host.Db.AppUsers.Add(admin);
+        await host.Db.SaveChangesAsync();
+
+        await DatabaseSeeder.SeedCoreAsync(host.Db, DatabaseSeeder.DefaultAdminUsername, "Password123");
+
+        var reloaded = await host.Db.AppUsers.SingleAsync(u => u.UserName == DatabaseSeeder.DefaultAdminUsername);
+        Assert.True(DatabaseSeeder.VerifyPassword(reloaded, "MyRealChangedPassword1"));
+        Assert.False(DatabaseSeeder.VerifyPassword(reloaded, "Password123"));
+        Assert.Equal(0, reloaded.FailedLoginAttempts);
+        Assert.Null(reloaded.LockedOutUntil);
+    }
+
     // ---- D. Reference numbers -------------------------------------------
 
     [Theory]

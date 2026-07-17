@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PerformanceManagement.Core.Data;
@@ -11,9 +12,11 @@ using PerformanceManagement.Core.Data;
 namespace PerformanceManagement.Core.Data.Migrations
 {
     [DbContext(typeof(PmDbContext))]
-    partial class PmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717070602_Phase9SettingsAndUserSecurity")]
+    partial class Phase9SettingsAndUserSecurity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,53 +74,6 @@ namespace PerformanceManagement.Core.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("AppUsers");
-                });
-
-            modelBuilder.Entity("PerformanceManagement.Core.Domain.AuditLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeptCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Details")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EmpCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EntityId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("EntityType")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("PerformedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Action");
-
-                    b.HasIndex("DeptCode");
-
-                    b.HasIndex("EmpCode");
-
-                    b.HasIndex("OccurredAt");
-
-                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("PerformanceManagement.Core.Domain.CompetencyMaster", b =>
@@ -553,45 +509,6 @@ namespace PerformanceManagement.Core.Data.Migrations
                     b.ToTable("ManagerAssignments");
                 });
 
-            modelBuilder.Entity("PerformanceManagement.Core.Domain.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Link")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserName", "IsRead", "CreatedAt");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("PerformanceManagement.Core.Domain.PmForm", b =>
                 {
                     b.Property<int>("Id")
@@ -940,41 +857,6 @@ namespace PerformanceManagement.Core.Data.Migrations
                     b.HasKey("Code");
 
                     b.ToTable("RatingScales");
-                });
-
-            modelBuilder.Entity("PerformanceManagement.Core.Domain.ScheduledJobRun", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("text");
-
-                    b.Property<string>("JobName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ResultSummary")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("JobName", "StartedAt");
-
-                    b.ToTable("ScheduledJobRuns");
                 });
 
             modelBuilder.Entity("PerformanceManagement.Core.Domain.Section", b =>

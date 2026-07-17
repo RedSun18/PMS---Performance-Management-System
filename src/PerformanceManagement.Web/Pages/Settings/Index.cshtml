@@ -5,102 +5,201 @@
 }
 <div class="page-header">System Settings</div>
 
-@if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
-@if (Model.ErrorMessage is not null) { <div class="alert alert-error">@Model.ErrorMessage</div> }
+<div class="tabs">
+    <a href="?tab=general" class="@(Model.Tab == "general" ? "active" : "")">General</a>
+    <a href="?tab=review" class="@(Model.Tab == "review" ? "active" : "")">Performance Review</a>
+    <a href="?tab=email" class="@(Model.Tab == "email" ? "active" : "")">Email</a>
+    <a href="?tab=auth" class="@(Model.Tab == "auth" ? "active" : "")">Authentication</a>
+    <a href="?tab=security" class="@(Model.Tab == "security" ? "active" : "")">Security</a>
+    <a href="?tab=dashboard" class="@(Model.Tab == "dashboard" ? "active" : "")">Dashboard</a>
+    <a href="?tab=branding" class="@(Model.Tab == "branding" ? "active" : "")">Branding</a>
+</div>
 
-<form method="post" asp-page-handler="SaveGeneral">
-    <div class="card" style="margin-bottom:20px;">
-        <div class="card-header">General</div>
-        <div class="card-body">
-            <div class="grid-2">
-                <div>
-                    <label for="applicationBaseUrl">Application Base URL</label>
-                    <input type="text" id="applicationBaseUrl" name="ApplicationBaseUrl" value="@Model.ApplicationBaseUrl" placeholder="https://pms.company.com" />
-                    <p class="muted" style="margin:4px 0 0;font-size:12px;">
-                        Used to build the action links inside outgoing email (e.g. "View Performance Form").
-                        Use the address people actually reach this site at — e.g. <code>https://pms.company.com</code> in
-                        production, or <code>https://localhost:5273</code> for local testing.
-                    </p>
+@if (Model.Tab == "general")
+{
+    <form method="post" asp-page-handler="SaveGeneral">
+        <div class="card">
+            <div class="card-header">General</div>
+            <div class="card-body">
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="companyName">Company Name</label><input type="text" id="companyName" name="General.CompanyName" value="@Model.General.CompanyName" /></div>
+                    <div><label for="applicationName">Application Name</label><input type="text" id="applicationName" name="General.ApplicationName" value="@Model.General.ApplicationName" placeholder="Performance Management System" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="companyAddress">Company Address</label><input type="text" id="companyAddress" name="General.CompanyAddress" value="@Model.General.CompanyAddress" /></div>
+                    <div><label for="contactEmail">Contact Email</label><input type="text" id="contactEmail" name="General.ContactEmail" value="@Model.General.ContactEmail" /></div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label for="appBaseUrl">Application Base URL</label>
+                        <input type="text" id="appBaseUrl" name="General.ApplicationBaseUrl" value="@Model.General.ApplicationBaseUrl" placeholder="https://pms.company.com" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Used to build the action links inside outgoing email — e.g. "https://localhost:5273" for local testing.</p>
+                    </div>
+                    <div class="muted" style="align-self:end;font-size:12px;">Company logo is managed from the <strong>Branding</strong> tab.</div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="form-actions" style="margin-bottom:28px;">
-        <button type="submit" class="btn btn-primary">Save General Settings</button>
-    </div>
-</form>
-
-<form method="post" asp-page-handler="Save">
-    <div class="card">
-        <div class="card-header">Email Settings (SMTP)</div>
-        <div class="card-body">
-            <div class="grid-2" style="margin-bottom:14px;">
-                <div>
-                    <label for="smtpHost">SMTP Host</label>
-                    <input type="text" id="smtpHost" name="Form.SmtpHost" value="@Model.Form.SmtpHost" placeholder="smtp.gmail.com" />
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save General Settings</button></div>
+    </form>
+}
+else if (Model.Tab == "review")
+{
+    <form method="post" asp-page-handler="SaveReview">
+        <div class="card">
+            <div class="card-header">Performance Review</div>
+            <div class="card-body">
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div>
+                        <label for="currentReviewYear">Current Review Year</label>
+                        <input type="number" id="currentReviewYear" name="Review.CurrentReviewYear" value="@Model.Review.CurrentReviewYear" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Informational default shown across the app — workflow rules (e.g. achievement scoring opening 1 December) are always based on the real calendar year.</p>
+                    </div>
                 </div>
-                <div>
-                    <label for="smtpPort">SMTP Port</label>
-                    <input type="number" id="smtpPort" name="Form.SmtpPort" value="@Model.Form.SmtpPort" placeholder="587" />
-                </div>
-            </div>
-
-            <div class="grid-2" style="margin-bottom:14px;">
-                <div>
-                    <label for="smtpUsername">Username</label>
-                    <input type="text" id="smtpUsername" name="Form.SmtpUsername" value="@Model.Form.SmtpUsername" placeholder="user@example.com" />
-                </div>
-                <div>
-                    <label for="smtpNewPassword">Password</label>
-                    <input type="password" id="smtpNewPassword" name="Form.NewPassword"
-                           placeholder="@(Model.HasPassword ? "•••••••• (leave blank to keep current password)" : "Not set")" />
+                <div class="grid-4">
+                    <div><label for="midYearStart">Mid-Year Start</label><input type="date" id="midYearStart" name="Review.MidYearStart" value="@Model.Review.MidYearStart?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="midYearEnd">Mid-Year End</label><input type="date" id="midYearEnd" name="Review.MidYearEnd" value="@Model.Review.MidYearEnd?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="endYearStart">End-Year Start</label><input type="date" id="endYearStart" name="Review.EndYearStart" value="@Model.Review.EndYearStart?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="endYearEnd">End-Year End</label><input type="date" id="endYearEnd" name="Review.EndYearEnd" value="@Model.Review.EndYearEnd?.ToString("yyyy-MM-dd")" /></div>
                 </div>
             </div>
-
-            <div class="grid-2" style="margin-bottom:14px;">
-                <div>
-                    <label for="senderName">Sender Name</label>
-                    <input type="text" id="senderName" name="Form.SenderName" value="@Model.Form.SenderName" placeholder="Performance Management System" />
-                </div>
-                <div>
-                    <label for="senderEmail">Sender Email</label>
-                    <input type="text" id="senderEmail" name="Form.SenderEmail" value="@Model.Form.SenderEmail" placeholder="user@example.com" />
-                </div>
-            </div>
-
-            <div class="grid-2" style="margin-bottom:14px;">
-                <div>
-                    <label style="text-transform:none;">
-                        <input type="checkbox" name="Form.EnableSsl" value="true" style="width:auto;" checked="@Model.Form.EnableSsl" /> Enable SSL / STARTTLS
-                    </label>
-                </div>
-                <div>
-                    <label style="text-transform:none;">
-                        <input type="checkbox" name="Form.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Form.EnableEmailNotifications" /> Enable Email Notifications
-                    </label>
-                </div>
-            </div>
-
-            <div class="grid-2" style="margin-bottom:14px;">
-                <div>
-                    <label for="devRedirectEmail">Development Redirect</label>
-                    <input type="text" id="devRedirectEmail" name="Form.DevelopmentRedirectEmail" value="@Model.Form.DevelopmentRedirectEmail" placeholder="e.g. aryanbhandary@gmail.com" />
-                    <p class="muted" style="margin:4px 0 0;font-size:12px;">
-                        Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.
-                        Clear this only when the app is ready to email real employee inboxes.
-                    </p>
-                </div>
-            </div>
-
-            @if (Model.UpdatedAt is not null)
-            {
-                <p class="muted" style="margin:0;font-size:12px;">Last updated @Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") UTC by @Model.UpdatedBy</p>
-            }
         </div>
-    </div>
-
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="submit" asp-page-handler="TestEmail" class="btn btn-secondary">Send Test Email</button>
-    </div>
-</form>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Performance Review Settings</button></div>
+    </form>
+}
+else if (Model.Tab == "email")
+{
+    <form method="post" asp-page-handler="SaveEmail">
+        <div class="card">
+            <div class="card-header">Email Settings (SMTP)</div>
+            <div class="card-body">
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="smtpHost">SMTP Host</label><input type="text" id="smtpHost" name="Email.SmtpHost" value="@Model.Email.SmtpHost" placeholder="smtp.gmail.com" /></div>
+                    <div><label for="smtpPort">SMTP Port</label><input type="number" id="smtpPort" name="Email.SmtpPort" value="@Model.Email.SmtpPort" placeholder="587" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="smtpUsername">Username</label><input type="text" id="smtpUsername" name="Email.SmtpUsername" value="@Model.Email.SmtpUsername" placeholder="user@example.com" /></div>
+                    <div>
+                        <label for="smtpPassword">Password</label>
+                        <input type="password" id="smtpPassword" name="Email.NewPassword"
+                               placeholder="@(Model.HasEmailPassword ? "•••••••• (leave blank to keep current password)" : "Not set")" />
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="senderName">Sender Name</label><input type="text" id="senderName" name="Email.SenderName" value="@Model.Email.SenderName" placeholder="Performance Management System" /></div>
+                    <div><label for="senderEmail">Sender Email</label><input type="text" id="senderEmail" name="Email.SenderEmail" value="@Model.Email.SenderEmail" placeholder="user@example.com" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableSsl" value="true" style="width:auto;" checked="@Model.Email.EnableSsl" /> Enable SSL / STARTTLS</label></div>
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Email.EnableEmailNotifications" /> Enable Email Notifications</label></div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label for="devRedirect">Development Redirect</label>
+                        <input type="text" id="devRedirect" name="Email.DevelopmentRedirectEmail" value="@Model.Email.DevelopmentRedirectEmail" placeholder="e.g. you@example.com" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.</p>
+                    </div>
+                </div>
+                @if (Model.EmailUpdatedAt is not null)
+                {
+                    <p class="muted" style="margin:12px 0 0;font-size:12px;">Last updated @Model.EmailUpdatedAt?.ToString("dd/MM/yyyy HH:mm") UTC by @Model.EmailUpdatedBy</p>
+                }
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;">
+            <button type="submit" class="btn btn-primary">Save Email Settings</button>
+            <button type="submit" asp-page-handler="TestEmail" class="btn btn-secondary">Send Test Email</button>
+        </div>
+    </form>
+}
+else if (Model.Tab == "auth")
+{
+    <form method="post" asp-page-handler="SaveAuth">
+        <div class="card">
+            <div class="card-header">Authentication</div>
+            <div class="card-body">
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="defaultPassword">Default Password</label><input type="text" id="defaultPassword" name="Auth.DefaultUserPassword" value="@Model.Auth.DefaultUserPassword" /></div>
+                    <div><label for="minPasswordLength">Minimum Password Length</label><input type="number" id="minPasswordLength" name="Auth.MinimumPasswordLength" value="@Model.Auth.MinimumPasswordLength" min="4" max="64" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Auth.PasswordComplexityRequired" value="true" style="width:auto;" checked="@Model.Auth.PasswordComplexityRequired" /> Require Password Complexity (letter + number)</label></div>
+                    <div><label for="maxLoginAttempts">Maximum Login Attempts</label><input type="number" id="maxLoginAttempts" name="Auth.MaxLoginAttempts" value="@Model.Auth.MaxLoginAttempts" min="0" /></div>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div>
+                        <label for="sessionTimeout">Session Timeout (minutes)</label>
+                        <input type="number" id="sessionTimeout" name="Auth.SessionTimeoutMinutes" value="@Model.Auth.SessionTimeoutMinutes" min="5" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Takes effect after the application restarts.</p>
+                    </div>
+                    <div>
+                        <label for="loginAsVerification">Login As Verification Password</label>
+                        <input type="password" id="loginAsVerification" name="Auth.NewLoginAsVerificationPassword"
+                               placeholder="@(Model.HasCustomVerificationPassword ? "•••••••• (leave blank to keep current)" : "Using development default")" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Authentication Settings</button></div>
+    </form>
+}
+else if (Model.Tab == "security")
+{
+    <form method="post" asp-page-handler="SaveSecurity">
+        <div class="card">
+            <div class="card-header">Security</div>
+            <div class="card-body">
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Security.EnableAuditLogging" value="true" style="width:auto;" checked="@Model.Security.EnableAuditLogging" /> Enable Audit Logging</label></div>
+                    <div><label for="lockoutMinutes">Account Lockout (minutes)</label><input type="number" id="lockoutMinutes" name="Security.AccountLockoutMinutes" value="@Model.Security.AccountLockoutMinutes" min="1" /></div>
+                </div>
+                <div class="grid-2">
+                    <div>
+                        <label for="passwordExpiry">Password Expiry (days)</label>
+                        <input type="number" id="passwordExpiry" name="Security.PasswordExpiryDays" value="@Model.Security.PasswordExpiryDays" min="0" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">0 = passwords never expire.</p>
+                    </div>
+                    <div><label for="rememberMeDuration">Remember Me Duration (days)</label><input type="number" id="rememberMeDuration" name="Security.RememberMeDurationDays" value="@Model.Security.RememberMeDurationDays" min="1" /></div>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Security Settings</button></div>
+    </form>
+}
+else if (Model.Tab == "dashboard")
+{
+    <form method="post" asp-page-handler="SaveDashboard">
+        <div class="card">
+            <div class="card-header">Dashboard</div>
+            <div class="card-body">
+                <div style="margin-bottom:14px;"><label for="welcomeMessage">Welcome Message</label><input type="text" id="welcomeMessage" name="DashboardSettings.WelcomeMessage" value="@Model.DashboardSettings.WelcomeMessage" placeholder="e.g. Welcome to the Performance Management System" /></div>
+                <div><label for="announcementBanner">Announcement Banner</label><textarea id="announcementBanner" name="DashboardSettings.AnnouncementBanner" rows="2" placeholder="Shown to everyone at the top of the Dashboard, e.g. maintenance notices">@Model.DashboardSettings.AnnouncementBanner</textarea></div>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Dashboard Settings</button></div>
+    </form>
+}
+else if (Model.Tab == "branding")
+{
+    <form method="post" asp-page-handler="SaveBranding" enctype="multipart/form-data">
+        <div class="card">
+            <div class="card-header">Branding</div>
+            <div class="card-body">
+                <div style="margin-bottom:14px;">
+                    <label for="logoFile">Company Logo</label>
+                    @if (!string.IsNullOrEmpty(Model.Branding.CompanyLogoPath))
+                    {
+                        <div style="margin-bottom:8px;"><img src="@Model.Branding.CompanyLogoPath" alt="Current company logo" style="max-height:48px;max-width:220px;" /></div>
+                    }
+                    <input type="file" id="logoFile" name="LogoFile" accept=".png,.jpg,.jpeg,.gif,.svg" />
+                    <p class="muted" style="margin:4px 0 0;font-size:12px;">PNG, JPG, GIF or SVG, up to 2 MB.</p>
+                </div>
+                <div class="grid-2" style="margin-bottom:14px;">
+                    <div><label for="primaryColor">Primary Colour</label><input type="color" id="primaryColor" name="Branding.PrimaryColorHex" value="@(Model.Branding.PrimaryColorHex ?? "#0f2b5c")" style="height:42px;padding:4px;" /></div>
+                    <div><label for="secondaryColor">Secondary Colour</label><input type="color" id="secondaryColor" name="Branding.SecondaryColorHex" value="@(Model.Branding.SecondaryColorHex ?? "#2f5fd6")" style="height:42px;padding:4px;" /></div>
+                </div>
+                <div><label for="footerText">Footer Text</label><input type="text" id="footerText" name="Branding.FooterText" value="@Model.Branding.FooterText" placeholder="e.g. © 2026 Your Company. All rights reserved." /></div>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Branding Settings</button></div>
+    </form>
+}

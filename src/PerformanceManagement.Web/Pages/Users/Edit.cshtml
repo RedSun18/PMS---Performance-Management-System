@@ -5,7 +5,6 @@
 }
 <div class="page-header">@(Model.IsNew ? "Create User" : $"Edit User — {Model.Form.UserName}")</div>
 
-@if (Model.Message is not null) { <div class="alert alert-success">@Model.Message</div> }
 @if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
 
 <div class="card">
@@ -72,6 +71,7 @@
                             <div>
                                 <label for="passwordInput">Password</label>
                                 <input type="text" id="passwordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
+                                <p class="muted" style="margin:4px 0 0;font-size:12px;">@Model.PasswordRuleHint</p>
                             </div>
                             <div>
                                 <label style="text-transform:none;">
@@ -107,6 +107,7 @@
                     <div>
                         <label for="resetPasswordInput">New Password</label>
                         <input type="text" id="resetPasswordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Model.PasswordRuleHint</p>
                     </div>
                     <div>
                         <label style="text-transform:none;">

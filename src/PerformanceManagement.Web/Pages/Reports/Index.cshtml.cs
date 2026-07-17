@@ -19,10 +19,11 @@ public class IndexModel : AppPageModel
     private readonly PmDbContext _db;
     private readonly IClock _clock;
     private readonly ReportDataService _reports;
+    private readonly NotificationService _notifications;
 
-    public IndexModel(PmDbContext db, IClock clock, ReportDataService reports)
+    public IndexModel(PmDbContext db, IClock clock, ReportDataService reports, NotificationService notifications)
     {
-        _db = db; _clock = clock; _reports = reports;
+        _db = db; _clock = clock; _reports = reports; _notifications = notifications;
     }
 
     public List<(string Code, string Label)> EmployeeOptions { get; set; } = new();
@@ -40,6 +41,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Employee Performance Report — {empcd} ({year})");
         return PdfFile(ReportExportService.EmployeeReportToPdf(report), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
@@ -47,6 +49,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Employee Performance Report — {empcd} ({year})");
         return ExcelFile(ReportExportService.EmployeeReportToExcel(report), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
@@ -55,6 +58,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Department Summary — {dept} ({year})");
         return PdfFile(ReportExportService.DepartmentReportToPdf(report), $"DepartmentSummary_{dept}_{year}");
     }
 
@@ -62,6 +66,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Department Summary — {dept} ({year})");
         return ExcelFile(ReportExportService.DepartmentReportToExcel(report), $"DepartmentSummary_{dept}_{year}");
     }
 
@@ -70,6 +75,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Manager Summary — {manager} ({year})");
         return PdfFile(ReportExportService.ManagerReportToPdf(report), $"ManagerSummary_{manager}_{year}");
     }
 
@@ -77,6 +83,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
+        await NotifyReportGeneratedAsync($"Manager Summary — {manager} ({year})");
         return ExcelFile(ReportExportService.ManagerReportToExcel(report), $"ManagerSummary_{manager}_{year}");
     }
 
@@ -84,14 +91,19 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnGetOverallPdfAsync(int year)
     {
         var report = await _reports.GetOverallReportAsync(year);
+        await NotifyReportGeneratedAsync($"Overall Organization Summary ({year})");
         return PdfFile(ReportExportService.OverallReportToPdf(report), $"OverallOrganizationSummary_{year}");
     }
 
     public async Task<IActionResult> OnGetOverallExcelAsync(int year)
     {
         var report = await _reports.GetOverallReportAsync(year);
+        await NotifyReportGeneratedAsync($"Overall Organization Summary ({year})");
         return ExcelFile(ReportExportService.OverallReportToExcel(report), $"OverallOrganizationSummary_{year}");
     }
+
+    private Task NotifyReportGeneratedAsync(string reportLabel) =>
+        _notifications.CreateAsync(CurrentUserName, "Report Generated", reportLabel, "ReportGenerated");
 
     // ======================================================================
     private async Task<EmployeePerformanceReport?> RequireEmployeeReportAsync(string? empcd, int year)

@@ -1,5 +1,6 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
+using PerformanceManagement.Core.Services;
 using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,12 +12,18 @@ namespace PerformanceManagement.Web.Pages.Users;
 public class EditModel : AppPageModel
 {
     private readonly PmDbContext _db;
-    private readonly IConfiguration _config;
-    public EditModel(PmDbContext db, IConfiguration config) { _db = db; _config = config; }
+    private readonly SettingsService _settings;
+    private readonly AuditService _audit;
+    private readonly NotificationService _notifications;
+    public EditModel(PmDbContext db, SettingsService settings, AuditService audit, NotificationService notifications)
+    {
+        _db = db; _settings = settings; _audit = audit; _notifications = notifications;
+    }
 
     [BindProperty(SupportsGet = true)] public int? Id { get; set; }
     public bool IsNew => Id is null;
-    public string DefaultPasswordHint => _config["Security:DefaultUserPassword"] ?? "Password123";
+    public string DefaultPasswordHint { get; set; } = "Password123";
+    public string PasswordRuleHint { get; set; } = "";
 
     [BindProperty] public Input Form { get; set; } = new();
     public List<(string Code, string Label, string? Email)> EmployeeOptions { get; set; } = new();
@@ -41,6 +48,7 @@ public class EditModel : AppPageModel
     public async Task<IActionResult> OnGetAsync()
     {
         await LoadEmployeeOptionsAsync();
+        await LoadPasswordHintsAsync();
 
         if (Id is int id)
         {
@@ -62,6 +70,7 @@ public class EditModel : AppPageModel
     public async Task<IActionResult> OnPostSaveAsync()
     {
         await LoadEmployeeOptionsAsync();
+        var rules = await LoadPasswordHintsAsync();
 
         var username = (Form.UserName ?? "").Trim();
         if (username.Length == 0) { Error = "Username is required."; return Page(); }
@@ -102,10 +111,10 @@ public class EditModel : AppPageModel
                 Error = "Enter a password or check 'Use default password'.";
                 return Page();
             }
-            if (!Form.UseDefaultPassword && Form.Password!.Length < InputValidation.MinPasswordLength)
+            if (!Form.UseDefaultPassword)
             {
-                Error = $"Password must be at least {InputValidation.MinPasswordLength} characters.";
-                return Page();
+                var passwordError = InputValidation.ValidatePassword(Form.Password!, rules.MinimumPasswordLength, rules.PasswordComplexityRequired);
+                if (passwordError is not null) { Error = passwordError; return Page(); }
             }
             user = new AppUser();
             _db.AppUsers.Add(user);
@@ -129,6 +138,7 @@ public class EditModel : AppPageModel
             var password = Form.UseDefaultPassword ? DefaultPasswordHint : Form.Password!;
             user.PasswordHash = DatabaseSeeder.HashPassword(user, password);
             user.MustChangePassword = Form.ForceChangePassword;
+            user.PasswordChangedAt = DateTime.UtcNow;
         }
 
         user.RolesList.Clear();
@@ -138,6 +148,11 @@ public class EditModel : AppPageModel
             user.RolesList.Add(new UserRole { Role = Roles.Viewer });
 
         await _db.SaveChangesAsync();
+        await _audit.LogAsync(isNew ? "User Created" : "User Updated", CurrentUserName,
+            empCode: user.EmpCode, entityType: "AppUser", entityId: user.Id.ToString(), details: username);
+        if (isNew)
+            await _notifications.CreateAsync(user.UserName, "Account Created",
+                "Your account has been created. Sign in with the password provided by your administrator.", "UserCreated");
         Message = isNew ? $"User '{username}' created." : $"User '{username}' updated.";
         return RedirectToPage("Index");
     }
@@ -149,6 +164,8 @@ public class EditModel : AppPageModel
         var user = await _db.AppUsers.FindAsync(id);
         if (user is null) return RedirectToPage("Index");
 
+        var rules = await LoadPasswordHintsAsync();
+
         if (string.IsNullOrWhiteSpace(Form.Password) && !Form.UseDefaultPassword)
         {
             await LoadEmployeeOptionsAsync();
@@ -156,18 +173,29 @@ public class EditModel : AppPageModel
             Error = "Enter a password or check 'Use default password'.";
             return Page();
         }
-        if (!Form.UseDefaultPassword && Form.Password!.Length < InputValidation.MinPasswordLength)
+        if (!Form.UseDefaultPassword)
         {
-            await LoadEmployeeOptionsAsync();
-            Form.UserType = UserTypes.Derive(await _db.AppUsers.Include(u => u.RolesList).FirstAsync(u => u.Id == id));
-            Error = $"Password must be at least {InputValidation.MinPasswordLength} characters.";
-            return Page();
+            var passwordError = InputValidation.ValidatePassword(Form.Password!, rules.MinimumPasswordLength, rules.PasswordComplexityRequired);
+            if (passwordError is not null)
+            {
+                await LoadEmployeeOptionsAsync();
+                Form.UserType = UserTypes.Derive(await _db.AppUsers.Include(u => u.RolesList).FirstAsync(u => u.Id == id));
+                Error = passwordError;
+                return Page();
+            }
         }
 
         var password = Form.UseDefaultPassword ? DefaultPasswordHint : Form.Password!;
         user.PasswordHash = DatabaseSeeder.HashPassword(user, password);
         user.MustChangePassword = Form.ForceChangePassword;
+        user.FailedLoginAttempts = 0;
+        user.LockedOutUntil = null;
+        user.PasswordChangedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+        await _audit.LogAsync("Password Reset", CurrentUserName,
+            empCode: user.EmpCode, entityType: "AppUser", entityId: user.Id.ToString(), details: user.UserName);
+        await _notifications.CreateAsync(user.UserName, "Password Reset",
+            "Your password was reset by an administrator." + (Form.ForceChangePassword ? " You must change it at next login." : ""), "PasswordReset");
 
         Message = $"Password reset for '{user.UserName}'." + (Form.ForceChangePassword ? " They must change it at next login." : "");
         return RedirectToPage("Edit", new { id });
@@ -178,5 +206,15 @@ public class EditModel : AppPageModel
         EmployeeOptions = (await _db.Employees.AsNoTracking().Where(e => e.TermDate == null)
                 .OrderBy(e => e.LatinName).ToListAsync())
             .Select(e => (e.EmpCode, $"{e.EmpCode} | {e.LatinName}", e.Email)).ToList();
+    }
+
+    private async Task<SecurityRules> LoadPasswordHintsAsync()
+    {
+        var rules = await _settings.GetSecurityRulesAsync();
+        DefaultPasswordHint = rules.DefaultUserPassword;
+        PasswordRuleHint = rules.PasswordComplexityRequired
+            ? $"At least {rules.MinimumPasswordLength} characters, including a letter and a number."
+            : $"At least {rules.MinimumPasswordLength} characters.";
+        return rules;
     }
 }

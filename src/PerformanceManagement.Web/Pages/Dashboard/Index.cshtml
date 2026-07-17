@@ -6,6 +6,15 @@
 }
 <div class="page-header">Dashboard</div>
 
+@if (!string.IsNullOrWhiteSpace(Model.AnnouncementBanner))
+{
+    <div class="alert alert-warn" style="margin-bottom:16px;">📢 @Model.AnnouncementBanner</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.WelcomeMessage))
+{
+    <p class="muted" style="margin:-8px 0 20px;font-size:14.5px;">@Model.WelcomeMessage</p>
+}
+
 @if (Model.DashboardKind == "employee")
 {
     <div class="card" style="margin-bottom:20px;">
@@ -222,3 +231,23 @@ else
         <a class="btn btn-secondary" asp-page="/Reports/Index">Reports</a>
     </div>
 }
+
+<div class="card" style="margin-top:20px;">
+    <div class="card-header">Recent Activity</div>
+    <div class="card-body">
+        @if (Model.RecentActivity.Count == 0)
+        {
+            <p class="muted" style="margin:0;">No recent activity.</p>
+        }
+        else
+        {
+            @foreach (var a in Model.RecentActivity)
+            {
+                <div style="padding:9px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;">
+                    <span>@a.Text <span class="muted">— @a.By</span></span>
+                    <span class="muted" style="white-space:nowrap;">@a.When.ToString("dd MMM yyyy HH:mm")</span>
+                </div>
+            }
+        }
+    </div>
+</div>

@@ -55,6 +55,7 @@ else
     <div class="card">
         <div class="card-header">Recent Impersonation History</div>
         <div class="card-body">
+            <div class="table-scroll">
             <table class="grid">
                 <thead>
                     <tr><th>Administrator</th><th>Impersonated User</th><th>Started</th><th>Ended</th><th>IP Address</th><th>Session</th></tr>
@@ -73,6 +74,7 @@ else
                 }
                 </tbody>
             </table>
+            </div>
             @if (Model.RecentHistory.Count == 0)
             {
                 <p class="muted">No impersonation sessions recorded yet.</p>

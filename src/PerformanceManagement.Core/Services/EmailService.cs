@@ -181,37 +181,61 @@ public static class EmailTemplates
     /// by email clients that strip &lt;style&gt; blocks, applied by those that don't (kept out of
     /// the interpolated template body so its literal braces don't need raw-string escaping).</summary>
     private const string ButtonHoverStyle = ".pms-btn:hover { background: #16336b !important; }";
+    private const string ResponsiveStyle =
+        "@media (max-width: 620px) { .pms-container { width: 100% !important; } .pms-card { padding: 20px !important; } }";
 
+    /// <summary>Outer skeleton for every workflow email. Deliberately mixes a `max-width` div
+    /// (for modern clients: Gmail, Apple Mail, Outlook.com, mobile) with an outer `role="presentation"`
+    /// table pinned to 600px (the "bulletproof centering" pattern) — legacy desktop Outlook
+    /// (2007–2019, Windows) uses Word's rendering engine and ignores `max-width` on a div
+    /// entirely, rendering it full-width instead; the wrapping table forces the same constrained
+    /// width there too. 600px (not 640px) is the conventional safe email width that comfortably
+    /// clears Gmail's and Outlook's own chrome without triggering their horizontal scrollbars.</summary>
     private static string Wrap(string appHeading, string title, string inner, DateTime sentAt) => $"""
         <html>
         <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta name="color-scheme" content="light dark" />
+          <meta name="supported-color-schemes" content="light dark" />
           <style>
             {ButtonHoverStyle}
+            {ResponsiveStyle}
           </style>
         </head>
         <body style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <div style="max-width:640px;margin:0 auto;padding:24px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;">
+          <tr><td align="center" style="padding:24px 16px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="pms-container" style="width:600px;max-width:600px;">
+          <tr><td>
           <div style="background-color:#0f2b5c;background:linear-gradient(135deg,#0f2b5c 0%,#1e3a8a 100%);border-radius:12px 12px 0 0;padding:20px 28px;">
             <div style="color:#fff;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;">{appHeading}</div>
             <div style="color:#fff;font-size:20px;font-weight:700;margin-top:4px;">{title}</div>
           </div>
-          <div style="background:#ffffff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px;padding:28px;box-shadow:0 1px 3px rgba(15,23,42,.07);color:#333;font-size:14px;line-height:1.6;">
+          <div class="pms-card" style="background:#ffffff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px;padding:28px;box-shadow:0 1px 3px rgba(15,23,42,.07);color:#333;font-size:14px;line-height:1.6;">
             {inner}
           </div>
           <div style="text-align:center;padding:18px 8px 0;color:#8a93a6;font-size:11px;">
             Sent {sentAt:dddd, dd MMMM yyyy} at {sentAt:HH:mm} &middot; This is an automated message, please do not reply.<br/>
             For assistance, contact the HR Department.
           </div>
-        </div>
+          </td></tr>
+        </table>
+          </td></tr>
+        </table>
         </body></html>
         """;
 
     private static string InfoTable(params (string Label, string Value)[] rows)
     {
+        // Every text-bearing cell sets its own `color` explicitly rather than inheriting from
+        // the surrounding card — some clients/browsers apply an automatic dark-mode heuristic
+        // once <meta name="color-scheme"> opts a page in (see Wrap), turning any *unstyled* text
+        // white while explicit backgrounds stay as authored; the result is invisible white-on-
+        // white text. Explicit color on every cell sidesteps that regardless of client behavior.
         var trs = string.Join("", rows.Select(r =>
-            $"<tr><td style='padding:8px;border-bottom:1px solid #e0e0e0;font-weight:bold;width:180px;color:#666;'>{r.Label}</td>" +
-            $"<td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.Value}</td></tr>"));
-        return $"<table style='width:100%;border-collapse:collapse;margin:15px 0;'>{trs}</table>";
+            $"<tr><td style='padding:8px;border-bottom:1px solid #e0e0e0;font-weight:bold;width:38%;color:#666666;word-break:break-word;'>{r.Label}</td>" +
+            $"<td style='padding:8px;border-bottom:1px solid #e0e0e0;width:62%;color:#333333;word-break:break-word;'>{r.Value}</td></tr>"));
+        return $"<table style='width:100%;table-layout:fixed;border-collapse:collapse;margin:15px 0;'>{trs}</table>";
     }
 
     /// <summary>Prominent, centered, mobile-friendly call-to-action button plus a plain-text fallback link.</summary>
@@ -338,30 +362,36 @@ public static class EmailTemplates
         string Status, string RequiredAction, string Owner, int DaysWaiting, string ActionUrl);
 
     /// <summary>Weekly digest for HR: every form that has been outstanding beyond the escalation
-    /// threshold, one row each, in a single email rather than one send per form.</summary>
+    /// threshold, one row each, in a single email rather than one send per form.
+    /// Deliberately narrow (4 columns, fixed %-width, forced word-break) rather than the 7-column
+    /// version this once was — a data-dense table with auto-sized columns and no wrap guarantee
+    /// is exactly the kind of thing that overflows its container in Outlook's Word rendering
+    /// engine (which doesn't support horizontal scrolling the way a browser does). Year and
+    /// Reference fold into the Employee cell instead of getting their own columns.</summary>
     public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt)
     {
+        // Explicit color on every cell — see InfoTable's remark on why nothing here can rely on
+        // inherited text color.
+        const string cell = "padding:8px;border-bottom:1px solid #e0e0e0;word-break:break-word;color:#333333;";
         var trs = string.Join("", rows.Select(r => $"""
             <tr>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'><a href="{r.ActionUrl}" style="color:#2f5fd6;">{r.LegacyRefNo}</a></td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.EmpNameSnapshot}</td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.EvalYear}</td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.Status}</td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.RequiredAction}</td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;'>{r.Owner}</td>
-              <td style='padding:8px;border-bottom:1px solid #e0e0e0;text-align:center;'>{r.DaysWaiting}</td>
+              <td style='{cell}width:34%;'>
+                <a href="{r.ActionUrl}" style="color:#2f5fd6;text-decoration:none;font-weight:600;">{r.EmpNameSnapshot}</a><br/>
+                <span style="color:#8a93a6;font-size:11px;">{r.LegacyRefNo} &middot; {r.EvalYear}</span>
+              </td>
+              <td style='{cell}width:24%;'>{r.RequiredAction}</td>
+              <td style='{cell}width:22%;'>{r.Owner}</td>
+              <td style='{cell}width:20%;text-align:center;'>{r.DaysWaiting}d<br/><span style="color:#8a93a6;font-size:11px;">{r.Status}</span></td>
             </tr>
             """));
+        const string th = "padding:8px;border-bottom:2px solid #ccc;color:#666666;";
         var table = $"""
-            <table style='width:100%;border-collapse:collapse;margin:15px 0;font-size:13px;'>
-              <thead><tr style='text-align:left;color:#666;'>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Reference</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Employee</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Year</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Status</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Required Action</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;'>Awaiting</th>
-                <th style='padding:8px;border-bottom:2px solid #ccc;text-align:center;'>Days</th>
+            <table style='width:100%;table-layout:fixed;border-collapse:collapse;margin:15px 0;font-size:13px;'>
+              <thead><tr style='text-align:left;'>
+                <th style='{th}width:34%;'>Employee</th>
+                <th style='{th}width:24%;'>Required Action</th>
+                <th style='{th}width:22%;'>Awaiting</th>
+                <th style='{th}width:20%;text-align:center;'>Waiting / Status</th>
               </tr></thead>
               <tbody>{trs}</tbody>
             </table>

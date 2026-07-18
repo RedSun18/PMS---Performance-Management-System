@@ -1,30 +1,26 @@
+using System.Net;
+using System.Text;
 using ClosedXML.Excel;
-using MigraDoc.DocumentObjectModel;
-using MigraDoc.DocumentObjectModel.Tables;
-using MigraDoc.Rendering;
 
 namespace PerformanceManagement.Core.Services;
 
 /// <summary>
 /// Renders the report data models from <see cref="ReportDataService"/> to downloadable
-/// PDF (MigraDoc/PdfSharp) and Excel (ClosedXML) files. Pure rendering — no database
-/// access here, so the data-shaping and export-formatting concerns stay independently
-/// testable/replaceable.
+/// PDF (HTML printed via headless Chromium — see <see cref="PdfRenderer"/>) and Excel
+/// (ClosedXML) files. Pure rendering — no database access here, so the data-shaping and
+/// export-formatting concerns stay independently testable/replaceable.
 /// </summary>
 public static class ReportExportService
 {
     private const string AppName = "Performance Management System";
-    private static readonly Color BrandNavy = new(15, 43, 92);
-    private static readonly Color BrandGrey = new(90, 100, 116);
 
     // ================================================================ PDF
-    public static byte[] EmployeeReportToPdf(EmployeePerformanceReport r)
+    public static Task<byte[]> EmployeeReportToPdfAsync(EmployeePerformanceReport r)
     {
-        var doc = NewDocument($"Employee Performance Report — {r.EmpName}");
-        var section = doc.Sections[0];
-        AddBrandHeader(section, "Employee Performance Report", r.GeneratedAt);
+        var h = new HtmlReportBuilder($"Employee Performance Report — {r.EmpName}");
+        h.AddBrandHeader("Employee Performance Report", r.GeneratedAt);
 
-        AddKeyValueTable(section, "Employee Information",
+        h.AddKeyValueTable("Employee Information",
             ("Employee", $"{r.EmpName} ({r.EmpCode})"),
             ("Department", r.Department ?? "—"),
             ("Designation", r.Designation ?? "—"),
@@ -34,7 +30,7 @@ public static class ReportExportService
             ("Reference Number", r.RefNo),
             ("Final Status", r.Status));
 
-        AddKeyValueTable(section, "Overall Score",
+        h.AddKeyValueTable("Overall Score",
             ("KPI Score", r.KpiScore.ToString("F2")),
             ("Competency Score", r.CompScore.ToString("F2")),
             ("Overall Score", r.OverallScore.ToString("F2")),
@@ -42,7 +38,7 @@ public static class ReportExportService
 
         if (r.Kpis.Count > 0)
         {
-            AddDataTable(section, "KPI Breakdown",
+            h.AddDataTable("KPI Breakdown",
                 new[] { "Perspective", "KPI", "Target", "Weight %", "Achievement %", "Weighted", "Comments" },
                 r.Kpis.Select(k => new[] { k.Perspective, k.Name, k.Target ?? "", k.Weight.ToString(),
                     k.Achievement.ToString(), k.Weighted.ToString("F2"), k.Comments ?? "" }));
@@ -50,17 +46,17 @@ public static class ReportExportService
 
         if (r.Competencies.Count > 0)
         {
-            AddDataTable(section, "Competency Breakdown",
+            h.AddDataTable("Competency Breakdown",
                 new[] { "Type", "Competency", "Weight %", "Achievement %", "Weighted", "Comments" },
                 r.Competencies.Select(c => new[] { c.Type == "T" ? "Technical" : "Behavioral", c.Name,
                     c.Weight.ToString(), c.Achievement.ToString(), c.Weighted.ToString("F2"), c.Comments ?? "" }));
         }
 
-        AddParagraphSection(section, "Self-Assessment", r.SelfAssessment);
-        AddParagraphSection(section, "Development Plan", r.DevelopmentPlan);
-        AddParagraphSection(section, "Employee Acknowledgement Comments", r.EmployeeAckComments);
+        h.AddParagraphSection("Self-Assessment", r.SelfAssessment);
+        h.AddParagraphSection("Development Plan", r.DevelopmentPlan);
+        h.AddParagraphSection("Employee Acknowledgement Comments", r.EmployeeAckComments);
 
-        AddKeyValueTable(section, "Approval History",
+        h.AddKeyValueTable("Approval History",
             ("HR Reviewer 1", r.Hr1ReviewerName ?? "—"),
             ("HR Review 1 Date", r.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? "—"),
             ("HR Reviewer 1 Remarks", r.Hr1Remarks ?? "—"),
@@ -70,56 +66,53 @@ public static class ReportExportService
 
         if (r.History.Count > 0)
         {
-            AddDataTable(section, "Workflow History",
+            h.AddDataTable("Workflow History",
                 new[] { "From", "To", "Changed By", "Changed At", "Note" },
-                r.History.Select(h => new[] { h.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(h.FromStatus),
-                    Domain.PmFormStatus.DisplayName(h.ToStatus), h.ChangedBy, h.ChangedAt.ToString("dd/MM/yyyy HH:mm"), h.Note ?? "" }));
+                r.History.Select(hi => new[] { hi.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(hi.FromStatus),
+                    Domain.PmFormStatus.DisplayName(hi.ToStatus), hi.ChangedBy, hi.ChangedAt.ToString("dd/MM/yyyy HH:mm"), hi.Note ?? "" }));
         }
 
-        return Render(doc);
+        return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static byte[] DepartmentReportToPdf(DepartmentSummaryReport r)
+    public static Task<byte[]> DepartmentReportToPdfAsync(DepartmentSummaryReport r)
     {
-        var doc = NewDocument($"Department Summary — {r.DeptName}");
-        var section = doc.Sections[0];
-        AddBrandHeader(section, "Department Summary Report", r.GeneratedAt);
+        var h = new HtmlReportBuilder($"Department Summary — {r.DeptName}");
+        h.AddBrandHeader("Department Summary Report", r.GeneratedAt);
 
-        AddKeyValueTable(section, "Department Information",
+        h.AddKeyValueTable("Department Information",
             ("Department", $"{r.DeptName} ({r.DeptCode})"),
             ("Review Year", r.EvalYear.ToString()),
             ("Employee Count", r.TotalEmployees.ToString()),
             ("Finalized Reviews", r.FinalizedCount.ToString()),
             ("Average Overall Score", r.AverageScore.ToString("F2")));
 
-        AddEmployeeRowsTable(section, "Employees", r.Employees);
-        return Render(doc);
+        h.AddEmployeeRowsTable("Employees", r.Employees);
+        return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static byte[] ManagerReportToPdf(ManagerSummaryReport r)
+    public static Task<byte[]> ManagerReportToPdfAsync(ManagerSummaryReport r)
     {
-        var doc = NewDocument($"Manager Summary — {r.ManagerName}");
-        var section = doc.Sections[0];
-        AddBrandHeader(section, "Manager Summary Report", r.GeneratedAt);
+        var h = new HtmlReportBuilder($"Manager Summary — {r.ManagerName}");
+        h.AddBrandHeader("Manager Summary Report", r.GeneratedAt);
 
-        AddKeyValueTable(section, "Manager Information",
+        h.AddKeyValueTable("Manager Information",
             ("Manager", $"{r.ManagerName} ({r.ManagerEmpCode})"),
             ("Review Year", r.EvalYear.ToString()),
             ("Team Size", r.TotalEmployees.ToString()),
             ("Finalized Reviews", r.FinalizedCount.ToString()),
             ("Average Overall Score", r.AverageScore.ToString("F2")));
 
-        AddEmployeeRowsTable(section, "Team Members", r.TeamMembers);
-        return Render(doc);
+        h.AddEmployeeRowsTable("Team Members", r.TeamMembers);
+        return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static byte[] OverallReportToPdf(OverallOrganizationReport r)
+    public static Task<byte[]> OverallReportToPdfAsync(OverallOrganizationReport r)
     {
-        var doc = NewDocument($"Overall Organization Summary — {r.EvalYear}");
-        var section = doc.Sections[0];
-        AddBrandHeader(section, "Overall Organization Summary", r.GeneratedAt);
+        var h = new HtmlReportBuilder($"Overall Organization Summary — {r.EvalYear}");
+        h.AddBrandHeader("Overall Organization Summary", r.GeneratedAt);
 
-        AddKeyValueTable(section, "Organization Overview",
+        h.AddKeyValueTable("Organization Overview",
             ("Review Year", r.EvalYear.ToString()),
             ("Total Employees", r.TotalEmployees.ToString()),
             ("Forms Generated", r.TotalForms.ToString()),
@@ -128,13 +121,13 @@ public static class ReportExportService
 
         if (r.Departments.Count > 0)
         {
-            AddDataTable(section, "Department Breakdown",
+            h.AddDataTable("Department Breakdown",
                 new[] { "Department", "Employees", "Finalized", "Completion %", "Average Score" },
                 r.Departments.Select(d => new[] { d.DeptName, d.EmployeeCount.ToString(), d.FinalizedCount.ToString(),
                     $"{d.CompletionPercent}%", d.AverageScore.ToString("F2") }));
         }
 
-        return Render(doc);
+        return PdfRenderer.RenderAsync(h.Build());
     }
 
     // ================================================================ Excel
@@ -238,134 +231,6 @@ public static class ReportExportService
         return ToBytes(wb);
     }
 
-    // ================================================================ MigraDoc helpers
-    private static Document NewDocument(string title)
-    {
-        var doc = new Document();
-        doc.Info.Title = title;
-        doc.Info.Author = AppName;
-
-        var style = doc.Styles["Normal"]!;
-        style.Font.Name = "Verdana";
-        style.Font.Size = 9;
-
-        var section = doc.AddSection();
-        section.PageSetup.PageFormat = PageFormat.A4;
-        section.PageSetup.TopMargin = "1.5cm";
-        section.PageSetup.BottomMargin = "1.5cm";
-        section.PageSetup.LeftMargin = "1.5cm";
-        section.PageSetup.RightMargin = "1.5cm";
-        return doc;
-    }
-
-    private static void AddBrandHeader(Section section, string title, DateTime generatedAt)
-    {
-        var brand = section.AddParagraph(AppName);
-        brand.Format.Font.Size = 10;
-        brand.Format.Font.Color = BrandGrey;
-        brand.Format.SpaceAfter = "2pt";
-
-        var heading = section.AddParagraph(title);
-        heading.Format.Font.Size = 18;
-        heading.Format.Font.Bold = true;
-        heading.Format.Font.Color = BrandNavy;
-        heading.Format.SpaceAfter = "4pt";
-
-        var generated = section.AddParagraph($"Generated {generatedAt:dddd, dd MMMM yyyy} at {generatedAt:HH:mm}");
-        generated.Format.Font.Size = 8;
-        generated.Format.Font.Color = BrandGrey;
-        generated.Format.SpaceAfter = "14pt";
-
-        var rule = section.AddParagraph();
-        rule.Format.Borders.Bottom = new Border { Width = "1pt", Color = BrandNavy };
-        rule.Format.SpaceAfter = "10pt";
-    }
-
-    private static void AddSectionHeading(Section section, string text)
-    {
-        var p = section.AddParagraph(text);
-        p.Format.Font.Size = 12;
-        p.Format.Font.Bold = true;
-        p.Format.Font.Color = BrandNavy;
-        p.Format.SpaceBefore = "10pt";
-        p.Format.SpaceAfter = "6pt";
-    }
-
-    private static void AddKeyValueTable(Section section, string heading, params (string Label, string Value)[] rows)
-    {
-        AddSectionHeading(section, heading);
-        var table = section.AddTable();
-        table.Borders.Width = 0.4;
-        table.Borders.Color = new Color(220, 224, 230);
-        table.AddColumn("4.5cm");
-        table.AddColumn("13cm");
-        foreach (var (label, value) in rows)
-        {
-            var r = table.AddRow();
-            r.Cells[0].AddParagraph(label);
-            r.Cells[0].Format.Font.Bold = true;
-            r.Cells[0].Shading.Color = new Color(240, 242, 246);
-            r.Cells[1].AddParagraph(value);
-            r.Format.Font.Size = 9;
-        }
-    }
-
-    private static void AddDataTable(Section section, string heading, string[] headers, IEnumerable<string[]> rows)
-    {
-        AddSectionHeading(section, heading);
-        var table = section.AddTable();
-        table.Borders.Width = 0.4;
-        table.Borders.Color = new Color(220, 224, 230);
-        foreach (var _ in headers) table.AddColumn();
-
-        var headerRow = table.AddRow();
-        headerRow.Shading.Color = BrandNavy;
-        for (var i = 0; i < headers.Length; i++)
-        {
-            var p = headerRow.Cells[i].AddParagraph(headers[i]);
-            p.Format.Font.Color = Colors.White;
-            p.Format.Font.Bold = true;
-            p.Format.Font.Size = 8;
-        }
-
-        foreach (var cells in rows)
-        {
-            var r = table.AddRow();
-            r.Format.Font.Size = 8;
-            for (var i = 0; i < cells.Length && i < headers.Length; i++)
-                r.Cells[i].AddParagraph(cells[i]);
-        }
-    }
-
-    private static void AddParagraphSection(Section section, string heading, string? text)
-    {
-        if (string.IsNullOrWhiteSpace(text)) return;
-        AddSectionHeading(section, heading);
-        var p = section.AddParagraph(text);
-        p.Format.Font.Size = 9;
-    }
-
-    private static void AddEmployeeRowsTable(Section section, string heading, IReadOnlyList<ReportEmployeeRow> rows)
-    {
-        if (rows.Count == 0)
-        {
-            AddParagraphSection(section, heading, "No employees found.");
-            return;
-        }
-        AddDataTable(section, heading,
-            new[] { "Employee Code", "Name", "Designation", "Overall Score", "Rating", "Status" },
-            rows.Select(r => new[] { r.EmpCode, r.Name, r.Designation ?? "", r.OverallScore.ToString("F2"), r.Rating, r.Status }));
-    }
-
-    private static byte[] Render(Document doc)
-    {
-        var renderer = new PdfDocumentRenderer { Document = doc };
-        renderer.RenderDocument();
-        using var ms = new MemoryStream();
-        renderer.PdfDocument.Save(ms, false);
-        return ms.ToArray();
-    }
-
     // ================================================================ ClosedXML helpers
     private static int WriteBrandHeader(IXLWorksheet ws, string title, DateTime generatedAt)
     {
@@ -443,5 +308,138 @@ public static class ReportExportService
         using var ms = new MemoryStream();
         wb.SaveAs(ms);
         return ms.ToArray();
+    }
+
+    // ================================================================ HTML report builder
+    /// <summary>Builds one report's HTML in the same section-by-section shape the old MigraDoc
+    /// helpers used (brand header, key-value table, data table, paragraph, employee rows) so the
+    /// visual structure carries over unchanged — only the rendering engine underneath it does not
+    /// (see <see cref="PdfRenderer"/> for why). Everything dynamic is HTML-encoded since these
+    /// values come from free-text database fields.</summary>
+    private sealed class HtmlReportBuilder
+    {
+        private static readonly string[] LongTextHeaders = { "Comments", "Note", "Remarks", "Target" };
+        private readonly StringBuilder _body = new();
+
+        public HtmlReportBuilder(string title)
+        {
+            _ = title; // reserved for a future <title> if reports gain a print-preview route
+        }
+
+        public void AddBrandHeader(string title, DateTime generatedAt)
+        {
+            _body.Append($"""
+                <div class="brand">{Enc(AppName)}</div>
+                <div class="report-title">{Enc(title)}</div>
+                <div class="generated">Generated {generatedAt:dddd, dd MMMM yyyy} at {generatedAt:HH:mm}</div>
+                <hr class="rule" />
+                """);
+        }
+
+        public void AddKeyValueTable(string heading, params (string Label, string Value)[] rows)
+        {
+            _body.Append($"<div class=\"section-heading\">{Enc(heading)}</div><table class=\"kv\">");
+            foreach (var (label, value) in rows)
+                _body.Append($"<tr><td class=\"kv-label\">{Enc(label)}</td><td>{Enc(value)}</td></tr>");
+            _body.Append("</table>");
+        }
+
+        public void AddDataTable(string heading, string[] headers, IEnumerable<string[]> rows)
+        {
+            _body.Append($"<div class=\"section-heading\">{Enc(heading)}</div>");
+
+            // Long-text columns (Comments/Note/Remarks/Target) get roughly double the width of a
+            // plain data column — left at equal widths, a "Comments" column is exactly as cramped
+            // as a two-digit "Weight %" column, illegible the moment anyone types a few words.
+            var weights = headers.Select(hd => LongTextHeaders.Contains(hd) ? 2.0 : 1.0).ToArray();
+            var totalWeight = weights.Sum();
+
+            _body.Append("<table class=\"data\"><colgroup>");
+            foreach (var w in weights) _body.Append($"<col style=\"width:{w / totalWeight * 100:0.00}%\" />");
+            _body.Append("</colgroup><thead><tr>");
+            foreach (var hd in headers) _body.Append($"<th>{Enc(hd)}</th>");
+            _body.Append("</tr></thead><tbody>");
+            foreach (var cells in rows)
+            {
+                _body.Append("<tr>");
+                for (var i = 0; i < headers.Length; i++)
+                    _body.Append($"<td>{Enc(i < cells.Length ? cells[i] : "")}</td>");
+                _body.Append("</tr>");
+            }
+            _body.Append("</tbody></table>");
+        }
+
+        public void AddParagraphSection(string heading, string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return;
+            _body.Append($"<div class=\"section-heading\">{Enc(heading)}</div><p class=\"para\">{Enc(text)}</p>");
+        }
+
+        public void AddEmployeeRowsTable(string heading, IReadOnlyList<ReportEmployeeRow> rows)
+        {
+            if (rows.Count == 0)
+            {
+                AddParagraphSection(heading, "No employees found.");
+                return;
+            }
+            AddDataTable(heading,
+                new[] { "Employee Code", "Name", "Designation", "Overall Score", "Rating", "Status" },
+                rows.Select(r => new[] { r.EmpCode, r.Name, r.Designation ?? "", r.OverallScore.ToString("F2"), r.Rating, r.Status }));
+        }
+
+        public string Build()
+        {
+            var latinFont = new Uri(Path.Combine(PdfRenderer.FontsDirectory, "NotoSans-latin.woff2")).AbsoluteUri;
+            var arabicFont = new Uri(Path.Combine(PdfRenderer.FontsDirectory, "NotoSansArabic-arabic.woff2")).AbsoluteUri;
+
+            // The CSS block is a plain (non-interpolated) string so its literal '{'/'}' don't
+            // collide with C# interpolated raw-string escaping rules; the two font URLs are
+            // substituted afterward via string.Format placeholders instead.
+            var style = string.Format(StyleTemplate, latinFont, arabicFont);
+
+            return $"""
+                <!doctype html>
+                <html lang="en">
+                <head>
+                <meta charset="utf-8" />
+                <style>
+                {style}
+                </style>
+                </head>
+                <body>
+                {_body}
+                </body>
+                </html>
+                """;
+        }
+
+        private const string StyleTemplate = """
+            @font-face {{ font-family: 'Noto Sans'; font-weight: 400 700; src: url('{0}') format('woff2'); }}
+            @font-face {{ font-family: 'Noto Sans Arabic'; font-weight: 400 700; src: url('{1}') format('woff2'); }}
+            * {{ box-sizing: border-box; }}
+            body {{
+              font-family: 'Noto Sans', 'Noto Sans Arabic', sans-serif;
+              font-size: 9pt; color: #1b2333; margin: 0;
+            }}
+            .brand {{ font-size: 10pt; color: #5a6474; margin-bottom: 2pt; }}
+            .report-title {{ font-size: 18pt; font-weight: 700; color: #0f2b5c; margin-bottom: 4pt; }}
+            .generated {{ font-size: 8pt; color: #5a6474; margin-bottom: 14pt; }}
+            .rule {{ border: none; border-top: 1pt solid #0f2b5c; margin-bottom: 10pt; }}
+            .section-heading {{ font-size: 12pt; font-weight: 700; color: #0f2b5c; margin: 10pt 0 6pt; page-break-after: avoid; }}
+            .para {{ font-size: 9pt; margin: 0 0 8pt; white-space: pre-wrap; }}
+            table {{ width: 100%; border-collapse: collapse; margin-bottom: 4pt; }}
+            table.kv td {{ border: 0.4pt solid #dce0e6; padding: 4pt 6pt; font-size: 9pt; }}
+            table.kv .kv-label {{ font-weight: 700; background: #f0f2f6; width: 26%; }}
+            table.data {{ font-size: 8pt; }}
+            table.data thead {{ display: table-header-group; }}
+            table.data th {{
+              background: #0f2b5c; color: #ffffff; font-weight: 700; font-size: 8pt;
+              padding: 5pt 6pt; text-align: start; border: 0.4pt solid #0f2b5c;
+            }}
+            table.data td {{ padding: 5pt 6pt; border: 0.4pt solid #dce0e6; word-break: break-word; }}
+            table.data tr {{ page-break-inside: avoid; }}
+            """;
+
+        private static string Enc(string? s) => WebUtility.HtmlEncode(s ?? "");
     }
 }

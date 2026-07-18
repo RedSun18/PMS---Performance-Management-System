@@ -3,12 +3,15 @@ using PerformanceManagement.Core.Services;
 using PerformanceManagement.Web.Jobs;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using System.Globalization;
 
-// PdfSharp/MigraDoc has no font enumeration on Linux — register a bundled font resolver
-// before any report is generated (see ReportFontResolver for why).
-ReportFontResolver.Register();
+// Downloads/launches the shared headless-Chromium instance used for PDF report rendering (see
+// PdfRenderer) in the background so it's most likely already warm by the first report request,
+// without delaying the rest of app startup — RenderAsync awaits this itself if it isn't done yet.
+_ = PdfRenderer.WarmupAsync();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,7 +97,28 @@ builder.Services.AddSession(o =>
     o.Cookie.IsEssential = true;
 });
 
-builder.Services.AddRazorPages();
+// Localization architecture (Phase 10 Part 8): English + Arabic supported, cookie-driven
+// culture selection (see Pages/Culture/SetLanguage.cshtml.cs and the language switcher in
+// _Layout.cshtml). Per-page .resx files live under Resources/Pages/{mirrors Pages/ folder
+// structure}; shared cross-page strings live in Resources/SharedResource.resx — see
+// Resources/SharedResource.cs. Deliberately not every page is translated yet (only Login, as
+// a working proof of the pattern) — this wires up the architecture for the rest to follow.
+builder.Services.AddLocalization(o => o.ResourcesPath = "Resources");
+builder.Services.AddRazorPages()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
+var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("ar") };
+builder.Services.Configure<RequestLocalizationOptions>(o =>
+{
+    o.DefaultRequestCulture = new RequestCulture("en");
+    o.SupportedCultures = supportedCultures;
+    o.SupportedUICultures = supportedCultures;
+    o.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new CookieRequestCultureProvider { CookieName = CookieRequestCultureProvider.DefaultCookieName }
+    };
+});
 
 var app = builder.Build();
 
@@ -137,6 +161,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseStaticFiles();
+app.UseRequestLocalization(app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value);
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

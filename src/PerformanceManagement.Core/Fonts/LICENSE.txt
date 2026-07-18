@@ -1,0 +1,6 @@
+Noto Sans and Noto Sans Arabic are (c) Google, licensed under the SIL Open Font
+License, Version 1.1. Full license text: https://openfontlicense.org
+
+Summary (not a substitute for the license): the fonts may be used, studied,
+modified, and redistributed freely, including in commercial products, provided
+they are not sold by themselves and any modified versions are renamed.

@@ -1,11 +1,17 @@
 @page
 @model PerformanceManagement.Web.Pages.Account.LoginModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Sign in";
+    // ViewData["Title"] is a plain string consumed via string interpolation in _Layout, not
+    // rendered as HTML — IViewLocalizer's indexer returns LocalizedHtmlString, whose ToString()
+    // is the CLR default (the type name), not the resolved text. Its .Value property has the
+    // actual resolved string.
+    ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_Layout";
 }
 <div class="login-box card">
-    <div class="card-header">Sign in — Performance Management System</div>
+    <div class="card-header">@Localizer["CardHeader", SharedLocalizer["ApplicationName"]]</div>
     <div class="card-body">
         @if (Model.Error is not null)
         {
@@ -14,21 +20,20 @@
         <form method="post" data-no-dirty-check>
             <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
             <div style="margin-bottom:12px;">
-                <label for="username">Username</label>
+                <label for="username">@SharedLocalizer["Username"]</label>
                 <input type="text" id="username" name="username" value="@Model.Username" autofocus />
             </div>
             <div style="margin-bottom:16px;">
-                <label for="password">Password</label>
+                <label for="password">@SharedLocalizer["Password"]</label>
                 <input type="password" id="password" name="password" />
             </div>
             <div style="margin-bottom:16px;">
-                <label style="text-transform:none;"><input type="checkbox" id="rememberMe" name="rememberMe" value="true" style="width:auto;" /> Remember me on this device</label>
+                <label style="text-transform:none;"><input type="checkbox" id="rememberMe" name="rememberMe" value="true" style="width:auto;" /> @Localizer["RememberMe"]</label>
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%;">Sign in</button>
+            <button type="submit" class="btn btn-primary" style="width:100%;">@SharedLocalizer["SignIn"]</button>
         </form>
         <p class="muted" style="margin-top:14px;">
-            Development accounts: <code>admin</code> (administrator) and one account per
-            employee (4-digit employee code). See the README for initial passwords.
+            @Localizer["DevAccountsHint"]
         </p>
     </div>
 </div>

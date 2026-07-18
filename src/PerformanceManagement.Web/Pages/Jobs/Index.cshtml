@@ -5,6 +5,7 @@
 }
 <div class="page-header">Scheduled Jobs</div>
 
+<div class="table-scroll">
 <table class="grid">
     <thead>
         <tr><th>Job</th><th>Status</th><th>Next Run</th><th>Previous Run</th><th>Duration</th><th>Result</th><th></th></tr>
@@ -61,6 +62,7 @@
     }
     </tbody>
 </table>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.ViewLog))
 {
@@ -73,6 +75,7 @@
             }
             else
             {
+                <div class="table-scroll">
                 <table class="grid">
                     <thead><tr><th>Started</th><th>Completed</th><th>Status</th><th>Result / Error</th></tr></thead>
                     <tbody>
@@ -87,6 +90,7 @@
                     }
                     </tbody>
                 </table>
+                </div>
             }
         </div>
     </div>

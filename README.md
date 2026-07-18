@@ -133,12 +133,31 @@ employee or a department change (enforced server-side, not just by hiding the dr
 
 The admin-only **Reports** page (`ReportDataService` + `ReportExportService`) generates four
 report types, each exportable to PDF and Excel: Employee Performance Report, Department Summary,
-Manager Summary, and Overall Organization Summary. PDF rendering uses PdfSharp/MigraDoc (MIT,
-unrestricted — chosen over QuestPDF specifically to avoid its revenue-gated Community license,
-since this is a real production system) with a bundled font (`ReportFontResolver`,
-DejaVu Sans — Bitstream Vera licensed, see `Assets/Fonts/LICENSE.txt`) so PDFs render identically
-on any host OS, including Linux containers with no system font enumeration. Excel export uses
-ClosedXML (MIT).
+Manager Summary, and Overall Organization Summary.
+
+PDF rendering builds each report as HTML and prints it to PDF with headless Chromium
+(`PuppeteerSharp` + `PdfRenderer`), not a native PDF-drawing library. That's a deliberate choice,
+not the default option: an earlier PdfSharp/MigraDoc-based renderer worked fine for English but had
+no bidi (bidirectional text) or Arabic-shaping engine, so Arabic content came out with words in the
+wrong order and letters disconnected — not fixable by swapping fonts, since the problem is the lack
+of a real text-layout engine, not glyph coverage. Chromium already has one (the same engine that
+renders Arabic correctly on any website), so reports reuse that instead of reimplementing bidi/
+shaping. Fonts (`Fonts/NotoSans-latin.woff2`, `Fonts/NotoSansArabic-arabic.woff2` — SIL Open Font
+Licensed, see `Fonts/LICENSE.txt`) are bundled as plain files, copied to the output directory, and
+referenced by `PdfRenderer` via `file://` URL so PDFs render identically on any host OS without a
+network dependency. The shared browser instance is downloaded/launched once in the background at
+app startup (`PdfRenderer.WarmupAsync`) and reused per report — only a lightweight page is opened
+and closed per render. Excel export uses ClosedXML (MIT) and is unaffected by any of this, since
+Excel's own renderer already handles bidi/shaping correctly at open-time.
+
+**Deployment note:** headless Chromium (downloaded automatically by `PuppeteerSharp` on first run,
+cached under the app's data directory) needs a handful of shared libraries most minimal/slim Linux
+container images don't include out of the box — `libnss3`, `libatk-1.0-0`, `libatk-bridge2.0-0`,
+`libcups2`, `libxcomposite1`, `libxdamage1`, `libxrandr2`, `libgbm1`, `libpango-1.0-0`,
+`libasound2`. On Debian/Ubuntu-based images: `apt-get install -y libnss3 libatk-bridge2.0-0
+libcups2 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libasound2`. The container
+also needs outbound internet access on first run to download the Chromium revision (or it can be
+pre-downloaded into the image at build time by running the app once).
 
 ## Email
 

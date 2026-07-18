@@ -19,7 +19,7 @@
   --border-strong: #d6dbe5;
 
   --text:        #1b2333;
-  --text-muted:  #8a93a6;
+  --text-muted:  #6b7280; /* was #8a93a6 — ~3.1:1 against white, below WCAG AA's 4.5:1 for normal text */
   --text-label:  #5b6472;
 
   --radius-sm:   6px;
@@ -35,13 +35,36 @@
   --ease: cubic-bezier(.2,.7,.3,1);
 }
 
+/* Self-hosted so glyph coverage and metrics are identical everywhere the app runs (offline
+   enterprise networks included) rather than depending on whichever system fonts happen to be
+   installed — the previous stack (-apple-system/Segoe UI/Roboto/...) has no guaranteed Arabic
+   coverage at all, so switching to Arabic would silently fall through to whatever anonymous
+   fallback font the OS picks, with no control over weight or metrics. Both files are subset to
+   just the script they cover (~30KB each) so this adds negligible weight. */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/NotoSans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+@font-face {
+  font-family: 'Noto Sans Arabic';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/NotoSansArabic-arabic.woff2') format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
 * { box-sizing: border-box; }
 
 html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Noto Sans', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   color: var(--text);
@@ -52,25 +75,41 @@ body {
 
 .sidebar {
   width: 260px; background: linear-gradient(180deg, var(--navy) 0%, var(--navy-mid) 100%);
-  box-shadow: var(--shadow-md); position: fixed; left: 0; top: 56px; bottom: 0; z-index: 30;
+  box-shadow: var(--shadow-md); position: fixed; inset-inline-start: 0; top: 56px; bottom: 0; z-index: 30;
   overflow-y: auto; transition: transform .25s var(--ease), width .25s var(--ease);
   padding-top: 0;
 }
-.sidebar.collapsed { transform: translateX(-260px); }
+/* --sidebar-collapsed-x flips sign per direction (see [dir="rtl"] below) so the sidebar always
+   slides off toward its own edge instead of sliding under the (mirrored) main content. */
+:root { --sidebar-collapsed-x: -260px; }
+[dir="rtl"] { --sidebar-collapsed-x: 260px; }
+.sidebar.collapsed { transform: translateX(var(--sidebar-collapsed-x)); }
 .sidebar-nav { display: flex; flex-direction: column; gap: 0; padding: 12px 0; }
 .sidebar-link {
   display: block; color: rgba(255,255,255,.85); text-decoration: none; font-size: 13.5px;
   font-weight: 500; padding: 12px 16px; transition: background .15s var(--ease), color .15s var(--ease);
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
 }
-.sidebar-link:hover { background: rgba(255,255,255,.12); color: #fff; border-left-color: rgba(255,255,255,.4); }
+.sidebar-link:hover { background: rgba(255,255,255,.12); color: #fff; border-inline-start-color: rgba(255,255,255,.4); }
 .sidebar-divider { background: rgba(255,255,255,.15); border: none; height: 1px; margin: 8px 0; }
 
 .main-area {
-  flex: 1; display: flex; flex-direction: column; margin-left: 260px;
-  transition: margin-left .25s var(--ease);
+  /* min-width: 0 overrides the flex item default of min-width: auto, which otherwise refuses to
+     shrink main-area below its content's intrinsic width (e.g. a table with `white-space: nowrap`
+     headers) — without it, wide tables silently push main-area past the viewport instead of
+     scrolling inside their own .table-scroll wrapper, which is exactly what that wrapper exists
+     to prevent. Only visible at narrower viewports, where there's no longer spare width to absorb
+     the overflow invisibly. */
+  flex: 1; min-width: 0; display: flex; flex-direction: column; margin-inline-start: 260px;
+  transition: margin-inline-start .25s var(--ease);
 }
-.sidebar.collapsed ~ .main-area { margin-left: 0; }
+.sidebar.collapsed ~ .main-area { margin-inline-start: 0; }
+/* Anonymous pages (Login, …) render no <aside class="sidebar"> at all, so the sibling
+   selector above never matches — .layout-container carries this state explicitly instead of
+   relying on a sidebar DOM node being present to "cancel" the reserved margin. Without this,
+   .main-area keeps its 260px margin with nothing to justify it, and every centered element
+   inside renders visibly right-of-true-center (the reported Login page offset). */
+.layout-container.no-sidebar .main-area { margin-inline-start: 0; }
 
 .page { max-width: 1240px; margin: 0 auto; padding: 24px 24px 72px; width: 100%; }
 
@@ -102,6 +141,13 @@ body {
 
 .topnav-brand { font-weight: 700; font-size: 15.5px; letter-spacing: .1px; flex: 1; white-space: nowrap; }
 .topnav-user { display: flex; align-items: center; gap: 12px; font-size: 13px; color: rgba(255,255,255,.85); white-space: nowrap; }
+.lang-switch-inline { display: flex; gap: 2px; font-size: 12px; }
+.lang-switch-inline a {
+  color: rgba(255,255,255,.7); text-decoration: none; padding: 5px 10px; border-radius: var(--radius-sm);
+  font-weight: 600; transition: background .15s var(--ease), color .15s var(--ease);
+}
+.lang-switch-inline a:hover:not(.active) { background: rgba(255,255,255,.12); color: #fff; }
+.lang-switch-inline a.active { background: rgba(255,255,255,.18); color: #fff; }
 .inline-form { display: inline; }
 .btn-link {
   background: none; border: none; color: rgba(255,255,255,.85); text-decoration: none; cursor: pointer;
@@ -118,11 +164,11 @@ body {
 }
 .notif-bell:hover { background: rgba(255,255,255,.12); }
 .notif-badge {
-  position: absolute; top: 0; right: 0; background: var(--red); color: #fff; font-size: 10px;
+  position: absolute; top: 0; inset-inline-end: 0; background: var(--red); color: #fff; font-size: 10px;
   font-weight: 700; border-radius: 999px; padding: 1px 5px; line-height: 1.4; min-width: 16px;
 }
 .notif-dropdown {
-  display: none; position: absolute; right: 0; top: calc(100% + 8px); width: 340px; max-height: 420px;
+  display: none; position: absolute; inset-inline-end: 0; top: calc(100% + 8px); width: 340px; max-height: 420px;
   overflow-y: auto; background: #fff; color: var(--text); border: 1px solid var(--border);
   border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(15,23,42,.18); z-index: 50;
 }
@@ -163,7 +209,7 @@ body {
   font-size: 19px; font-weight: 700; letter-spacing: .1px;
   border-radius: var(--radius-lg); box-shadow: var(--shadow-md); position: relative;
 }
-.lang-switch { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 13px; }
+.lang-switch { position: absolute; inset-inline-end: 18px; top: 50%; transform: translateY(-50%); font-size: 13px; }
 .lang-switch a { color: rgba(255,255,255,.85); text-decoration: none; padding: 5px 12px; border-radius: var(--radius-sm); transition: background .15s var(--ease); }
 .lang-switch a.active { background: #fff; color: var(--navy-mid); font-weight: 700; }
 .lang-switch a:hover:not(.active) { background: rgba(255,255,255,.15); }
@@ -179,6 +225,7 @@ body {
   color: #fff; padding: 13px 20px; font-weight: 600; font-size: 13.5px; letter-spacing: .1px;
 }
 .card-header.green { background: linear-gradient(135deg, var(--green) 0%, var(--green-soft) 100%); }
+.page-header.danger { background: linear-gradient(135deg, #7f1d1d 0%, var(--red) 100%); }
 .card-body { padding: 22px; }
 
 /* ── Forms ─────────────────────────────────────────────────────────── */
@@ -202,6 +249,16 @@ textarea { min-height: 74px; resize: vertical; line-height: 1.5; }
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* Visually hidden until keyboard-focused — lets a keyboard/screen-reader user jump straight to
+   page content instead of tabbing through the full sidebar nav (12+ links) on every page. */
+.skip-link {
+  position: absolute; top: -40px; inset-inline-start: 8px; z-index: 1000;
+  background: var(--navy); color: #fff; padding: 10px 16px; border-radius: var(--radius-sm);
+  text-decoration: none; font-weight: 600; font-size: 13px; transition: top .15s var(--ease);
+}
+.skip-link:focus { top: 8px; }
+main:focus-visible { outline: none; }
+
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
@@ -220,7 +277,7 @@ textarea { min-height: 74px; resize: vertical; line-height: 1.5; }
 .emp-info-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; font-size: 13px; }
 .emp-info-row:last-child { margin-bottom: 0; }
 .emp-lbl { color: var(--text-label); font-weight: 600; white-space: nowrap; }
-.emp-val { font-weight: 600; text-align: right; color: var(--text); }
+.emp-val { font-weight: 600; text-align: end; color: var(--text); }
 .emp-val-accent { font-size: 19px; font-weight: 800; color: var(--navy-mid); letter-spacing: -.2px; }
 .badge-refno {
   display: inline-block; background: var(--navy-mid); color: #fff; font-size: 11.5px; font-weight: 700;
@@ -248,14 +305,24 @@ textarea { min-height: 74px; resize: vertical; line-height: 1.5; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ── Tables ────────────────────────────────────────────────────────── */
+/* table.grid previously set `display: block` directly (paired with overflow-x: auto) to get
+   horizontal scrolling on wide tables. That broke the browser's table layout algorithm — a
+   block-level table with block-level rows no longer has a table layout context to size cells
+   against, so narrow tables (few columns) collapsed to their content width instead of filling
+   the card, while wide tables merely looked fine because their content already exceeded the
+   container. `overflow` also isn't reliably honored directly on a `display: table` element in
+   the first place (it applies to block/flex/grid containers, not the table box itself) — so
+   the correct fix is a dedicated block-level scroll wrapper, `.table-scroll`, around every
+   `<table class="grid">`, while the table itself keeps its default `display: table` so column
+   widths are distributed correctly regardless of column count. */
+.table-scroll { overflow-x: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
 table.grid {
-  width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius-md);
-  overflow: hidden; box-shadow: var(--shadow-sm); display: block; overflow-x: auto;
+  width: 100%; border-collapse: collapse; background: #fff;
 }
-table.grid thead, table.grid tbody, table.grid tr { width: 100%; }
+.table-scroll table.grid { box-shadow: none; }
 table.grid th {
   background: var(--navy-mid); color: #fff; font-size: 10.5px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: .5px; padding: 11px 12px; text-align: left;
+  text-transform: uppercase; letter-spacing: .5px; padding: 11px 12px; text-align: start;
   white-space: nowrap;
 }
 table.grid td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: top; }
@@ -282,8 +349,8 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 .summary-card.blue  { background: linear-gradient(135deg, var(--accent), #4d7de8); }
 
 .perf-metrics { display: grid; grid-template-columns: repeat(4, 1fr); }
-.perf-metric { padding: 20px 16px; text-align: center; border-right: 1px solid var(--border); }
-.perf-metric:last-child { border-right: none; }
+.perf-metric { padding: 20px 16px; text-align: center; border-inline-end: 1px solid var(--border); }
+.perf-metric:last-child { border-inline-end: none; }
 .perf-metric .label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); margin-bottom: 7px; }
 .perf-metric .value { font-size: 23px; font-weight: 800; color: var(--navy-mid); letter-spacing: -.2px; }
 
@@ -298,28 +365,28 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 
 /* ── Toast notifications ──────────────────────────────────────────── */
 .toast-stack {
-  position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+  position: fixed; bottom: 20px; inset-inline-end: 20px; z-index: 1000;
   display: flex; flex-direction: column; gap: 10px; max-width: 360px;
 }
 .toast {
   background: #fff; border-radius: var(--radius-md); padding: 13px 16px; font-size: 13.5px;
-  box-shadow: 0 10px 30px rgba(15,23,42,.18); border-left: 4px solid var(--green-soft);
+  box-shadow: 0 10px 30px rgba(15,23,42,.18); border-inline-start: 4px solid var(--green-soft);
   display: flex; align-items: flex-start; gap: 10px;
   animation: toast-in .25s var(--ease);
 }
-.toast.error { border-left-color: var(--red); }
+.toast.error { border-inline-start-color: var(--red); }
 .toast.leaving { animation: toast-out .2s var(--ease) forwards; }
 .toast-icon { font-size: 15px; line-height: 1.3; }
 .toast-text { flex: 1; color: var(--text); line-height: 1.4; }
 .toast-close {
   background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px;
-  line-height: 1; padding: 0 0 0 6px;
+  line-height: 1; padding-inline-start: 6px;
 }
 .toast-close:hover { color: var(--text); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(10px); } }
 
-.lock-notice { background: #fffaeb; border: 1px solid #fbdd94; border-left: 4px solid var(--amber-soft); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 18px; }
+.lock-notice { background: #fffaeb; border: 1px solid #fbdd94; border-inline-start: 4px solid var(--amber-soft); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 18px; }
 .lock-timeline { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; font-size: 12px; font-weight: 600; }
 .lock-step { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
 .lock-step.done { color: var(--green); }
@@ -354,7 +421,6 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 }
 .muted { color: var(--text-muted); font-size: 12.5px; }
 .login-box { max-width: 400px; margin: 72px auto; }
-[dir="rtl"] .emp-val { text-align: left; }
 
 /* ── Responsive ────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
@@ -362,11 +428,18 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
   .grid-2, .grid-3, .grid-4, .emp-info-grid { grid-template-columns: 1fr; }
   .filters, .filters-6 { grid-template-columns: 1fr; }
   .perf-metrics { grid-template-columns: 1fr 1fr; }
-  .perf-metric { border-right: none; border-bottom: 1px solid var(--border); }
-  .topnav { height: auto; padding: 10px 16px; }
+  .perf-metric { border-inline-end: none; border-bottom: 1px solid var(--border); }
+  /* Same flex-item-won't-shrink-below-content issue as .main-area (see its comment) — the
+     brand text and the lang-switch/bell/user/sign-out cluster both refuse to shrink below their
+     nowrap intrinsic width by default, so together they overflow the topnav well before the
+     viewport is actually mobile-narrow. Wrapping to a second row here reads better than either
+     truncating the app name or letting the row scroll sideways. */
+  .topnav { height: auto; padding: 10px 16px; flex-wrap: wrap; row-gap: 8px; }
+  .topnav-brand { flex: 1 1 auto; min-width: 0; }
+  .topnav-user { flex-wrap: wrap; white-space: normal; }
   .topnav-links { gap: 0; }
   .sidebar { width: 240px; }
-  .main-area { margin-left: 240px; }
+  .main-area { margin-inline-start: 240px; }
 }
 
 @media (max-width: 640px) {
@@ -374,8 +447,8 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
     width: 70vw; max-width: 260px;
     box-shadow: 2px 0 8px rgba(0,0,0,.2);
   }
-  .main-area { margin-left: 0; }
-  .sidebar:not(.collapsed) { position: fixed; left: 0; top: 56px; bottom: 0; z-index: 50; }
+  .main-area { margin-inline-start: 0; }
+  .sidebar:not(.collapsed) { position: fixed; inset-inline-start: 0; top: 56px; bottom: 0; z-index: 50; }
   
   .topnav { padding: 0 12px; }
   .topnav-brand { font-size: 14px; }

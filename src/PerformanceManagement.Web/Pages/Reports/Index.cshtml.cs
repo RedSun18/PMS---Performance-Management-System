@@ -42,7 +42,7 @@ public class IndexModel : AppPageModel
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync($"Employee Performance Report — {empcd} ({year})");
-        return PdfFile(ReportExportService.EmployeeReportToPdf(report), $"EmployeePerformanceReport_{empcd}_{year}");
+        return PdfFile(await ReportExportService.EmployeeReportToPdfAsync(report), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
     public async Task<IActionResult> OnGetEmployeeExcelAsync(string? empcd, int year)
@@ -59,7 +59,7 @@ public class IndexModel : AppPageModel
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync($"Department Summary — {dept} ({year})");
-        return PdfFile(ReportExportService.DepartmentReportToPdf(report), $"DepartmentSummary_{dept}_{year}");
+        return PdfFile(await ReportExportService.DepartmentReportToPdfAsync(report), $"DepartmentSummary_{dept}_{year}");
     }
 
     public async Task<IActionResult> OnGetDepartmentExcelAsync(string? dept, int year)
@@ -76,7 +76,7 @@ public class IndexModel : AppPageModel
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync($"Manager Summary — {manager} ({year})");
-        return PdfFile(ReportExportService.ManagerReportToPdf(report), $"ManagerSummary_{manager}_{year}");
+        return PdfFile(await ReportExportService.ManagerReportToPdfAsync(report), $"ManagerSummary_{manager}_{year}");
     }
 
     public async Task<IActionResult> OnGetManagerExcelAsync(string? manager, int year)
@@ -92,7 +92,7 @@ public class IndexModel : AppPageModel
     {
         var report = await _reports.GetOverallReportAsync(year);
         await NotifyReportGeneratedAsync($"Overall Organization Summary ({year})");
-        return PdfFile(ReportExportService.OverallReportToPdf(report), $"OverallOrganizationSummary_{year}");
+        return PdfFile(await ReportExportService.OverallReportToPdfAsync(report), $"OverallOrganizationSummary_{year}");
     }
 
     public async Task<IActionResult> OnGetOverallExcelAsync(int year)

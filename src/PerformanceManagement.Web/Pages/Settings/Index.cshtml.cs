@@ -22,7 +22,21 @@ public class IndexModel : AppPageModel
     private readonly IWebHostEnvironment _env;
     public IndexModel(SettingsService settings, IWebHostEnvironment env) { _settings = settings; _env = env; }
 
-    [BindProperty(SupportsGet = true)] public string Tab { get; set; } = "general";
+    private static readonly string[] KnownTabs = { "general", "review", "email", "auth", "security", "dashboard", "branding" };
+    private string _tab = "general";
+
+    // Normalizes case and falls back to "general" for anything unrecognized (a stale bookmark,
+    // a hand-typed URL, a differently-cased link) — the view's tab conditionals have no final
+    // else branch, so an unmatched value previously rendered a blank content area with only the
+    // tab bar showing, silently, with nothing telling the user what went wrong.
+    [BindProperty(SupportsGet = true)]
+    public string Tab
+    {
+        get => _tab;
+        set => _tab = value is not null && KnownTabs.Contains(value.Trim().ToLowerInvariant())
+            ? value.Trim().ToLowerInvariant()
+            : "general";
+    }
 
     [BindProperty] public GeneralForm General { get; set; } = new();
     [BindProperty] public ReviewForm Review { get; set; } = new();

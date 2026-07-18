@@ -100,6 +100,7 @@
         </div>
     </form>
 
+    <div class="table-scroll">
     <table class="grid">
         <thead><tr><th>Code</th><th>Name</th><th>Perspective</th><th>Departments</th><th>Weight Range</th><th>Status</th><th>Modified</th><th></th></tr></thead>
         <tbody>
@@ -122,6 +123,7 @@
         }
         </tbody>
     </table>
+    </div>
     <p class="muted">@Model.Kpis.Count KPIs.</p>
 }
 else if (Model.Tab == "comp")
@@ -194,6 +196,7 @@ else if (Model.Tab == "comp")
         </div>
     </form>
 
+    <div class="table-scroll">
     <table class="grid">
         <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Description</th><th>Weight Range</th><th>Status</th><th></th></tr></thead>
         <tbody>
@@ -215,6 +218,7 @@ else if (Model.Tab == "comp")
         }
         </tbody>
     </table>
+    </div>
     <p class="muted">@Model.Comps.Count competencies.</p>
 }
 else if (Model.Tab == "dept")
@@ -263,6 +267,7 @@ else if (Model.Tab == "dept")
         </div>
     </form>
 
+    <div class="table-scroll">
     <table class="grid">
         <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead>
         <tbody>
@@ -296,6 +301,7 @@ else if (Model.Tab == "dept")
         }
         </tbody>
     </table>
+    </div>
     <p class="muted">@Model.DeptRows.Count departments. Departments are never deleted — disable them instead to preserve history for existing employees.</p>
 }
 else
@@ -303,6 +309,7 @@ else
     <div class="card">
         <div class="card-header">Job Families (grade → KPI/Competency weight split)</div>
         <div class="card-body">
+            <div class="table-scroll">
             <table class="grid">
                 <thead><tr><th>Code</th><th>Name</th><th>Grades</th><th>KPI Weight %</th><th>Competency Weight %</th><th></th></tr></thead>
                 <tbody>
@@ -321,12 +328,14 @@ else
                 }
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
     <div class="card">
         <div class="card-header">Rating Scales (performance score → rating)</div>
         <div class="card-body">
+            <div class="table-scroll">
             <table class="grid">
                 <thead><tr><th>Code</th><th>Rating (EN)</th><th>Rating (AR)</th><th>Score Range</th><th>Remarks</th></tr></thead>
                 <tbody>
@@ -342,6 +351,7 @@ else
                 }
                 </tbody>
             </table>
+            </div>
             <p class="muted">Rating bands are reference data imported from the legacy system; edit via the importer or database if HR policy changes.</p>
         </div>
     </div>

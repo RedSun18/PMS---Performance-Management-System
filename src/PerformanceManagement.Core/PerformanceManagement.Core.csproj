@@ -20,14 +20,16 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.11" />
-    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <PackageReference Include="PuppeteerSharp" Version="20.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Bundled so PDF report generation works headlessly on any host OS (Linux containers
-         have no GDI/system font enumeration) — see ReportFontResolver. DejaVu Sans is
-         Bitstream Vera licensed; freely redistributable — see Assets/Fonts/LICENSE.txt. -->
-    <EmbeddedResource Include="Assets\Fonts\*.ttf" />
+    <!-- Bundled (not embedded resources) so PdfRenderer can hand Chromium plain file:// URLs —
+         see PdfRenderer. Noto Sans / Noto Sans Arabic are SIL Open Font Licensed; freely
+         redistributable — see Fonts/LICENSE.txt. Also copied into the Web project's wwwroot for
+         on-screen use (site.css); this copy is the one the headless-Chromium PDF pipeline reads. -->
+    <None Include="Fonts\*.woff2" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fonts\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

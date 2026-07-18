@@ -105,6 +105,7 @@ else if (Model.DashboardKind == "manager")
         <div class="card" style="margin-bottom:20px;">
             <div class="card-header">@deptGroup.Key — @Model.EvalYear (@deptGroup.Count())</div>
             <div class="card-body" style="padding:0;">
+                <div class="table-scroll">
                 <table class="grid">
                     <thead><tr><th>Employee</th><th>Status</th><th></th></tr></thead>
                     <tbody>
@@ -127,6 +128,7 @@ else if (Model.DashboardKind == "manager")
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     }
@@ -185,6 +187,7 @@ else
             }
             else
             {
+                <div class="table-scroll">
                 <table class="grid">
                     <thead>
                         <tr>
@@ -221,6 +224,7 @@ else
                         }
                     </tbody>
                 </table>
+                </div>
             }
         </div>
     </div>

@@ -1,16 +1,30 @@
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.Extensions.Localization
 @inject SettingsService Settings
 @inject NotificationService Notifications
+@inject IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
     var branding = await Settings.GetBrandingSettingsAsync();
     var general = await Settings.GetGeneralSettingsAsync();
     var appName = string.IsNullOrWhiteSpace(general.ApplicationName) ? "Performance Management System" : general.ApplicationName;
 
+    // Global Language Selector (Phase 10 Part 8) — current UI culture drives both which link
+    // is highlighted and the page's text direction (Part 9: RTL support).
+    var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    var isRtl = currentCulture == "ar";
+    var currentPath = Context.Request.Path + Context.Request.QueryString;
+
+    // Single source of truth for "is the sidebar/topnav chrome shown" — every layout region
+    // (sidebar presence, .main-area's reserved margin, notification bell) reads this one flag
+    // instead of repeating the User.Identity check, so they can never drift out of sync.
+    var hasSidebar = User.Identity?.IsAuthenticated == true;
+
     var unreadCount = 0;
     var recentNotifications = new List<Notification>();
-    if (User.Identity?.IsAuthenticated == true)
+    if (hasSidebar)
     {
-        unreadCount = await Notifications.UnreadCountAsync(User.Identity.Name ?? "");
-        recentNotifications = await Notifications.GetRecentAsync(User.Identity.Name ?? "");
+        unreadCount = await Notifications.UnreadCountAsync(User.Identity!.Name ?? "");
+        recentNotifications = await Notifications.GetRecentAsync(User.Identity!.Name ?? "");
     }
 
     // Standard flash-message keys used by [TempData] Message/ErrorMessage properties across
@@ -20,7 +34,7 @@
     var toastError = TempData["ErrorMessage"] as string;
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@currentCulture" dir="@(isRtl ? "rtl" : "ltr")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,12 +57,13 @@
     }
 </head>
 <body>
-    <div class="layout-container">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <div class="layout-container @(hasSidebar ? "" : "no-sidebar")">
         <!-- Sidebar -->
-        @if (User.Identity?.IsAuthenticated == true)
+        @if (hasSidebar)
         {
             <aside class="sidebar" id="sidebar">
-                <nav class="sidebar-nav">
+                <nav class="sidebar-nav" aria-label="Main navigation">
                     <a asp-page="/Dashboard/Index" class="sidebar-link">🏠 Dashboard</a>
                     <a asp-page="/PmForm/Index" class="sidebar-link">📋 PM Form</a>
                     @if ((bool?)ViewData["IsHrAdmin"] == true || (bool?)ViewData["IsViewer"] == true)
@@ -75,7 +90,7 @@
         <!-- Main content area -->
         <div class="main-area">
             <header class="topnav">
-                @if (User.Identity?.IsAuthenticated == true)
+                @if (hasSidebar)
                 {
                     <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
                         <span></span>
@@ -91,17 +106,21 @@
                     @appName
                 </a>
                 <div class="topnav-user">
-                    @if (User.Identity?.IsAuthenticated == true)
+                    <div class="lang-switch-inline">
+                        <a href="/Culture/SetLanguage?culture=en&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "" : "active")">EN</a>
+                        <a href="/Culture/SetLanguage?culture=ar&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "active" : "")">عربي</a>
+                    </div>
+                    @if (hasSidebar)
                     {
                         <div class="notif-bell-wrap">
-                            <button type="button" class="notif-bell" id="notifBellBtn" aria-label="Notifications">
+                            <button type="button" class="notif-bell" id="notifBellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
                                 🔔
                                 @if (unreadCount > 0)
                                 {
                                     <span class="notif-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
                                 }
                             </button>
-                            <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-dropdown" id="notifDropdown" role="region" aria-label="Notifications">
                                 <div class="notif-dropdown-header">
                                     <strong>Notifications</strong>
                                     <form method="post" asp-page="/Notifications/Index" asp-page-handler="MarkAllRead" class="inline-form">
@@ -129,9 +148,9 @@
                                 <a href="/Notifications/Index" class="notif-dropdown-footer">View all</a>
                             </div>
                         </div>
-                        <span>@User.FindFirst("DisplayName")?.Value (@User.Identity.Name)</span>
+                        <span>@User.FindFirst("DisplayName")?.Value (@User.Identity?.Name)</span>
                         <form method="post" asp-page="/Account/Logout" class="inline-form">
-                            <button type="submit" class="btn btn-link">Sign out</button>
+                            <button type="submit" class="btn btn-link">@SharedLocalizer["SignOut"]</button>
                         </form>
                     }
                 </div>
@@ -147,7 +166,7 @@
                     </form>
                 </div>
             }
-            <main class="page">
+            <main class="page" id="main-content" tabindex="-1">
                 @RenderBody()
             </main>
             @if (!string.IsNullOrWhiteSpace(branding.FooterText))
@@ -157,7 +176,7 @@
         </div>
     </div>
 
-    <div class="toast-stack" id="toastStack"></div>
+    <div class="toast-stack" id="toastStack" role="status" aria-live="polite"></div>
 
     <script>
         function showToast(text, type) {
@@ -198,13 +217,23 @@
 
         document.getElementById('notifBellBtn')?.addEventListener('click', function(e) {
             e.stopPropagation();
-            document.getElementById('notifDropdown')?.classList.toggle('open');
+            var open = document.getElementById('notifDropdown')?.classList.toggle('open');
+            this.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
         document.addEventListener('click', function(e) {
             var dropdown = document.getElementById('notifDropdown');
             var btn = document.getElementById('notifBellBtn');
             if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target) && e.target !== btn) {
                 dropdown.classList.remove('open');
+                btn?.setAttribute('aria-expanded', 'false');
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Escape') return;
+            var dropdown = document.getElementById('notifDropdown');
+            if (dropdown?.classList.contains('open')) {
+                dropdown.classList.remove('open');
+                document.getElementById('notifBellBtn')?.setAttribute('aria-expanded', 'false');
             }
         });
 

@@ -59,6 +59,9 @@ namespace PerformanceManagement.Core.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PreferredCulture")
+                        .HasColumnType("text");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1042,6 +1045,9 @@ namespace PerformanceManagement.Core.Data.Migrations
                     b.Property<bool>("EnableEmailNotifications")
                         .HasColumnType("boolean");
 
+                    b.Property<DateOnly?>("EndYearAchievementStartDate")
+                        .HasColumnType("date");
+
                     b.Property<DateOnly?>("EndYearEnd")
                         .HasColumnType("date");
 
@@ -1051,6 +1057,9 @@ namespace PerformanceManagement.Core.Data.Migrations
                     b.Property<string>("FooterText")
                         .HasColumnType("text");
 
+                    b.Property<bool>("LanguageSelectionEnabled")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LoginAsVerificationPasswordProtected")
                         .HasColumnType("text");
 
@@ -1058,6 +1067,9 @@ namespace PerformanceManagement.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(5);
+
+                    b.Property<DateOnly?>("MidYearAchievementStartDate")
+                        .HasColumnType("date");
 
                     b.Property<DateOnly?>("MidYearEnd")
                         .HasColumnType("date");
@@ -1112,6 +1124,9 @@ namespace PerformanceManagement.Core.Data.Migrations
 
                     b.Property<string>("SmtpUsername")
                         .HasColumnType("text");
+
+                    b.Property<DateOnly?>("SubmitToHrStartDate")
+                        .HasColumnType("date");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");

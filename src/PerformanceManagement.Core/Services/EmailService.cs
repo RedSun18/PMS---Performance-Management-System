@@ -1,7 +1,9 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
+using PerformanceManagement.Core.Resources;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Net;
 using System.Net.Mail;
 
@@ -177,6 +179,8 @@ public class EmailService
 /// </summary>
 public static class EmailTemplates
 {
+    private const string AppName = "Performance Management System";
+
     /// <summary>Progressive-enhancement hover state for the action button — ignored gracefully
     /// by email clients that strip &lt;style&gt; blocks, applied by those that don't (kept out of
     /// the interpolated template body so its literal braces don't need raw-string escaping).</summary>
@@ -190,48 +194,64 @@ public static class EmailTemplates
     /// (2007–2019, Windows) uses Word's rendering engine and ignores `max-width` on a div
     /// entirely, rendering it full-width instead; the wrapping table forces the same constrained
     /// width there too. 600px (not 640px) is the conventional safe email width that comfortably
-    /// clears Gmail's and Outlook's own chrome without triggering their horizontal scrollbars.</summary>
-    private static string Wrap(string appHeading, string title, string inner, DateTime sentAt) => $"""
-        <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta name="color-scheme" content="light dark" />
-          <meta name="supported-color-schemes" content="light dark" />
-          <style>
-            {ButtonHoverStyle}
-            {ResponsiveStyle}
-          </style>
-        </head>
-        <body style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;">
-          <tr><td align="center" style="padding:24px 16px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="pms-container" style="width:600px;max-width:600px;">
-          <tr><td>
-          <div style="background-color:#0f2b5c;background:linear-gradient(135deg,#0f2b5c 0%,#1e3a8a 100%);border-radius:12px 12px 0 0;padding:20px 28px;">
-            <div style="color:#fff;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;">{appHeading}</div>
-            <div style="color:#fff;font-size:20px;font-weight:700;margin-top:4px;">{title}</div>
-          </div>
-          <div class="pms-card" style="background:#ffffff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px;padding:28px;box-shadow:0 1px 3px rgba(15,23,42,.07);color:#333;font-size:14px;line-height:1.6;">
-            {inner}
-          </div>
-          <div style="text-align:center;padding:18px 8px 0;color:#8a93a6;font-size:11px;">
-            Sent {sentAt:dddd, dd MMMM yyyy} at {sentAt:HH:mm} &middot; This is an automated message, please do not reply.<br/>
-            For assistance, contact the HR Department.
-          </div>
-          </td></tr>
-        </table>
-          </td></tr>
-        </table>
-        </body></html>
-        """;
-
-    private static string InfoTable(params (string Label, string Value)[] rows)
+    /// clears Gmail's and Outlook's own chrome without triggering their horizontal scrollbars.
+    ///
+    /// `dir`/`lang` on &lt;html&gt; drive bidi reordering and default text-align (cells below rely
+    /// on the UA default of `text-align: start`, never a hardcoded `left`, so they flip correctly
+    /// for Arabic without any extra CSS). The font stack includes Tahoma — one of the few fonts
+    /// with reliable Arabic glyph coverage baked into virtually every OS/email client, unlike the
+    /// self-hosted Noto Sans Arabic used on-screen (email clients routinely strip @font-face).</summary>
+    private static string Wrap(string appHeading, string title, string inner, DateTime sentAt, CultureInfo culture)
     {
+        var isRtl = culture.TwoLetterISOLanguageName == "ar";
+        var dir = isRtl ? "rtl" : "ltr";
+        var footer = string.Format(EmailResource.Get("FooterSentOn", culture),
+            sentAt.ToString("dddd, dd MMMM yyyy", culture), sentAt.ToString("HH:mm", culture));
+        return $"""
+            <html dir="{dir}" lang="{culture.TwoLetterISOLanguageName}">
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <meta name="color-scheme" content="light dark" />
+              <meta name="supported-color-schemes" content="light dark" />
+              <style>
+                {ButtonHoverStyle}
+                {ResponsiveStyle}
+              </style>
+            </head>
+            <body dir="{dir}" style="margin:0;padding:0;background:#eef1f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Tahoma,Roboto,Helvetica,Arial,sans-serif;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f6;">
+              <tr><td align="center" style="padding:24px 16px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="pms-container" style="width:600px;max-width:600px;">
+              <tr><td>
+              <div style="background-color:#0f2b5c;background:linear-gradient(135deg,#0f2b5c 0%,#1e3a8a 100%);border-radius:12px 12px 0 0;padding:20px 28px;">
+                <div style="color:#fff;font-size:13px;letter-spacing:.06em;text-transform:uppercase;opacity:.75;">{appHeading}</div>
+                <div style="color:#fff;font-size:20px;font-weight:700;margin-top:4px;">{title}</div>
+              </div>
+              <div class="pms-card" style="background:#ffffff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px;padding:28px;box-shadow:0 1px 3px rgba(15,23,42,.07);color:#333;font-size:14px;line-height:1.6;">
+                {inner}
+              </div>
+              <div style="text-align:center;padding:18px 8px 0;color:#8a93a6;font-size:11px;">
+                {footer}<br/>
+                {EmailResource.Get("FooterContactHr", culture)}
+              </div>
+              </td></tr>
+            </table>
+              </td></tr>
+            </table>
+            </body></html>
+            """;
+    }
+
+    private static string InfoTable(CultureInfo culture, params (string Label, string Value)[] rows)
+    {
+        _ = culture; // rows already carry pre-localized label/value text; kept for call-site symmetry
         // Every text-bearing cell sets its own `color` explicitly rather than inheriting from
         // the surrounding card — some clients/browsers apply an automatic dark-mode heuristic
         // once <meta name="color-scheme"> opts a page in (see Wrap), turning any *unstyled* text
         // white while explicit backgrounds stay as authored; the result is invisible white-on-
         // white text. Explicit color on every cell sidesteps that regardless of client behavior.
+        // No hardcoded text-align — cells inherit the UA default of `text-align: start`, which
+        // flips correctly for RTL along with the rest of the document.
         var trs = string.Join("", rows.Select(r =>
             $"<tr><td style='padding:8px;border-bottom:1px solid #e0e0e0;font-weight:bold;width:38%;color:#666666;word-break:break-word;'>{r.Label}</td>" +
             $"<td style='padding:8px;border-bottom:1px solid #e0e0e0;width:62%;color:#333333;word-break:break-word;'>{r.Value}</td></tr>"));
@@ -253,108 +273,136 @@ public static class EmailTemplates
         """;
 
     public static (string Subject, string Body) AcknowledgementRequest(
-        PmForm f, string managerName, string actionUrl, DateTime sentAt) =>
-        ($"ACTION REQUIRED: Review Your Performance Objectives | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Objectives Ready for Review",
-              $"<p>Dear <strong>{f.EmpNameSnapshot}</strong>,</p>" +
-              "<p>Your manager has set your performance objectives. Please review and acknowledge them within 7 days.</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "Review and acknowledge your objectives"),
-                        ("Previous Action By", $"{managerName} (Manager)"),
-                        ("Next Action Required By", $"{f.EmpNameSnapshot} (You)"),
-                        ("KPIs Set", f.Kpis.Count.ToString()), ("Competencies", f.Competencies.Count.ToString())) +
-              ActionButton(actionUrl, "View Performance Form"), sentAt));
+        PmForm f, string managerName, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("AckReqSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("AckReqTitle"),
+              $"<p>{G("DearName", f.EmpNameSnapshot)}</p>" +
+              $"<p>{G("AckReqIntro")}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("AckReqRequiredAction")),
+                        (G("PreviousActionBy"), G("RoleManager", managerName)),
+                        (G("NextActionRequiredBy"), G("RoleYou", f.EmpNameSnapshot)),
+                        (G("KpisSet"), f.Kpis.Count.ToString()), (G("Competencies"), f.Competencies.Count.ToString())) +
+              ActionButton(actionUrl, G("ViewPerformanceForm")), sentAt, c));
+    }
 
     public static (string Subject, string Body) EmployeeAcknowledged(
-        PmForm f, string managerName, string actionUrl, DateTime sentAt) =>
-        ($"Employee Acknowledged Objectives: {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Employee Submitted Performance Review",
-              $"<p>Dear <strong>{managerName}</strong>,</p>" +
-              $"<p>{f.EmpNameSnapshot} has acknowledged their objectives for {f.EvalYear}.</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "Review the acknowledged objectives; achievement scoring opens 1 December"),
-                        ("Previous Action By", $"{f.EmpNameSnapshot} (Employee)"),
-                        ("Next Action Required By", $"{managerName} (You, Manager)"),
-                        ("Acknowledged On", f.EmpAckDate?.ToString("dd/MM/yyyy") ?? "")) +
+        PmForm f, string managerName, string actionUrl, DateTime sentAt, DateOnly achievementOpenDate, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("EmpAckSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("EmpAckTitle"),
+              $"<p>{G("DearName", managerName)}</p>" +
+              $"<p>{G("EmpAckIntro", f.EmpNameSnapshot, f.EvalYear)}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("EmpAckRequiredAction", achievementOpenDate.ToDateTime(TimeOnly.MinValue).ToString("dd MMMM yyyy", c))),
+                        (G("PreviousActionBy"), G("RoleEmployee", f.EmpNameSnapshot)),
+                        (G("NextActionRequiredBy"), G("RoleYouManager", managerName)),
+                        (G("AcknowledgedOn"), f.EmpAckDate?.ToString("dd/MM/yyyy") ?? "")) +
               (string.IsNullOrWhiteSpace(f.EmpAckComments) ? "" :
-               $"<p><strong>Employee comments:</strong> {f.EmpAckComments}</p>") +
-              ActionButton(actionUrl, "Review Employee Submission"), sentAt));
+               $"<p><strong>{G("EmployeeComments")}</strong> {f.EmpAckComments}</p>") +
+              ActionButton(actionUrl, G("ReviewEmployeeSubmission")), sentAt, c));
+    }
 
     public static (string Subject, string Body) SubmittedToHr(
-        PmForm f, string managerName, string rating, string actionUrl, DateTime sentAt) =>
-        ($"PM Form Ready for HR Review | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Review Ready for HR",
-              "<p>Dear HR Team,</p><p>A Performance Management form has been completed by the manager and is ready for your review:</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "Complete first HR review"),
-                        ("Previous Action By", $"{managerName} (Manager)"),
-                        ("Next Action Required By", "HR Reviewer 1"),
-                        ("KPI Score", f.KpiScore.ToString("F2")), ("Competency Score", f.CompScore.ToString("F2")),
-                        ("Overall Score", f.PerformanceScore.ToString("F2")), ("Rating", rating)) +
-              ActionButton(actionUrl, "Open HR Review"), sentAt));
+        PmForm f, string managerName, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("SubToHrSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("SubToHrTitle"),
+              $"<p>{G("DearHrTeam")}</p><p>{G("SubToHrIntro")}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("SubToHrRequiredAction")),
+                        (G("PreviousActionBy"), G("RoleManager", managerName)),
+                        (G("NextActionRequiredBy"), G("HrReviewer1Plain")),
+                        (G("KpiScore"), f.KpiScore.ToString("F2")), (G("CompetencyScore"), f.CompScore.ToString("F2")),
+                        (G("OverallScore"), f.PerformanceScore.ToString("F2")), (G("Rating"), rating)) +
+              ActionButton(actionUrl, G("OpenHrReview")), sentAt, c));
+    }
 
-    public static (string Subject, string Body) Hr1Approved(PmForm f, string actionUrl, DateTime sentAt) =>
-        ($"PM Form - Ready for Final HR Review (HR Rep 2) | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Final HR Review Required",
-              "<p>Dear HR Team,</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "Complete final HR review and approval"),
-                        ("Previous Action By", $"{f.Hr1ReviewerName} (HR Reviewer 1)"),
-                        ("Next Action Required By", "HR Reviewer 2 (Final Approval)")) +
-              (string.IsNullOrWhiteSpace(f.Hr1Remarks) ? "" : $"<p><strong>HR remarks:</strong> {f.Hr1Remarks}</p>") +
-              ActionButton(actionUrl, "Open HR Review"), sentAt));
+    public static (string Subject, string Body) Hr1Approved(PmForm f, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("Hr1ApprovedSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("Hr1ApprovedTitle"),
+              $"<p>{G("DearHrTeam")}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("Hr1ApprovedRequiredAction")),
+                        (G("PreviousActionBy"), G("RoleHrReviewer1", f.Hr1ReviewerName)),
+                        (G("NextActionRequiredBy"), G("HrReviewer2FinalPlain"))) +
+              (string.IsNullOrWhiteSpace(f.Hr1Remarks) ? "" : $"<p><strong>{G("HrRemarks")}</strong> {f.Hr1Remarks}</p>") +
+              ActionButton(actionUrl, G("OpenHrReview")), sentAt, c));
+    }
 
     public static (string Subject, string Body) FinalApproved(
-        PmForm f, string rating, string actionUrl, DateTime sentAt) =>
-        ($"PM Form - APPROVED (Final) | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Review Finalized",
-              "<p>Dear Team,</p><p>This Performance Management form is now finalized and archived.</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "None — this review is complete"),
-                        ("Previous Action By", $"{f.Hr2ReviewerName} (HR Reviewer 2)"),
-                        ("Next Action Required By", "None"),
-                        ("Reviewed By", f.Hr1ReviewerName ?? ""), ("Approved By", f.Hr2ReviewerName ?? ""),
-                        ("Score", f.PerformanceScore.ToString("F2")), ("Rating", rating)) +
-              (string.IsNullOrWhiteSpace(f.Hr2Remarks) ? "" : $"<p><strong>HR remarks:</strong> {f.Hr2Remarks}</p>") +
-              ActionButton(actionUrl, "View Final Performance Review"), sentAt));
+        PmForm f, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("FinalApprovedSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("FinalApprovedTitle"),
+              $"<p>{G("DearTeam")}</p><p>{G("FinalApprovedIntro")}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("FinalApprovedRequiredAction")),
+                        (G("PreviousActionBy"), G("RoleHrReviewer2", f.Hr2ReviewerName)),
+                        (G("NextActionRequiredBy"), G("NonePlain")),
+                        (G("ReviewedBy"), f.Hr1ReviewerName ?? ""), (G("ApprovedBy"), f.Hr2ReviewerName ?? ""),
+                        (G("Score"), f.PerformanceScore.ToString("F2")), (G("Rating"), rating)) +
+              (string.IsNullOrWhiteSpace(f.Hr2Remarks) ? "" : $"<p><strong>{G("HrRemarks")}</strong> {f.Hr2Remarks}</p>") +
+              ActionButton(actionUrl, G("ViewFinalPerformanceReview")), sentAt, c));
+    }
 
     public static (string Subject, string Body) Reverted(
-        PmForm f, string managerName, string hrComments, string actionUrl, DateTime sentAt) =>
-        ($"PM Form Requires Revision | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Performance Form Requires Revision",
-              $"<p>Dear <strong>{managerName}</strong>,</p><p>The Performance Management form below has been reviewed by HR and requires revisions:</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", "Revise the form per HR's comments and resubmit"),
-                        ("Previous Action By", string.IsNullOrWhiteSpace(f.Hr1ReviewerName) ? "HR Team" : $"{f.Hr1ReviewerName} (HR)"),
-                        ("Next Action Required By", $"{managerName} (You, Manager)"),
-                        ("HR Comments", string.IsNullOrWhiteSpace(hrComments) ? "No specific comments provided." : hrComments)) +
-              ActionButton(actionUrl, "Revise Performance Form"), sentAt));
+        PmForm f, string managerName, string hrComments, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("RevertedSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("RevertedTitle"),
+              $"<p>{G("DearName", managerName)}</p><p>{G("RevertedIntro")}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), G("RevertedRequiredAction")),
+                        (G("PreviousActionBy"), string.IsNullOrWhiteSpace(f.Hr1ReviewerName) ? G("HrTeamPlain") : $"{f.Hr1ReviewerName} ({G("HrTeamPlain")})"),
+                        (G("NextActionRequiredBy"), G("RoleYouManager", managerName)),
+                        (G("HrComments"), string.IsNullOrWhiteSpace(hrComments) ? G("NoCommentsProvided") : hrComments)) +
+              ActionButton(actionUrl, G("RevisePerformanceForm")), sentAt, c));
+    }
 
     /// <summary>Daily scheduled nudge for a form that has been sitting in the same actionable status too long.</summary>
     public static (string Subject, string Body) Reminder(
-        PmForm f, string recipientLabel, string requiredAction, int daysWaiting, string actionUrl, DateTime sentAt) =>
-        ($"REMINDER: Action Needed | {f.EmpNameSnapshot} | {f.EvalYear}",
-         Wrap("Performance Management System", "Reminder: Action Needed",
-              $"<p>Dear {recipientLabel},</p>" +
-              $"<p>The performance review below has been waiting for action for {daysWaiting} day(s).</p>" +
-              InfoTable(("Reference", f.LegacyRefNo), ("Employee", $"{f.EmpNameSnapshot} ({f.EmpCode})"),
-                        ("Review Year", f.EvalYear.ToString()),
-                        ("Current Status", PmFormStatus.DisplayName(f.Status)),
-                        ("Required Action", requiredAction),
-                        ("Days Waiting", daysWaiting.ToString())) +
-              ActionButton(actionUrl, "View Performance Form"), sentAt));
+        PmForm f, string recipientLabel, string requiredAction, int daysWaiting, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    {
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+        return (G("ReminderSubject", f.EmpNameSnapshot, f.EvalYear),
+         Wrap(AppName, G("ReminderTitle"),
+              $"<p>{G("DearPlain", recipientLabel)}</p>" +
+              $"<p>{G("ReminderIntro", daysWaiting)}</p>" +
+              InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
+                        (G("ReviewYear"), f.EvalYear.ToString()),
+                        (G("CurrentStatus"), PmFormStatus.DisplayName(f.Status, c)),
+                        (G("RequiredAction"), requiredAction),
+                        (G("DaysWaiting"), daysWaiting.ToString())) +
+              ActionButton(actionUrl, G("ViewPerformanceForm")), sentAt, c));
+    }
 
     /// <summary>One row in the weekly escalation digest — a single HR-facing summary email rather
     /// than one email per overdue form, so a large backlog can't turn into dozens of separate sends.</summary>
@@ -368,10 +416,17 @@ public static class EmailTemplates
     /// is exactly the kind of thing that overflows its container in Outlook's Word rendering
     /// engine (which doesn't support horizontal scrolling the way a browser does). Year and
     /// Reference fold into the Employee cell instead of getting their own columns.</summary>
-    public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt)
+    public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt, CultureInfo? culture = null)
     {
+        // Broadcast to the whole HR team rather than one named recipient, so there's no single
+        // PreferredCulture to honor — defaults to the ambient culture (English unless a caller
+        // explicitly passes one), same as every other static default in this file.
+        var c = culture ?? CultureInfo.CurrentUICulture;
+        string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
+
         // Explicit color on every cell — see InfoTable's remark on why nothing here can rely on
-        // inherited text color.
+        // inherited text color. No hardcoded text-align on the header row — start-aligned by
+        // default, which flips correctly for RTL along with the rest of the document.
         const string cell = "padding:8px;border-bottom:1px solid #e0e0e0;word-break:break-word;color:#333333;";
         var trs = string.Join("", rows.Select(r => $"""
             <tr>
@@ -381,24 +436,24 @@ public static class EmailTemplates
               </td>
               <td style='{cell}width:24%;'>{r.RequiredAction}</td>
               <td style='{cell}width:22%;'>{r.Owner}</td>
-              <td style='{cell}width:20%;text-align:center;'>{r.DaysWaiting}d<br/><span style="color:#8a93a6;font-size:11px;">{r.Status}</span></td>
+              <td style='{cell}width:20%;text-align:center;'>{G("EscalationDaysSuffix", r.DaysWaiting)}<br/><span style="color:#8a93a6;font-size:11px;">{r.Status}</span></td>
             </tr>
             """));
         const string th = "padding:8px;border-bottom:2px solid #ccc;color:#666666;";
         var table = $"""
             <table style='width:100%;table-layout:fixed;border-collapse:collapse;margin:15px 0;font-size:13px;'>
-              <thead><tr style='text-align:left;'>
-                <th style='{th}width:34%;'>Employee</th>
-                <th style='{th}width:24%;'>Required Action</th>
-                <th style='{th}width:22%;'>Awaiting</th>
-                <th style='{th}width:20%;text-align:center;'>Waiting / Status</th>
+              <thead><tr>
+                <th style='{th}width:34%;'>{G("Employee")}</th>
+                <th style='{th}width:24%;'>{G("RequiredAction")}</th>
+                <th style='{th}width:22%;'>{G("EscalationColAwaiting")}</th>
+                <th style='{th}width:20%;text-align:center;'>{G("EscalationColWaitingStatus")}</th>
               </tr></thead>
               <tbody>{trs}</tbody>
             </table>
             """;
-        return ($"ESCALATION: {rows.Count} Overdue Performance Review(s)",
-            Wrap("Performance Management System", "Weekly Escalation: Overdue Reviews",
-                 $"<p>Dear HR Team,</p><p>{rows.Count} performance review(s) have been outstanding beyond the normal window and require escalation:</p>" +
-                 table, sentAt));
+        return (G("EscalationSubject", rows.Count),
+            Wrap(AppName, G("EscalationTitle"),
+                 $"<p>{G("DearHrTeam")}</p><p>{G("EscalationIntro", rows.Count)}</p>" +
+                 table, sentAt, c));
     }
 }

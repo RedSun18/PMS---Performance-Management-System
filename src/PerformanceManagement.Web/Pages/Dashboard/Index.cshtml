@@ -1,10 +1,12 @@
 @page
 @using PerformanceManagement.Core.Domain
 @model PerformanceManagement.Web.Pages.Dashboard.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = SharedLocalizer["Dashboard"].Value;
 }
-<div class="page-header">Dashboard</div>
+<div class="page-header">@SharedLocalizer["Dashboard"]</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.AnnouncementBanner))
 {
@@ -18,10 +20,10 @@
 @if (Model.DashboardKind == "employee")
 {
     <div class="card" style="margin-bottom:20px;">
-        <div class="card-header">My @Model.EvalYear Performance Review</div>
+        <div class="card-header">@Localizer["MyReviewCardHeader", Model.EvalYear]</div>
         <div class="card-body">
             <div class="status-chip" style="margin-bottom:10px;">
-                <span class="status-dot"></span> Current Stage: <strong>@Model.MyStatusLabel</strong>
+                <span class="status-dot"></span> @Localizer["CurrentStageLabel"] <strong>@Model.MyStatusLabel</strong>
             </div>
             <div class="progress-outer">
                 <div class="progress-inner" style="width:@(Model.MyProgressPercent)%;">@Model.MyProgressPercent%</div>
@@ -34,33 +36,33 @@
     </div>
 
     <div class="card" style="margin-bottom:20px;">
-        <div class="card-header">Completion Breakdown</div>
+        <div class="card-header">@Localizer["CompletionBreakdownHeader"]</div>
         <div class="perf-metrics">
             <div class="perf-metric">
-                <div class="label">Overall Progress</div>
+                <div class="label">@Localizer["OverallProgressLabel"]</div>
                 <div class="value">@Model.MyProgressPercent%</div>
             </div>
             <div class="perf-metric">
-                <div class="label">KPI Completion</div>
+                <div class="label">@Localizer["KpiCompletionLabel"]</div>
                 <div class="value">@Model.MyKpiCompletionPercent%</div>
             </div>
             <div class="perf-metric">
-                <div class="label">Competency Completion</div>
+                <div class="label">@Localizer["CompCompletionLabel"]</div>
                 <div class="value">@Model.MyCompCompletionPercent%</div>
             </div>
             <div class="perf-metric">
-                <div class="label">Items Recorded</div>
+                <div class="label">@Localizer["ItemsRecordedLabel"]</div>
                 <div class="value">@(Model.MyForm?.Kpis.Count ?? 0) / @(Model.MyForm?.Competencies.Count ?? 0)</div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Recent Notifications</div>
+        <div class="card-header">@Localizer["RecentNotificationsHeader"]</div>
         <div class="card-body">
             @if (Model.MyRecentNotifications.Count == 0)
             {
-                <p class="muted" style="margin:0;">No notifications yet.</p>
+                <p class="muted" style="margin:0;">@SharedLocalizer["NoNotificationsYet"]</p>
             }
             else
             {
@@ -76,26 +78,26 @@
     </div>
 
     <div class="form-actions" style="margin-top:20px;">
-        <a class="btn btn-primary" asp-page="/PmForm/Index">Open My PM Form</a>
+        <a class="btn btn-primary" asp-page="/PmForm/Index">@Localizer["OpenMyPmFormButton"]</a>
     </div>
 }
 else if (Model.DashboardKind == "manager")
 {
     <div class="summary-cards">
         <div class="summary-card blue">
-            <div class="label">Team Members</div>
+            <div class="label">@Localizer["TeamMembersLabel"]</div>
             <div class="value">@Model.TeamCount</div>
         </div>
         <div class="summary-card grey">
-            <div class="label">Waiting for Your Review</div>
+            <div class="label">@Localizer["WaitingForReviewLabel"]</div>
             <div class="value">@Model.WaitingForReviewCount</div>
         </div>
         <div class="summary-card red">
-            <div class="label">Returned by HR</div>
+            <div class="label">@Localizer["ReturnedByHrLabel"]</div>
             <div class="value">@Model.ReturnedCount</div>
         </div>
         <div class="summary-card green">
-            <div class="label">Completed</div>
+            <div class="label">@Localizer["CompletedLabel"]</div>
             <div class="value">@Model.CompletedCount</div>
         </div>
     </div>
@@ -107,7 +109,7 @@ else if (Model.DashboardKind == "manager")
             <div class="card-body" style="padding:0;">
                 <div class="table-scroll">
                 <table class="grid">
-                    <thead><tr><th>Employee</th><th>Status</th><th></th></tr></thead>
+                    <thead><tr><th>@SharedLocalizer["Employee"]</th><th>@SharedLocalizer["Status"]</th><th></th></tr></thead>
                     <tbody>
                         @foreach (var r in deptGroup)
                         {
@@ -123,7 +125,7 @@ else if (Model.DashboardKind == "manager")
                                         @r.Status
                                     }
                                 </td>
-                                <td><a class="btn btn-secondary" asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode" asp-route-year="@Model.EvalYear">Open</a></td>
+                                <td><a class="btn btn-secondary" asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode" asp-route-year="@Model.EvalYear">@SharedLocalizer["Open"]</a></td>
                             </tr>
                         }
                     </tbody>
@@ -134,56 +136,55 @@ else if (Model.DashboardKind == "manager")
     }
 
     <div class="form-actions" style="margin-top:20px;">
-        <a class="btn btn-primary" asp-page="/PmForm/Index">Go to PM Form</a>
-        <a class="btn btn-secondary" asp-page="/PmFormSummary/Index">View Team Summary</a>
+        <a class="btn btn-primary" asp-page="/PmForm/Index">@Localizer["GoToPmFormButton"]</a>
+        <a class="btn btn-secondary" asp-page="/PmFormSummary/Index">@Localizer["ViewTeamSummaryButton"]</a>
     </div>
 }
 else
 {
     <div class="summary-cards">
         <div class="summary-card blue">
-            <div class="label">Employees</div>
+            <div class="label">@Localizer["EmployeesLabel"]</div>
             <div class="value">@Model.EmployeeCount</div>
         </div>
         <div class="summary-card grey">
-            <div class="label">Forms Generated (@Model.EvalYear)</div>
+            <div class="label">@Localizer["FormsGeneratedLabel", Model.EvalYear]</div>
             <div class="value">@Model.FormsGeneratedCount</div>
         </div>
         <div class="summary-card @(Model.OverallCompletionPercent >= 75 ? "green" : Model.OverallCompletionPercent >= 40 ? "blue" : "red")">
-            <div class="label">Overall Completion</div>
+            <div class="label">@Localizer["OverallCompletionLabel"]</div>
             <div class="value">@Model.OverallCompletionPercent%</div>
         </div>
     </div>
 
     <div class="card" style="margin-bottom:20px;">
-        <div class="card-header">Form Status Breakdown</div>
+        <div class="card-header">@Localizer["FormStatusBreakdownHeader"]</div>
         <div class="perf-metrics">
             <div class="perf-metric">
-                <div class="label">Ready / Not Started</div>
+                <div class="label">@SharedLocalizer["ReadyNotStarted"]</div>
                 <div class="value">@Model.ReadyCount</div>
             </div>
             <div class="perf-metric">
-                <div class="label">In Progress</div>
+                <div class="label">@SharedLocalizer["InProgress"]</div>
                 <div class="value">@Model.InProgressCount</div>
             </div>
             <div class="perf-metric">
-                <div class="label">Finalized</div>
+                <div class="label">@SharedLocalizer["Finalized"]</div>
                 <div class="value">@Model.FinalizedCount</div>
             </div>
             <div class="perf-metric">
-                <div class="label">Total</div>
+                <div class="label">@SharedLocalizer["Total"]</div>
                 <div class="value">@Model.FormsGeneratedCount</div>
             </div>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-header">Department Completion, Progress &amp; Performance</div>
+        <div class="card-header">@Localizer["DeptCompletionHeader"]</div>
         <div class="card-body" style="padding:0;">
             @if (Model.DeptCompletion.Count == 0)
             {
-                <p class="muted" style="margin:0;padding:16px;">No department data available. Employees must be assigned
-                    to a department in Employee Master, matched to a Department Master record in Reference Master.</p>
+                <p class="muted" style="margin:0;padding:16px;">@Localizer["NoDeptDataMessage"]</p>
             }
             else
             {
@@ -191,7 +192,7 @@ else
                 <table class="grid">
                     <thead>
                         <tr>
-                            <th>Department</th><th>Employees</th><th>Progress</th><th>Completion</th><th>Avg. Score</th>
+                            <th>@SharedLocalizer["Department"]</th><th>@Localizer["EmployeesLabel"]</th><th>@SharedLocalizer["Progress"]</th><th>@SharedLocalizer["Completion"]</th><th>@SharedLocalizer["AvgScore"]</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -230,18 +231,18 @@ else
     </div>
 
     <div class="form-actions" style="margin-top:20px;">
-        <a class="btn btn-primary" asp-page="/PmFormSummary/Index">Open PM Form Summary</a>
-        <a class="btn btn-secondary" asp-page="/Employees/Index">Employee Master</a>
-        <a class="btn btn-secondary" asp-page="/Reports/Index">Reports</a>
+        <a class="btn btn-primary" asp-page="/PmFormSummary/Index">@Localizer["OpenPmFormSummaryButton"]</a>
+        <a class="btn btn-secondary" asp-page="/Employees/Index">@SharedLocalizer["NavEmployeeMaster"]</a>
+        <a class="btn btn-secondary" asp-page="/Reports/Index">@SharedLocalizer["NavReports"]</a>
     </div>
 }
 
 <div class="card" style="margin-top:20px;">
-    <div class="card-header">Recent Activity</div>
+    <div class="card-header">@Localizer["RecentActivityHeader"]</div>
     <div class="card-body">
         @if (Model.RecentActivity.Count == 0)
         {
-            <p class="muted" style="margin:0;">No recent activity.</p>
+            <p class="muted" style="margin:0;">@Localizer["NoRecentActivityMessage"]</p>
         }
         else
         {

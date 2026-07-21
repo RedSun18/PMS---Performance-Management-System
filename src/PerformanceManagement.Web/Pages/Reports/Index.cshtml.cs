@@ -4,6 +4,7 @@ using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Reports;
 
@@ -20,10 +21,12 @@ public class IndexModel : AppPageModel
     private readonly IClock _clock;
     private readonly ReportDataService _reports;
     private readonly NotificationService _notifications;
+    private readonly IStringLocalizer<IndexModel> _localizer;
 
-    public IndexModel(PmDbContext db, IClock clock, ReportDataService reports, NotificationService notifications)
+    public IndexModel(PmDbContext db, IClock clock, ReportDataService reports, NotificationService notifications,
+        IStringLocalizer<IndexModel> localizer)
     {
-        _db = db; _clock = clock; _reports = reports; _notifications = notifications;
+        _db = db; _clock = clock; _reports = reports; _notifications = notifications; _localizer = localizer;
     }
 
     public List<(string Code, string Label)> EmployeeOptions { get; set; } = new();
@@ -41,7 +44,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Employee Performance Report — {empcd} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["EmployeeReportNotifLabel", empcd!, year]);
         return PdfFile(await ReportExportService.EmployeeReportToPdfAsync(report), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
@@ -49,7 +52,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Employee Performance Report — {empcd} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["EmployeeReportNotifLabel", empcd!, year]);
         return ExcelFile(ReportExportService.EmployeeReportToExcel(report), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
@@ -58,7 +61,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Department Summary — {dept} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["DepartmentSummaryNotifLabel", dept!, year]);
         return PdfFile(await ReportExportService.DepartmentReportToPdfAsync(report), $"DepartmentSummary_{dept}_{year}");
     }
 
@@ -66,7 +69,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Department Summary — {dept} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["DepartmentSummaryNotifLabel", dept!, year]);
         return ExcelFile(ReportExportService.DepartmentReportToExcel(report), $"DepartmentSummary_{dept}_{year}");
     }
 
@@ -75,7 +78,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Manager Summary — {manager} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["ManagerSummaryNotifLabel", manager!, year]);
         return PdfFile(await ReportExportService.ManagerReportToPdfAsync(report), $"ManagerSummary_{manager}_{year}");
     }
 
@@ -83,7 +86,7 @@ public class IndexModel : AppPageModel
     {
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
-        await NotifyReportGeneratedAsync($"Manager Summary — {manager} ({year})");
+        await NotifyReportGeneratedAsync(_localizer["ManagerSummaryNotifLabel", manager!, year]);
         return ExcelFile(ReportExportService.ManagerReportToExcel(report), $"ManagerSummary_{manager}_{year}");
     }
 
@@ -91,43 +94,43 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnGetOverallPdfAsync(int year)
     {
         var report = await _reports.GetOverallReportAsync(year);
-        await NotifyReportGeneratedAsync($"Overall Organization Summary ({year})");
+        await NotifyReportGeneratedAsync(_localizer["OverallSummaryNotifLabel", year]);
         return PdfFile(await ReportExportService.OverallReportToPdfAsync(report), $"OverallOrganizationSummary_{year}");
     }
 
     public async Task<IActionResult> OnGetOverallExcelAsync(int year)
     {
         var report = await _reports.GetOverallReportAsync(year);
-        await NotifyReportGeneratedAsync($"Overall Organization Summary ({year})");
+        await NotifyReportGeneratedAsync(_localizer["OverallSummaryNotifLabel", year]);
         return ExcelFile(ReportExportService.OverallReportToExcel(report), $"OverallOrganizationSummary_{year}");
     }
 
     private Task NotifyReportGeneratedAsync(string reportLabel) =>
-        _notifications.CreateAsync(CurrentUserName, "Report Generated", reportLabel, "ReportGenerated");
+        _notifications.CreateAsync(CurrentUserName, _localizer["ReportGeneratedNotifTitle"], reportLabel, "ReportGenerated");
 
     // ======================================================================
     private async Task<EmployeePerformanceReport?> RequireEmployeeReportAsync(string? empcd, int year)
     {
         await LoadOptionsAsync();
-        if (string.IsNullOrWhiteSpace(empcd)) { ReportError = "Please select an employee."; return null; }
+        if (string.IsNullOrWhiteSpace(empcd)) { ReportError = _localizer["SelectEmployeeError"]; return null; }
         var report = await _reports.GetEmployeeReportAsync(empcd, year);
-        if (report is null) ReportError = $"No PM form found for employee {empcd} in {year}.";
+        if (report is null) ReportError = _localizer["NoPmFormFoundError", empcd, year];
         return report;
     }
 
     private async Task<DepartmentSummaryReport?> RequireDepartmentReportAsync(string? dept, int year)
     {
         await LoadOptionsAsync();
-        if (string.IsNullOrWhiteSpace(dept)) { ReportError = "Please select a department."; return null; }
+        if (string.IsNullOrWhiteSpace(dept)) { ReportError = _localizer["SelectDepartmentError"]; return null; }
         var report = await _reports.GetDepartmentReportAsync(dept, year);
-        if (report is null) ReportError = $"Department '{dept}' was not found.";
+        if (report is null) ReportError = _localizer["DepartmentNotFoundError", dept];
         return report;
     }
 
     private async Task<ManagerSummaryReport?> RequireManagerReportAsync(string? manager, int year)
     {
         await LoadOptionsAsync();
-        if (string.IsNullOrWhiteSpace(manager)) { ReportError = "Please select a manager."; return null; }
+        if (string.IsNullOrWhiteSpace(manager)) { ReportError = _localizer["SelectManagerError"]; return null; }
         return await _reports.GetManagerReportAsync(manager, year);
     }
 

@@ -202,21 +202,54 @@ public class CoreRulesTests
         Assert.Empty(FormValidationService.ValidateKpiItem(form, master, 18, editingSeq: 1));
     }
 
-    // ---- Achievement gate: 1 December of the evaluation year ------------------
+    [Fact]
+    public void Competency_weight_range_is_guidance_only_not_a_validation_rule()
+    {
+        // Phase 12 Part 3: the Competency Master's configured weight range is reference
+        // information for the manager, not an enforced rule (unlike KPI, where the equivalent
+        // range check above IS still enforced) — any weight must be accepted.
+        var master = new CompetencyMaster { CompId = "COM001", Name = "Analytical Thinking", CompType = "B", MinWeight = 10, MaxWeight = 40 };
+        var form = new PmForm();
+
+        Assert.Empty(FormValidationService.ValidateCompItem(form, master, 5));
+        Assert.Empty(FormValidationService.ValidateCompItem(form, master, 90));
+
+        // Duplicate and max-count checks are unrelated to the weight range and still apply.
+        form.Competencies.Add(new PmFormCompetency { RecordSeq = 1, CompCode = "COM001", ItemWeight = 20 });
+        Assert.Contains(FormValidationService.ValidateCompItem(form, master, 20), e => e.Contains("Duplicate Competency"));
+    }
+
+    // ---- Achievement gate: defaults to 1 December of the eval year when unconfigured --------
 
     [Fact]
-    public void Achievement_gate_opens_on_december_first_of_eval_year()
+    public async Task Achievement_gate_defaults_to_december_first_of_eval_year_when_unconfigured()
     {
-        var clock = new FakeClock { Today = new DateOnly(2026, 11, 30) };
-        var gate = new AchievementGate(clock);
-        Assert.False(gate.IsOpen(2026));
-        Assert.Equal(0, gate.NormalizeAchievement(2026, 85)); // discarded while closed
+        using var host = new TestHost();
+        host.Clock.Today = new DateOnly(2026, 11, 30);
+        Assert.False(await host.Gate.IsAchievementOpenAsync(2026));
+        Assert.Equal(0, await host.Gate.NormalizeAchievementAsync(2026, 85)); // discarded while closed
 
-        clock.Today = new DateOnly(2026, 12, 1);
-        Assert.True(gate.IsOpen(2026));
-        Assert.Equal(85, gate.NormalizeAchievement(2026, 85));
-        Assert.True(gate.IsOpen(2025));   // past year stays open
-        Assert.False(gate.IsOpen(2027));  // future year still closed
+        host.Clock.Today = new DateOnly(2026, 12, 1);
+        Assert.True(await host.Gate.IsAchievementOpenAsync(2026));
+        Assert.Equal(85, await host.Gate.NormalizeAchievementAsync(2026, 85));
+        Assert.True(await host.Gate.IsAchievementOpenAsync(2025));   // past year stays open
+        Assert.False(await host.Gate.IsAchievementOpenAsync(2027));  // future year still closed
+    }
+
+    [Fact]
+    public async Task Achievement_gate_uses_configured_date_instead_of_december_first()
+    {
+        using var host = new TestHost();
+        host.Clock.Today = new DateOnly(2026, 9, 1);
+        await host.Settings.SavePerformanceReviewSettingsAsync(
+            new PerformanceReviewSettings(2026, null, null, null, null, null, new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 15)),
+            "test");
+
+        Assert.True(await host.Gate.IsAchievementOpenAsync(2026));   // configured date already reached
+        Assert.False(await host.Gate.IsSubmitToHrOpenAsync(2026));   // configured date not yet reached
+
+        host.Clock.Today = new DateOnly(2026, 9, 15);
+        Assert.True(await host.Gate.IsSubmitToHrOpenAsync(2026));
     }
 
     // ---- KPI tab visibility (legacy SetupTabsByJobFamily) --------------------

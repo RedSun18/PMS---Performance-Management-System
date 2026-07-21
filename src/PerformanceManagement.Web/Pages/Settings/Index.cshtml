@@ -1,113 +1,145 @@
 @page
 @model PerformanceManagement.Web.Pages.Settings.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "System Settings";
+    ViewData["Title"] = SharedLocalizer["NavSystemSettings"].Value;
 }
-<div class="page-header">System Settings</div>
+<div class="page-header">@SharedLocalizer["NavSystemSettings"]</div>
 
 <div class="tabs">
-    <a href="?tab=general" class="@(Model.Tab == "general" ? "active" : "")">General</a>
-    <a href="?tab=review" class="@(Model.Tab == "review" ? "active" : "")">Performance Review</a>
-    <a href="?tab=email" class="@(Model.Tab == "email" ? "active" : "")">Email</a>
-    <a href="?tab=auth" class="@(Model.Tab == "auth" ? "active" : "")">Authentication</a>
-    <a href="?tab=security" class="@(Model.Tab == "security" ? "active" : "")">Security</a>
-    <a href="?tab=dashboard" class="@(Model.Tab == "dashboard" ? "active" : "")">Dashboard</a>
-    <a href="?tab=branding" class="@(Model.Tab == "branding" ? "active" : "")">Branding</a>
+    <a href="?tab=general" class="@(Model.Tab == "general" ? "active" : "")">@Localizer["TabGeneral"]</a>
+    <a href="?tab=review" class="@(Model.Tab == "review" ? "active" : "")">@Localizer["TabReview"]</a>
+    <a href="?tab=email" class="@(Model.Tab == "email" ? "active" : "")">@Localizer["TabEmail"]</a>
+    <a href="?tab=auth" class="@(Model.Tab == "auth" ? "active" : "")">@Localizer["TabAuth"]</a>
+    <a href="?tab=security" class="@(Model.Tab == "security" ? "active" : "")">@Localizer["TabSecurity"]</a>
+    <a href="?tab=dashboard" class="@(Model.Tab == "dashboard" ? "active" : "")">@Localizer["TabDashboard"]</a>
+    <a href="?tab=branding" class="@(Model.Tab == "branding" ? "active" : "")">@Localizer["TabBranding"]</a>
 </div>
 
 @if (Model.Tab == "general")
 {
     <form method="post" asp-page-handler="SaveGeneral">
         <div class="card">
-            <div class="card-header">General</div>
+            <div class="card-header">@Localizer["TabGeneral"]</div>
             <div class="card-body">
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="companyName">Company Name</label><input type="text" id="companyName" name="General.CompanyName" value="@Model.General.CompanyName" /></div>
-                    <div><label for="applicationName">Application Name</label><input type="text" id="applicationName" name="General.ApplicationName" value="@Model.General.ApplicationName" placeholder="Performance Management System" /></div>
+                    <div><label for="companyName">@Localizer["CompanyNameLabel"]</label><input type="text" id="companyName" name="General.CompanyName" value="@Model.General.CompanyName" /></div>
+                    <div><label for="applicationName">@Localizer["ApplicationNameLabel"]</label><input type="text" id="applicationName" name="General.ApplicationName" value="@Model.General.ApplicationName" placeholder="@Localizer["ApplicationNamePlaceholder"]" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="companyAddress">Company Address</label><input type="text" id="companyAddress" name="General.CompanyAddress" value="@Model.General.CompanyAddress" /></div>
-                    <div><label for="contactEmail">Contact Email</label><input type="text" id="contactEmail" name="General.ContactEmail" value="@Model.General.ContactEmail" /></div>
+                    <div><label for="companyAddress">@Localizer["CompanyAddressLabel"]</label><input type="text" id="companyAddress" name="General.CompanyAddress" value="@Model.General.CompanyAddress" /></div>
+                    <div><label for="contactEmail">@Localizer["ContactEmailLabel"]</label><input type="text" id="contactEmail" name="General.ContactEmail" value="@Model.General.ContactEmail" /></div>
                 </div>
-                <div class="grid-2">
+                <div class="grid-2" style="margin-bottom:14px;">
                     <div>
-                        <label for="appBaseUrl">Application Base URL</label>
+                        <label for="appBaseUrl">@Localizer["AppBaseUrlLabel"]</label>
                         <input type="text" id="appBaseUrl" name="General.ApplicationBaseUrl" value="@Model.General.ApplicationBaseUrl" placeholder="https://pms.company.com" />
-                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Used to build the action links inside outgoing email — e.g. "https://localhost:5273" for local testing.</p>
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["AppBaseUrlHint"]</p>
                     </div>
-                    <div class="muted" style="align-self:end;font-size:12px;">Company logo is managed from the <strong>Branding</strong> tab.</div>
+                    <div class="muted" style="align-self:end;font-size:12px;">@Localizer["LogoManagedHint", Localizer["TabBranding"]]</div>
+                </div>
+                <div>
+                    <label style="text-transform:none;"><input type="checkbox" name="General.LanguageSelectionEnabled" value="true" style="width:auto;" checked="@Model.General.LanguageSelectionEnabled" /><input type="hidden" name="General.LanguageSelectionEnabled" value="false" /> @Localizer["LanguageSelectionLabel"]</label>
+                    <p class="muted" style="margin:4px 0 0;font-size:12px;">
+                        @Localizer["LanguageSelectionHint"]
+                    </p>
                 </div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save General Settings</button></div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveGeneralButton"]</button></div>
     </form>
 }
 else if (Model.Tab == "review")
 {
     <form method="post" asp-page-handler="SaveReview">
         <div class="card">
-            <div class="card-header">Performance Review</div>
+            <div class="card-header">@Localizer["TabReview"]</div>
             <div class="card-body">
                 <div class="grid-2" style="margin-bottom:14px;">
                     <div>
-                        <label for="currentReviewYear">Current Review Year</label>
+                        <label for="currentReviewYear">@Localizer["CurrentReviewYearLabel"]</label>
                         <input type="number" id="currentReviewYear" name="Review.CurrentReviewYear" value="@Model.Review.CurrentReviewYear" />
-                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Informational default shown across the app — workflow rules (e.g. achievement scoring opening 1 December) are always based on the real calendar year.</p>
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["CurrentReviewYearHint"]</p>
                     </div>
                 </div>
                 <div class="grid-4">
-                    <div><label for="midYearStart">Mid-Year Start</label><input type="date" id="midYearStart" name="Review.MidYearStart" value="@Model.Review.MidYearStart?.ToString("yyyy-MM-dd")" /></div>
-                    <div><label for="midYearEnd">Mid-Year End</label><input type="date" id="midYearEnd" name="Review.MidYearEnd" value="@Model.Review.MidYearEnd?.ToString("yyyy-MM-dd")" /></div>
-                    <div><label for="endYearStart">End-Year Start</label><input type="date" id="endYearStart" name="Review.EndYearStart" value="@Model.Review.EndYearStart?.ToString("yyyy-MM-dd")" /></div>
-                    <div><label for="endYearEnd">End-Year End</label><input type="date" id="endYearEnd" name="Review.EndYearEnd" value="@Model.Review.EndYearEnd?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="midYearStart">@Localizer["MidYearStartLabel"]</label><input type="date" id="midYearStart" name="Review.MidYearStart" value="@Model.Review.MidYearStart?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="midYearEnd">@Localizer["MidYearEndLabel"]</label><input type="date" id="midYearEnd" name="Review.MidYearEnd" value="@Model.Review.MidYearEnd?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="endYearStart">@Localizer["EndYearStartLabel"]</label><input type="date" id="endYearStart" name="Review.EndYearStart" value="@Model.Review.EndYearStart?.ToString("yyyy-MM-dd")" /></div>
+                    <div><label for="endYearEnd">@Localizer["EndYearEndLabel"]</label><input type="date" id="endYearEnd" name="Review.EndYearEnd" value="@Model.Review.EndYearEnd?.ToString("yyyy-MM-dd")" /></div>
                 </div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Performance Review Settings</button></div>
+
+        <div class="card">
+            <div class="card-header">@Localizer["ReviewDatesHeader"]</div>
+            <div class="card-body">
+                <p class="muted" style="margin:0 0 14px;font-size:12px;">
+                    @Localizer["ReviewDatesIntro"]
+                </p>
+                <div class="grid-3">
+                    <div>
+                        <label for="midYearAchievementStartDate">@Localizer["MidYearAchievementStartDateLabel"]</label>
+                        <input type="date" id="midYearAchievementStartDate" name="Review.MidYearAchievementStartDate" value="@Model.Review.MidYearAchievementStartDate?.ToString("yyyy-MM-dd")" />
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["MidYearAchievementHint"]</p>
+                    </div>
+                    <div>
+                        <label for="endYearAchievementStartDate">@Localizer["EndYearAchievementStartDateLabel"]</label>
+                        <input type="date" id="endYearAchievementStartDate" name="Review.EndYearAchievementStartDate" value="@Model.Review.EndYearAchievementStartDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div>
+                        <label for="submitToHrStartDate">@Localizer["SubmitToHrStartDateLabel"]</label>
+                        <input type="date" id="submitToHrStartDate" name="Review.SubmitToHrStartDate" value="@Model.Review.SubmitToHrStartDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveReviewButton"]</button></div>
     </form>
 }
 else if (Model.Tab == "email")
 {
     <form method="post" asp-page-handler="SaveEmail">
         <div class="card">
-            <div class="card-header">Email Settings (SMTP)</div>
+            <div class="card-header">@Localizer["EmailSettingsHeader"]</div>
             <div class="card-body">
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="smtpHost">SMTP Host</label><input type="text" id="smtpHost" name="Email.SmtpHost" value="@Model.Email.SmtpHost" placeholder="smtp.gmail.com" /></div>
-                    <div><label for="smtpPort">SMTP Port</label><input type="number" id="smtpPort" name="Email.SmtpPort" value="@Model.Email.SmtpPort" placeholder="587" /></div>
+                    <div><label for="smtpHost">@Localizer["SmtpHostLabel"]</label><input type="text" id="smtpHost" name="Email.SmtpHost" value="@Model.Email.SmtpHost" placeholder="smtp.gmail.com" /></div>
+                    <div><label for="smtpPort">@Localizer["SmtpPortLabel"]</label><input type="number" id="smtpPort" name="Email.SmtpPort" value="@Model.Email.SmtpPort" placeholder="587" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="smtpUsername">Username</label><input type="text" id="smtpUsername" name="Email.SmtpUsername" value="@Model.Email.SmtpUsername" placeholder="user@example.com" /></div>
+                    <div><label for="smtpUsername">@SharedLocalizer["Username"]</label><input type="text" id="smtpUsername" name="Email.SmtpUsername" value="@Model.Email.SmtpUsername" placeholder="user@example.com" /></div>
                     <div>
-                        <label for="smtpPassword">Password</label>
+                        <label for="smtpPassword">@SharedLocalizer["Password"]</label>
                         <input type="password" id="smtpPassword" name="Email.NewPassword"
-                               placeholder="@(Model.HasEmailPassword ? "•••••••• (leave blank to keep current password)" : "Not set")" />
+                               placeholder="@(Model.HasEmailPassword ? Localizer["PasswordKeepCurrentPlaceholder"].Value : Localizer["NotSetPlaceholder"].Value)" />
                     </div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="senderName">Sender Name</label><input type="text" id="senderName" name="Email.SenderName" value="@Model.Email.SenderName" placeholder="Performance Management System" /></div>
-                    <div><label for="senderEmail">Sender Email</label><input type="text" id="senderEmail" name="Email.SenderEmail" value="@Model.Email.SenderEmail" placeholder="user@example.com" /></div>
+                    <div><label for="senderName">@Localizer["SenderNameLabel"]</label><input type="text" id="senderName" name="Email.SenderName" value="@Model.Email.SenderName" placeholder="@Localizer["ApplicationNamePlaceholder"]" /></div>
+                    <div><label for="senderEmail">@Localizer["SenderEmailLabel"]</label><input type="text" id="senderEmail" name="Email.SenderEmail" value="@Model.Email.SenderEmail" placeholder="user@example.com" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableSsl" value="true" style="width:auto;" checked="@Model.Email.EnableSsl" /> Enable SSL / STARTTLS</label></div>
-                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Email.EnableEmailNotifications" /> Enable Email Notifications</label></div>
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableSsl" value="true" style="width:auto;" checked="@Model.Email.EnableSsl" /><input type="hidden" name="Email.EnableSsl" value="false" /> @Localizer["EnableSslLabel"]</label></div>
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Email.EnableEmailNotifications" /><input type="hidden" name="Email.EnableEmailNotifications" value="false" /> @Localizer["EnableEmailNotificationsLabel"]</label></div>
                 </div>
                 <div class="grid-2">
                     <div>
-                        <label for="devRedirect">Development Redirect</label>
+                        <label for="devRedirect">@Localizer["DevRedirectLabel"]</label>
                         <input type="text" id="devRedirect" name="Email.DevelopmentRedirectEmail" value="@Model.Email.DevelopmentRedirectEmail" placeholder="e.g. you@example.com" />
-                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.</p>
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["DevRedirectHint"]</p>
                     </div>
                 </div>
                 @if (Model.EmailUpdatedAt is not null)
                 {
-                    <p class="muted" style="margin:12px 0 0;font-size:12px;">Last updated @Model.EmailUpdatedAt?.ToString("dd/MM/yyyy HH:mm") UTC by @Model.EmailUpdatedBy</p>
+                    <p class="muted" style="margin:12px 0 0;font-size:12px;">@Localizer["LastUpdatedByLabel", Model.EmailUpdatedAt.Value.ToString("dd/MM/yyyy HH:mm"), Model.EmailUpdatedBy ?? ""]</p>
                 }
             </div>
         </div>
         <div class="form-actions" style="margin-top:16px;">
-            <button type="submit" class="btn btn-primary">Save Email Settings</button>
-            <button type="submit" asp-page-handler="TestEmail" class="btn btn-secondary">Send Test Email</button>
+            <button type="submit" class="btn btn-primary">@Localizer["SaveEmailButton"]</button>
+            <button type="submit" asp-page-handler="TestEmail" class="btn btn-secondary">@Localizer["SendTestEmailButton"]</button>
         </div>
     </form>
 }
@@ -115,91 +147,91 @@ else if (Model.Tab == "auth")
 {
     <form method="post" asp-page-handler="SaveAuth">
         <div class="card">
-            <div class="card-header">Authentication</div>
+            <div class="card-header">@Localizer["TabAuth"]</div>
             <div class="card-body">
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="defaultPassword">Default Password</label><input type="text" id="defaultPassword" name="Auth.DefaultUserPassword" value="@Model.Auth.DefaultUserPassword" /></div>
-                    <div><label for="minPasswordLength">Minimum Password Length</label><input type="number" id="minPasswordLength" name="Auth.MinimumPasswordLength" value="@Model.Auth.MinimumPasswordLength" min="4" max="64" /></div>
+                    <div><label for="defaultPassword">@Localizer["DefaultPasswordLabel"]</label><input type="text" id="defaultPassword" name="Auth.DefaultUserPassword" value="@Model.Auth.DefaultUserPassword" /></div>
+                    <div><label for="minPasswordLength">@Localizer["MinPasswordLengthLabel"]</label><input type="number" id="minPasswordLength" name="Auth.MinimumPasswordLength" value="@Model.Auth.MinimumPasswordLength" min="4" max="64" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label style="text-transform:none;"><input type="checkbox" name="Auth.PasswordComplexityRequired" value="true" style="width:auto;" checked="@Model.Auth.PasswordComplexityRequired" /> Require Password Complexity (letter + number)</label></div>
-                    <div><label for="maxLoginAttempts">Maximum Login Attempts</label><input type="number" id="maxLoginAttempts" name="Auth.MaxLoginAttempts" value="@Model.Auth.MaxLoginAttempts" min="0" /></div>
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Auth.PasswordComplexityRequired" value="true" style="width:auto;" checked="@Model.Auth.PasswordComplexityRequired" /><input type="hidden" name="Auth.PasswordComplexityRequired" value="false" /> @Localizer["PasswordComplexityLabel"]</label></div>
+                    <div><label for="maxLoginAttempts">@Localizer["MaxLoginAttemptsLabel"]</label><input type="number" id="maxLoginAttempts" name="Auth.MaxLoginAttempts" value="@Model.Auth.MaxLoginAttempts" min="0" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
                     <div>
-                        <label for="sessionTimeout">Session Timeout (minutes)</label>
+                        <label for="sessionTimeout">@Localizer["SessionTimeoutLabel"]</label>
                         <input type="number" id="sessionTimeout" name="Auth.SessionTimeoutMinutes" value="@Model.Auth.SessionTimeoutMinutes" min="5" />
-                        <p class="muted" style="margin:4px 0 0;font-size:12px;">Takes effect after the application restarts.</p>
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["SessionTimeoutHint"]</p>
                     </div>
                     <div>
-                        <label for="loginAsVerification">Login As Verification Password</label>
+                        <label for="loginAsVerification">@Localizer["LoginAsVerificationPasswordLabel"]</label>
                         <input type="password" id="loginAsVerification" name="Auth.NewLoginAsVerificationPassword"
-                               placeholder="@(Model.HasCustomVerificationPassword ? "•••••••• (leave blank to keep current)" : "Using development default")" />
+                               placeholder="@(Model.HasCustomVerificationPassword ? Localizer["KeepCurrentPlaceholder"].Value : Localizer["UsingDevDefaultPlaceholder"].Value)" />
                     </div>
                 </div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Authentication Settings</button></div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveAuthButton"]</button></div>
     </form>
 }
 else if (Model.Tab == "security")
 {
     <form method="post" asp-page-handler="SaveSecurity">
         <div class="card">
-            <div class="card-header">Security</div>
+            <div class="card-header">@Localizer["TabSecurity"]</div>
             <div class="card-body">
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label style="text-transform:none;"><input type="checkbox" name="Security.EnableAuditLogging" value="true" style="width:auto;" checked="@Model.Security.EnableAuditLogging" /> Enable Audit Logging</label></div>
-                    <div><label for="lockoutMinutes">Account Lockout (minutes)</label><input type="number" id="lockoutMinutes" name="Security.AccountLockoutMinutes" value="@Model.Security.AccountLockoutMinutes" min="1" /></div>
+                    <div><label style="text-transform:none;"><input type="checkbox" name="Security.EnableAuditLogging" value="true" style="width:auto;" checked="@Model.Security.EnableAuditLogging" /><input type="hidden" name="Security.EnableAuditLogging" value="false" /> @Localizer["EnableAuditLoggingLabel"]</label></div>
+                    <div><label for="lockoutMinutes">@Localizer["AccountLockoutLabel"]</label><input type="number" id="lockoutMinutes" name="Security.AccountLockoutMinutes" value="@Model.Security.AccountLockoutMinutes" min="1" /></div>
                 </div>
                 <div class="grid-2">
                     <div>
-                        <label for="passwordExpiry">Password Expiry (days)</label>
+                        <label for="passwordExpiry">@Localizer["PasswordExpiryLabel"]</label>
                         <input type="number" id="passwordExpiry" name="Security.PasswordExpiryDays" value="@Model.Security.PasswordExpiryDays" min="0" />
-                        <p class="muted" style="margin:4px 0 0;font-size:12px;">0 = passwords never expire.</p>
+                        <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["PasswordExpiryHint"]</p>
                     </div>
-                    <div><label for="rememberMeDuration">Remember Me Duration (days)</label><input type="number" id="rememberMeDuration" name="Security.RememberMeDurationDays" value="@Model.Security.RememberMeDurationDays" min="1" /></div>
+                    <div><label for="rememberMeDuration">@Localizer["RememberMeDurationLabel"]</label><input type="number" id="rememberMeDuration" name="Security.RememberMeDurationDays" value="@Model.Security.RememberMeDurationDays" min="1" /></div>
                 </div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Security Settings</button></div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveSecurityButton"]</button></div>
     </form>
 }
 else if (Model.Tab == "dashboard")
 {
     <form method="post" asp-page-handler="SaveDashboard">
         <div class="card">
-            <div class="card-header">Dashboard</div>
+            <div class="card-header">@SharedLocalizer["Dashboard"]</div>
             <div class="card-body">
-                <div style="margin-bottom:14px;"><label for="welcomeMessage">Welcome Message</label><input type="text" id="welcomeMessage" name="DashboardSettings.WelcomeMessage" value="@Model.DashboardSettings.WelcomeMessage" placeholder="e.g. Welcome to the Performance Management System" /></div>
-                <div><label for="announcementBanner">Announcement Banner</label><textarea id="announcementBanner" name="DashboardSettings.AnnouncementBanner" rows="2" placeholder="Shown to everyone at the top of the Dashboard, e.g. maintenance notices">@Model.DashboardSettings.AnnouncementBanner</textarea></div>
+                <div style="margin-bottom:14px;"><label for="welcomeMessage">@Localizer["WelcomeMessageLabel"]</label><input type="text" id="welcomeMessage" name="DashboardSettings.WelcomeMessage" value="@Model.DashboardSettings.WelcomeMessage" placeholder="@Localizer["WelcomeMessagePlaceholder"]" /></div>
+                <div><label for="announcementBanner">@Localizer["AnnouncementBannerLabel"]</label><textarea id="announcementBanner" name="DashboardSettings.AnnouncementBanner" rows="2" placeholder="@Localizer["AnnouncementBannerPlaceholder"]">@Model.DashboardSettings.AnnouncementBanner</textarea></div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Dashboard Settings</button></div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveDashboardButton"]</button></div>
     </form>
 }
 else if (Model.Tab == "branding")
 {
     <form method="post" asp-page-handler="SaveBranding" enctype="multipart/form-data">
         <div class="card">
-            <div class="card-header">Branding</div>
+            <div class="card-header">@Localizer["TabBranding"]</div>
             <div class="card-body">
                 <div style="margin-bottom:14px;">
-                    <label for="logoFile">Company Logo</label>
+                    <label for="logoFile">@Localizer["CompanyLogoLabel"]</label>
                     @if (!string.IsNullOrEmpty(Model.Branding.CompanyLogoPath))
                     {
-                        <div style="margin-bottom:8px;"><img src="@Model.Branding.CompanyLogoPath" alt="Current company logo" style="max-height:48px;max-width:220px;" /></div>
+                        <div style="margin-bottom:8px;"><img src="@Model.Branding.CompanyLogoPath" alt="@Localizer["CurrentLogoAlt"]" style="max-height:48px;max-width:220px;" /></div>
                     }
                     <input type="file" id="logoFile" name="LogoFile" accept=".png,.jpg,.jpeg,.gif,.svg" />
-                    <p class="muted" style="margin:4px 0 0;font-size:12px;">PNG, JPG, GIF or SVG, up to 2 MB.</p>
+                    <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["LogoHint"]</p>
                 </div>
                 <div class="grid-2" style="margin-bottom:14px;">
-                    <div><label for="primaryColor">Primary Colour</label><input type="color" id="primaryColor" name="Branding.PrimaryColorHex" value="@(Model.Branding.PrimaryColorHex ?? "#0f2b5c")" style="height:42px;padding:4px;" /></div>
-                    <div><label for="secondaryColor">Secondary Colour</label><input type="color" id="secondaryColor" name="Branding.SecondaryColorHex" value="@(Model.Branding.SecondaryColorHex ?? "#2f5fd6")" style="height:42px;padding:4px;" /></div>
+                    <div><label for="primaryColor">@Localizer["PrimaryColorLabel"]</label><input type="color" id="primaryColor" name="Branding.PrimaryColorHex" value="@(Model.Branding.PrimaryColorHex ?? "#0f2b5c")" style="height:42px;padding:4px;" /></div>
+                    <div><label for="secondaryColor">@Localizer["SecondaryColorLabel"]</label><input type="color" id="secondaryColor" name="Branding.SecondaryColorHex" value="@(Model.Branding.SecondaryColorHex ?? "#2f5fd6")" style="height:42px;padding:4px;" /></div>
                 </div>
-                <div><label for="footerText">Footer Text</label><input type="text" id="footerText" name="Branding.FooterText" value="@Model.Branding.FooterText" placeholder="e.g. © 2026 Your Company. All rights reserved." /></div>
+                <div><label for="footerText">@Localizer["FooterTextLabel"]</label><input type="text" id="footerText" name="Branding.FooterText" value="@Model.Branding.FooterText" placeholder="@Localizer["FooterTextPlaceholder"]" /></div>
             </div>
         </div>
-        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">Save Branding Settings</button></div>
+        <div class="form-actions" style="margin-top:16px;"><button type="submit" class="btn btn-primary">@Localizer["SaveBrandingButton"]</button></div>
     </form>
 }

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Reference" xml:space="preserve"><value>الرقم المرجعي</value></data>
+  <data name="Employee" xml:space="preserve"><value>الموظف</value></data>
+  <data name="ReviewYear" xml:space="preserve"><value>سنة التقييم</value></data>
+  <data name="CurrentStatus" xml:space="preserve"><value>الحالة الحالية</value></data>
+  <data name="RequiredAction" xml:space="preserve"><value>الإجراء المطلوب</value></data>
+  <data name="PreviousActionBy" xml:space="preserve"><value>الإجراء السابق بواسطة</value></data>
+  <data name="NextActionRequiredBy" xml:space="preserve"><value>الإجراء التالي مطلوب من</value></data>
+  <data name="KpisSet" xml:space="preserve"><value>عدد مؤشرات الأداء المحددة</value></data>
+  <data name="Competencies" xml:space="preserve"><value>الكفاءات</value></data>
+  <data name="AcknowledgedOn" xml:space="preserve"><value>تاريخ الإقرار</value></data>
+  <data name="KpiScore" xml:space="preserve"><value>درجة مؤشرات الأداء</value></data>
+  <data name="CompetencyScore" xml:space="preserve"><value>درجة الكفاءات</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>الدرجة الإجمالية</value></data>
+  <data name="Rating" xml:space="preserve"><value>التقييم</value></data>
+  <data name="ReviewedBy" xml:space="preserve"><value>تمت المراجعة بواسطة</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>تم الاعتماد بواسطة</value></data>
+  <data name="Score" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="DaysWaiting" xml:space="preserve"><value>عدد أيام الانتظار</value></data>
+  <data name="HrComments" xml:space="preserve"><value>ملاحظات الموارد البشرية</value></data>
+  <data name="HrRemarks" xml:space="preserve"><value>ملاحظات الموارد البشرية:</value></data>
+  <data name="EmployeeComments" xml:space="preserve"><value>ملاحظات الموظف:</value></data>
+  <data name="DearHrTeam" xml:space="preserve"><value>عزيزي فريق الموارد البشرية،</value></data>
+  <data name="DearTeam" xml:space="preserve"><value>عزيزي الفريق،</value></data>
+  <data name="ViewPerformanceForm" xml:space="preserve"><value>عرض نموذج الأداء</value></data>
+  <data name="ReviewEmployeeSubmission" xml:space="preserve"><value>مراجعة تقديم الموظف</value></data>
+  <data name="OpenHrReview" xml:space="preserve"><value>فتح مراجعة الموارد البشرية</value></data>
+  <data name="ViewFinalPerformanceReview" xml:space="preserve"><value>عرض التقييم النهائي للأداء</value></data>
+  <data name="RevisePerformanceForm" xml:space="preserve"><value>تعديل نموذج الأداء</value></data>
+  <data name="ButtonFallbackHint" xml:space="preserve"><value>إذا لم يعمل الزر، يرجى نسخ الرابط التالي ولصقه في متصفحك:</value></data>
+  <data name="FooterAutomatedMessage" xml:space="preserve"><value>هذه رسالة آلية، يرجى عدم الرد عليها.</value></data>
+  <data name="FooterContactHr" xml:space="preserve"><value>للمساعدة، يرجى التواصل مع إدارة الموارد البشرية.</value></data>
+  <data name="SentOn" xml:space="preserve"><value>تم الإرسال في</value></data>
+  <data name="At" xml:space="preserve"><value>الساعة</value></data>
+
+  <!-- Salutation / role formats -->
+  <data name="DearName" xml:space="preserve"><value>عزيزي &lt;strong&gt;{0}&lt;/strong&gt;،</value></data>
+  <data name="DearPlain" xml:space="preserve"><value>عزيزي {0}،</value></data>
+  <data name="RoleManager" xml:space="preserve"><value>{0} (المدير)</value></data>
+  <data name="RoleYou" xml:space="preserve"><value>{0} (أنت)</value></data>
+  <data name="RoleEmployee" xml:space="preserve"><value>{0} (الموظف)</value></data>
+  <data name="RoleYouManager" xml:space="preserve"><value>{0} (أنت، المدير)</value></data>
+  <data name="RoleHrReviewer1" xml:space="preserve"><value>{0} (مراجع الموارد البشرية الأول)</value></data>
+  <data name="RoleHrReviewer2" xml:space="preserve"><value>{0} (مراجع الموارد البشرية الثاني)</value></data>
+  <data name="HrTeamPlain" xml:space="preserve"><value>فريق الموارد البشرية</value></data>
+  <data name="HrReviewer1Plain" xml:space="preserve"><value>مراجع الموارد البشرية الأول</value></data>
+  <data name="HrReviewer2FinalPlain" xml:space="preserve"><value>مراجع الموارد البشرية الثاني (الاعتماد النهائي)</value></data>
+  <data name="NonePlain" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="NoCommentsProvided" xml:space="preserve"><value>لم يتم تقديم ملاحظات محددة.</value></data>
+
+  <!-- AcknowledgementRequest -->
+  <data name="AckReqSubject" xml:space="preserve"><value>إجراء مطلوب: مراجعة أهداف أدائك | {0} | {1}</value></data>
+  <data name="AckReqTitle" xml:space="preserve"><value>أهداف الأداء جاهزة للمراجعة</value></data>
+  <data name="AckReqIntro" xml:space="preserve"><value>قام مديرك بتحديد أهداف أدائك. يرجى مراجعتها والإقرار بها خلال 7 أيام.</value></data>
+  <data name="AckReqRequiredAction" xml:space="preserve"><value>مراجعة أهدافك والإقرار بها</value></data>
+
+  <!-- EmployeeAcknowledged -->
+  <data name="EmpAckSubject" xml:space="preserve"><value>أقرّ الموظف بالأهداف: {0} | {1}</value></data>
+  <data name="EmpAckTitle" xml:space="preserve"><value>قدّم الموظف مراجعة الأداء</value></data>
+  <data name="EmpAckIntro" xml:space="preserve"><value>أقرّ {0} بأهدافه لعام {1}.</value></data>
+  <data name="EmpAckRequiredAction" xml:space="preserve"><value>مراجعة الأهداف التي تم الإقرار بها؛ يبدأ تقييم الإنجاز في {0}</value></data>
+
+  <!-- SubmittedToHr -->
+  <data name="SubToHrSubject" xml:space="preserve"><value>نموذج الأداء جاهز لمراجعة الموارد البشرية | {0} | {1}</value></data>
+  <data name="SubToHrTitle" xml:space="preserve"><value>مراجعة الأداء جاهزة للموارد البشرية</value></data>
+  <data name="SubToHrIntro" xml:space="preserve"><value>أكمل المدير نموذج إدارة الأداء وهو جاهز الآن لمراجعتكم:</value></data>
+  <data name="SubToHrRequiredAction" xml:space="preserve"><value>إكمال المراجعة الأولى للموارد البشرية</value></data>
+
+  <!-- Hr1Approved -->
+  <data name="Hr1ApprovedSubject" xml:space="preserve"><value>نموذج الأداء - جاهز للمراجعة النهائية للموارد البشرية (المراجع الثاني) | {0} | {1}</value></data>
+  <data name="Hr1ApprovedTitle" xml:space="preserve"><value>مطلوب مراجعة نهائية من الموارد البشرية</value></data>
+  <data name="Hr1ApprovedRequiredAction" xml:space="preserve"><value>إكمال المراجعة النهائية للموارد البشرية والاعتماد</value></data>
+
+  <!-- FinalApproved -->
+  <data name="FinalApprovedSubject" xml:space="preserve"><value>نموذج الأداء - معتمد (نهائي) | {0} | {1}</value></data>
+  <data name="FinalApprovedTitle" xml:space="preserve"><value>تم اعتماد تقييم الأداء بشكل نهائي</value></data>
+  <data name="FinalApprovedIntro" xml:space="preserve"><value>تم الآن اعتماد نموذج إدارة الأداء هذا نهائيًا وأرشفته.</value></data>
+  <data name="FinalApprovedRequiredAction" xml:space="preserve"><value>لا يوجد — هذه المراجعة مكتملة</value></data>
+
+  <!-- Reverted -->
+  <data name="RevertedSubject" xml:space="preserve"><value>نموذج الأداء يتطلب مراجعة | {0} | {1}</value></data>
+  <data name="RevertedTitle" xml:space="preserve"><value>نموذج الأداء يتطلب تعديلاً</value></data>
+  <data name="RevertedIntro" xml:space="preserve"><value>قامت الموارد البشرية بمراجعة نموذج إدارة الأداء أدناه وهو يتطلب تعديلات:</value></data>
+  <data name="RevertedRequiredAction" xml:space="preserve"><value>تعديل النموذج وفق ملاحظات الموارد البشرية وإعادة إرساله</value></data>
+
+  <!-- Reminder -->
+  <data name="ReminderSubject" xml:space="preserve"><value>تذكير: إجراء مطلوب | {0} | {1}</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>تذكير: إجراء مطلوب</value></data>
+  <data name="ReminderIntro" xml:space="preserve"><value>ما زال تقييم الأداء أدناه بانتظار الإجراء منذ {0} يوم/أيام.</value></data>
+
+  <!-- EscalationDigest -->
+  <data name="EscalationSubject" xml:space="preserve"><value>تصعيد: {0} من مراجعات الأداء المتأخرة</value></data>
+  <data name="EscalationTitle" xml:space="preserve"><value>التصعيد الأسبوعي: المراجعات المتأخرة</value></data>
+  <data name="EscalationIntro" xml:space="preserve"><value>هناك {0} من مراجعات الأداء المتأخرة عن الفترة المحددة وتتطلب التصعيد:</value></data>
+  <data name="EscalationColAwaiting" xml:space="preserve"><value>الجهة المنتظرة</value></data>
+  <data name="EscalationColWaitingStatus" xml:space="preserve"><value>مدة الانتظار / الحالة</value></data>
+  <data name="EscalationDaysSuffix" xml:space="preserve"><value>{0} يوم</value></data>
+</root>

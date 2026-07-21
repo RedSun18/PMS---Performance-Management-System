@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Net;
 using System.Text;
 using ClosedXML.Excel;
+using PerformanceManagement.Core.Resources;
 
 namespace PerformanceManagement.Core.Services;
 
@@ -9,6 +11,13 @@ namespace PerformanceManagement.Core.Services;
 /// PDF (HTML printed via headless Chromium — see <see cref="PdfRenderer"/>) and Excel
 /// (ClosedXML) files. Pure rendering — no database access here, so the data-shaping and
 /// export-formatting concerns stay independently testable/replaceable.
+///
+/// Every export is generated synchronously inside the request that asked for the download, so
+/// <see cref="CultureInfo.CurrentUICulture"/> is already the viewer's own selected language (set by
+/// RequestLocalizationMiddleware earlier in the pipeline) — labels are resolved via
+/// <see cref="ReportResource"/> against that ambient culture, no explicit plumbing needed from the
+/// calling page. "Performance Management System" is the product's brand name, kept as-is in both
+/// languages for the same reason every workflow email leaves it untranslated.
 /// </summary>
 public static class ReportExportService
 {
@@ -17,59 +26,63 @@ public static class ReportExportService
     // ================================================================ PDF
     public static Task<byte[]> EmployeeReportToPdfAsync(EmployeePerformanceReport r)
     {
-        var h = new HtmlReportBuilder($"Employee Performance Report — {r.EmpName}");
-        h.AddBrandHeader("Employee Performance Report", r.GeneratedAt);
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
+        var h = new HtmlReportBuilder(c);
+        h.AddBrandHeader(G("EmployeePerformanceReport"), r.GeneratedAt);
 
-        h.AddKeyValueTable("Employee Information",
-            ("Employee", $"{r.EmpName} ({r.EmpCode})"),
-            ("Department", r.Department ?? "—"),
-            ("Designation", r.Designation ?? "—"),
-            ("Grade", r.Grade ?? "—"),
-            ("Direct Manager", r.ManagerName ?? "—"),
-            ("Review Year", r.EvalYear.ToString()),
-            ("Reference Number", r.RefNo),
-            ("Final Status", r.Status));
+        h.AddKeyValueTable(G("EmployeeInformation"),
+            (G("Employee"), $"{r.EmpName} ({r.EmpCode})"),
+            (G("Department"), r.Department ?? "—"),
+            (G("Designation"), r.Designation ?? "—"),
+            (G("Grade"), r.Grade ?? "—"),
+            (G("DirectManager"), r.ManagerName ?? "—"),
+            (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("ReferenceNumber"), r.RefNo),
+            (G("FinalStatus"), r.Status));
 
-        h.AddKeyValueTable("Overall Score",
-            ("KPI Score", r.KpiScore.ToString("F2")),
-            ("Competency Score", r.CompScore.ToString("F2")),
-            ("Overall Score", r.OverallScore.ToString("F2")),
-            ("Rating", r.Rating));
+        h.AddKeyValueTable(G("OverallScoreHeading"),
+            (G("KpiScore"), r.KpiScore.ToString("F2", c)),
+            (G("CompetencyScore"), r.CompScore.ToString("F2", c)),
+            (G("OverallScore"), r.OverallScore.ToString("F2", c)),
+            (G("Rating"), r.Rating));
 
         if (r.Kpis.Count > 0)
         {
-            h.AddDataTable("KPI Breakdown",
-                new[] { "Perspective", "KPI", "Target", "Weight %", "Achievement %", "Weighted", "Comments" },
-                r.Kpis.Select(k => new[] { k.Perspective, k.Name, k.Target ?? "", k.Weight.ToString(),
-                    k.Achievement.ToString(), k.Weighted.ToString("F2"), k.Comments ?? "" }));
+            h.AddDataTable(G("KpiBreakdown"),
+                new[] { (G("Perspective"), false), (G("Kpi"), false), (G("Target"), true), (G("WeightPercent"), false),
+                    (G("AchievementPercent"), false), (G("Weighted"), false), (G("Comments"), true) },
+                r.Kpis.Select(k => new[] { k.Perspective, k.Name, k.Target ?? "", k.Weight.ToString(c),
+                    k.Achievement.ToString(c), k.Weighted.ToString("F2", c), k.Comments ?? "" }));
         }
 
         if (r.Competencies.Count > 0)
         {
-            h.AddDataTable("Competency Breakdown",
-                new[] { "Type", "Competency", "Weight %", "Achievement %", "Weighted", "Comments" },
-                r.Competencies.Select(c => new[] { c.Type == "T" ? "Technical" : "Behavioral", c.Name,
-                    c.Weight.ToString(), c.Achievement.ToString(), c.Weighted.ToString("F2"), c.Comments ?? "" }));
+            h.AddDataTable(G("CompetencyBreakdown"),
+                new[] { (G("Type"), false), (G("Competency"), false), (G("WeightPercent"), false),
+                    (G("AchievementPercent"), false), (G("Weighted"), false), (G("Comments"), true) },
+                r.Competencies.Select(comp => new[] { comp.Type == "T" ? G("Technical") : G("Behavioral"), comp.Name,
+                    comp.Weight.ToString(c), comp.Achievement.ToString(c), comp.Weighted.ToString("F2", c), comp.Comments ?? "" }));
         }
 
-        h.AddParagraphSection("Self-Assessment", r.SelfAssessment);
-        h.AddParagraphSection("Development Plan", r.DevelopmentPlan);
-        h.AddParagraphSection("Employee Acknowledgement Comments", r.EmployeeAckComments);
+        h.AddParagraphSection(G("SelfAssessment"), r.SelfAssessment);
+        h.AddParagraphSection(G("DevelopmentPlan"), r.DevelopmentPlan);
+        h.AddParagraphSection(G("EmployeeAcknowledgementComments"), r.EmployeeAckComments);
 
-        h.AddKeyValueTable("Approval History",
-            ("HR Reviewer 1", r.Hr1ReviewerName ?? "—"),
-            ("HR Review 1 Date", r.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? "—"),
-            ("HR Reviewer 1 Remarks", r.Hr1Remarks ?? "—"),
-            ("HR Reviewer 2 (Final)", r.Hr2ReviewerName ?? "—"),
-            ("HR Review 2 Date", r.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? "—"),
-            ("HR Reviewer 2 Remarks", r.Hr2Remarks ?? "—"));
+        h.AddKeyValueTable(G("ApprovalHistory"),
+            (G("HrReviewer1"), r.Hr1ReviewerName ?? "—"),
+            (G("HrReview1Date"), r.Hr1ReviewDate?.ToString("dd/MM/yyyy", c) ?? "—"),
+            (G("HrReviewer1Remarks"), r.Hr1Remarks ?? "—"),
+            (G("HrReviewer2Final"), r.Hr2ReviewerName ?? "—"),
+            (G("HrReview2Date"), r.Hr2ReviewDate?.ToString("dd/MM/yyyy", c) ?? "—"),
+            (G("HrReviewer2Remarks"), r.Hr2Remarks ?? "—"));
 
         if (r.History.Count > 0)
         {
-            h.AddDataTable("Workflow History",
-                new[] { "From", "To", "Changed By", "Changed At", "Note" },
-                r.History.Select(hi => new[] { hi.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(hi.FromStatus),
-                    Domain.PmFormStatus.DisplayName(hi.ToStatus), hi.ChangedBy, hi.ChangedAt.ToString("dd/MM/yyyy HH:mm"), hi.Note ?? "" }));
+            h.AddDataTable(G("WorkflowHistory"),
+                new[] { (G("From"), false), (G("To"), false), (G("ChangedBy"), false), (G("ChangedAt"), false), (G("Note"), true) },
+                r.History.Select(hi => new[] { hi.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(hi.FromStatus, c),
+                    Domain.PmFormStatus.DisplayName(hi.ToStatus, c), hi.ChangedBy, hi.ChangedAt.ToString("dd/MM/yyyy HH:mm", c), hi.Note ?? "" }));
         }
 
         return PdfRenderer.RenderAsync(h.Build());
@@ -77,54 +90,61 @@ public static class ReportExportService
 
     public static Task<byte[]> DepartmentReportToPdfAsync(DepartmentSummaryReport r)
     {
-        var h = new HtmlReportBuilder($"Department Summary — {r.DeptName}");
-        h.AddBrandHeader("Department Summary Report", r.GeneratedAt);
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
+        var h = new HtmlReportBuilder(c);
+        h.AddBrandHeader(G("DepartmentSummaryReport"), r.GeneratedAt);
 
-        h.AddKeyValueTable("Department Information",
-            ("Department", $"{r.DeptName} ({r.DeptCode})"),
-            ("Review Year", r.EvalYear.ToString()),
-            ("Employee Count", r.TotalEmployees.ToString()),
-            ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
+        h.AddKeyValueTable(G("DepartmentInformation"),
+            (G("Department"), $"{r.DeptName} ({r.DeptCode})"),
+            (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("EmployeeCount"), r.TotalEmployees.ToString(c)),
+            (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
 
-        h.AddEmployeeRowsTable("Employees", r.Employees);
+        h.AddEmployeeRowsTable(G("Employees"), r.Employees, c);
         return PdfRenderer.RenderAsync(h.Build());
     }
 
     public static Task<byte[]> ManagerReportToPdfAsync(ManagerSummaryReport r)
     {
-        var h = new HtmlReportBuilder($"Manager Summary — {r.ManagerName}");
-        h.AddBrandHeader("Manager Summary Report", r.GeneratedAt);
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
+        var h = new HtmlReportBuilder(c);
+        h.AddBrandHeader(G("ManagerSummaryReport"), r.GeneratedAt);
 
-        h.AddKeyValueTable("Manager Information",
-            ("Manager", $"{r.ManagerName} ({r.ManagerEmpCode})"),
-            ("Review Year", r.EvalYear.ToString()),
-            ("Team Size", r.TotalEmployees.ToString()),
-            ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
+        h.AddKeyValueTable(G("ManagerInformation"),
+            (G("Manager"), $"{r.ManagerName} ({r.ManagerEmpCode})"),
+            (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("TeamSize"), r.TotalEmployees.ToString(c)),
+            (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
 
-        h.AddEmployeeRowsTable("Team Members", r.TeamMembers);
+        h.AddEmployeeRowsTable(G("TeamMembers"), r.TeamMembers, c);
         return PdfRenderer.RenderAsync(h.Build());
     }
 
     public static Task<byte[]> OverallReportToPdfAsync(OverallOrganizationReport r)
     {
-        var h = new HtmlReportBuilder($"Overall Organization Summary — {r.EvalYear}");
-        h.AddBrandHeader("Overall Organization Summary", r.GeneratedAt);
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
+        var h = new HtmlReportBuilder(c);
+        h.AddBrandHeader(G("OverallOrganizationSummary"), r.GeneratedAt);
 
-        h.AddKeyValueTable("Organization Overview",
-            ("Review Year", r.EvalYear.ToString()),
-            ("Total Employees", r.TotalEmployees.ToString()),
-            ("Forms Generated", r.TotalForms.ToString()),
-            ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
+        h.AddKeyValueTable(G("OrganizationOverview"),
+            (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("TotalEmployees"), r.TotalEmployees.ToString(c)),
+            (G("FormsGenerated"), r.TotalForms.ToString(c)),
+            (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
 
         if (r.Departments.Count > 0)
         {
-            h.AddDataTable("Department Breakdown",
-                new[] { "Department", "Employees", "Finalized", "Completion %", "Average Score" },
-                r.Departments.Select(d => new[] { d.DeptName, d.EmployeeCount.ToString(), d.FinalizedCount.ToString(),
-                    $"{d.CompletionPercent}%", d.AverageScore.ToString("F2") }));
+            h.AddDataTable(G("DepartmentBreakdown"),
+                new[] { (G("Department"), false), (G("Employees"), false), (G("Finalized"), false),
+                    (G("CompletionPercent"), false), (G("AverageScore"), false) },
+                r.Departments.Select(d => new[] { d.DeptName, d.EmployeeCount.ToString(c), d.FinalizedCount.ToString(c),
+                    $"{d.CompletionPercent}%", d.AverageScore.ToString("F2", c) }));
         }
 
         return PdfRenderer.RenderAsync(h.Build());
@@ -133,49 +153,52 @@ public static class ReportExportService
     // ================================================================ Excel
     public static byte[] EmployeeReportToExcel(EmployeePerformanceReport r)
     {
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
-        var ws = wb.Worksheets.Add("Employee Report");
-        var row = WriteBrandHeader(ws, "Employee Performance Report", r.GeneratedAt);
+        var ws = wb.Worksheets.Add(G("EmployeePerformanceReport"));
+        SetSheetDirection(ws, c);
+        var row = WriteBrandHeader(ws, G("EmployeePerformanceReport"), r.GeneratedAt, c);
 
-        row = WriteKeyValueBlock(ws, row, "Employee Information",
-            ("Employee", $"{r.EmpName} ({r.EmpCode})"), ("Department", r.Department ?? "—"),
-            ("Designation", r.Designation ?? "—"), ("Grade", r.Grade ?? "—"),
-            ("Direct Manager", r.ManagerName ?? "—"), ("Review Year", r.EvalYear.ToString()),
-            ("Reference Number", r.RefNo), ("Final Status", r.Status));
+        row = WriteKeyValueBlock(ws, row, G("EmployeeInformation"),
+            (G("Employee"), $"{r.EmpName} ({r.EmpCode})"), (G("Department"), r.Department ?? "—"),
+            (G("Designation"), r.Designation ?? "—"), (G("Grade"), r.Grade ?? "—"),
+            (G("DirectManager"), r.ManagerName ?? "—"), (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("ReferenceNumber"), r.RefNo), (G("FinalStatus"), r.Status));
 
-        row = WriteKeyValueBlock(ws, row, "Overall Score",
-            ("KPI Score", r.KpiScore.ToString("F2")), ("Competency Score", r.CompScore.ToString("F2")),
-            ("Overall Score", r.OverallScore.ToString("F2")), ("Rating", r.Rating));
+        row = WriteKeyValueBlock(ws, row, G("OverallScoreHeading"),
+            (G("KpiScore"), r.KpiScore.ToString("F2", c)), (G("CompetencyScore"), r.CompScore.ToString("F2", c)),
+            (G("OverallScore"), r.OverallScore.ToString("F2", c)), (G("Rating"), r.Rating));
 
         if (r.Kpis.Count > 0)
         {
-            row = WriteDataTable(ws, row, "KPI Breakdown",
-                new[] { "Perspective", "KPI", "Target", "Weight %", "Achievement %", "Weighted", "Comments" },
+            row = WriteDataTable(ws, row, G("KpiBreakdown"),
+                new[] { G("Perspective"), G("Kpi"), G("Target"), G("WeightPercent"), G("AchievementPercent"), G("Weighted"), G("Comments") },
                 r.Kpis.Select(k => new object?[] { k.Perspective, k.Name, k.Target, k.Weight, k.Achievement, k.Weighted, k.Comments }));
         }
 
         if (r.Competencies.Count > 0)
         {
-            row = WriteDataTable(ws, row, "Competency Breakdown",
-                new[] { "Type", "Competency", "Weight %", "Achievement %", "Weighted", "Comments" },
-                r.Competencies.Select(c => new object?[] { c.Type == "T" ? "Technical" : "Behavioral", c.Name, c.Weight, c.Achievement, c.Weighted, c.Comments }));
+            row = WriteDataTable(ws, row, G("CompetencyBreakdown"),
+                new[] { G("Type"), G("Competency"), G("WeightPercent"), G("AchievementPercent"), G("Weighted"), G("Comments") },
+                r.Competencies.Select(comp => new object?[] { comp.Type == "T" ? G("Technical") : G("Behavioral"), comp.Name, comp.Weight, comp.Achievement, comp.Weighted, comp.Comments }));
         }
 
-        row = WriteKeyValueBlock(ws, row, "Comments & Development",
-            ("Self-Assessment", r.SelfAssessment ?? "—"), ("Development Plan", r.DevelopmentPlan ?? "—"),
-            ("Employee Acknowledgement Comments", r.EmployeeAckComments ?? "—"));
+        row = WriteKeyValueBlock(ws, row, G("CommentsAndDevelopment"),
+            (G("SelfAssessment"), r.SelfAssessment ?? "—"), (G("DevelopmentPlan"), r.DevelopmentPlan ?? "—"),
+            (G("EmployeeAcknowledgementComments"), r.EmployeeAckComments ?? "—"));
 
-        row = WriteKeyValueBlock(ws, row, "Approval History",
-            ("HR Reviewer 1", r.Hr1ReviewerName ?? "—"), ("HR Review 1 Date", r.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? "—"),
-            ("HR Reviewer 1 Remarks", r.Hr1Remarks ?? "—"), ("HR Reviewer 2 (Final)", r.Hr2ReviewerName ?? "—"),
-            ("HR Review 2 Date", r.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? "—"), ("HR Reviewer 2 Remarks", r.Hr2Remarks ?? "—"));
+        row = WriteKeyValueBlock(ws, row, G("ApprovalHistory"),
+            (G("HrReviewer1"), r.Hr1ReviewerName ?? "—"), (G("HrReview1Date"), r.Hr1ReviewDate?.ToString("dd/MM/yyyy", c) ?? "—"),
+            (G("HrReviewer1Remarks"), r.Hr1Remarks ?? "—"), (G("HrReviewer2Final"), r.Hr2ReviewerName ?? "—"),
+            (G("HrReview2Date"), r.Hr2ReviewDate?.ToString("dd/MM/yyyy", c) ?? "—"), (G("HrReviewer2Remarks"), r.Hr2Remarks ?? "—"));
 
         if (r.History.Count > 0)
         {
-            WriteDataTable(ws, row, "Workflow History",
-                new[] { "From", "To", "Changed By", "Changed At", "Note" },
-                r.History.Select(h => new object?[] { h.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(h.FromStatus),
-                    Domain.PmFormStatus.DisplayName(h.ToStatus), h.ChangedBy, h.ChangedAt.ToString("dd/MM/yyyy HH:mm"), h.Note }));
+            WriteDataTable(ws, row, G("WorkflowHistory"),
+                new[] { G("From"), G("To"), G("ChangedBy"), G("ChangedAt"), G("Note") },
+                r.History.Select(h => new object?[] { h.FromStatus is null ? "—" : Domain.PmFormStatus.DisplayName(h.FromStatus, c),
+                    Domain.PmFormStatus.DisplayName(h.ToStatus, c), h.ChangedBy, h.ChangedAt.ToString("dd/MM/yyyy HH:mm", c), h.Note }));
         }
 
         ws.Columns().AdjustToContents();
@@ -184,46 +207,55 @@ public static class ReportExportService
 
     public static byte[] DepartmentReportToExcel(DepartmentSummaryReport r)
     {
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
-        var ws = wb.Worksheets.Add("Department Summary");
-        var row = WriteBrandHeader(ws, "Department Summary Report", r.GeneratedAt);
-        row = WriteKeyValueBlock(ws, row, "Department Information",
-            ("Department", $"{r.DeptName} ({r.DeptCode})"), ("Review Year", r.EvalYear.ToString()),
-            ("Employee Count", r.TotalEmployees.ToString()), ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
-        WriteEmployeeRowsTable(ws, row, "Employees", r.Employees);
+        var ws = wb.Worksheets.Add(G("DepartmentSummaryReport"));
+        SetSheetDirection(ws, c);
+        var row = WriteBrandHeader(ws, G("DepartmentSummaryReport"), r.GeneratedAt, c);
+        row = WriteKeyValueBlock(ws, row, G("DepartmentInformation"),
+            (G("Department"), $"{r.DeptName} ({r.DeptCode})"), (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("EmployeeCount"), r.TotalEmployees.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
+        WriteEmployeeRowsTable(ws, row, G("Employees"), r.Employees, c);
         ws.Columns().AdjustToContents();
         return ToBytes(wb);
     }
 
     public static byte[] ManagerReportToExcel(ManagerSummaryReport r)
     {
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
-        var ws = wb.Worksheets.Add("Manager Summary");
-        var row = WriteBrandHeader(ws, "Manager Summary Report", r.GeneratedAt);
-        row = WriteKeyValueBlock(ws, row, "Manager Information",
-            ("Manager", $"{r.ManagerName} ({r.ManagerEmpCode})"), ("Review Year", r.EvalYear.ToString()),
-            ("Team Size", r.TotalEmployees.ToString()), ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
-        WriteEmployeeRowsTable(ws, row, "Team Members", r.TeamMembers);
+        var ws = wb.Worksheets.Add(G("ManagerSummaryReport"));
+        SetSheetDirection(ws, c);
+        var row = WriteBrandHeader(ws, G("ManagerSummaryReport"), r.GeneratedAt, c);
+        row = WriteKeyValueBlock(ws, row, G("ManagerInformation"),
+            (G("Manager"), $"{r.ManagerName} ({r.ManagerEmpCode})"), (G("ReviewYear"), r.EvalYear.ToString()),
+            (G("TeamSize"), r.TotalEmployees.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
+        WriteEmployeeRowsTable(ws, row, G("TeamMembers"), r.TeamMembers, c);
         ws.Columns().AdjustToContents();
         return ToBytes(wb);
     }
 
     public static byte[] OverallReportToExcel(OverallOrganizationReport r)
     {
+        var c = CultureInfo.CurrentUICulture;
+        string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
-        var ws = wb.Worksheets.Add("Overall Summary");
-        var row = WriteBrandHeader(ws, "Overall Organization Summary", r.GeneratedAt);
-        row = WriteKeyValueBlock(ws, row, "Organization Overview",
-            ("Review Year", r.EvalYear.ToString()), ("Total Employees", r.TotalEmployees.ToString()),
-            ("Forms Generated", r.TotalForms.ToString()), ("Finalized Reviews", r.FinalizedCount.ToString()),
-            ("Average Overall Score", r.AverageScore.ToString("F2")));
+        var ws = wb.Worksheets.Add(G("OverallOrganizationSummary"));
+        SetSheetDirection(ws, c);
+        var row = WriteBrandHeader(ws, G("OverallOrganizationSummary"), r.GeneratedAt, c);
+        row = WriteKeyValueBlock(ws, row, G("OrganizationOverview"),
+            (G("ReviewYear"), r.EvalYear.ToString()), (G("TotalEmployees"), r.TotalEmployees.ToString(c)),
+            (G("FormsGenerated"), r.TotalForms.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
+            (G("AverageOverallScore"), r.AverageScore.ToString("F2", c)));
 
         if (r.Departments.Count > 0)
         {
-            WriteDataTable(ws, row, "Department Breakdown",
-                new[] { "Department", "Employees", "Finalized", "Completion %", "Average Score" },
+            WriteDataTable(ws, row, G("DepartmentBreakdown"),
+                new[] { G("Department"), G("Employees"), G("Finalized"), G("CompletionPercent"), G("AverageScore") },
                 r.Departments.Select(d => new object?[] { d.DeptName, d.EmployeeCount, d.FinalizedCount, $"{d.CompletionPercent}%", d.AverageScore }));
         }
 
@@ -232,14 +264,19 @@ public static class ReportExportService
     }
 
     // ================================================================ ClosedXML helpers
-    private static int WriteBrandHeader(IXLWorksheet ws, string title, DateTime generatedAt)
+    /// <summary>Arabic reads right-to-left, so the sheet's own column order and text direction flip
+    /// too — otherwise every worksheet would look transposed against its own content in Excel.</summary>
+    private static void SetSheetDirection(IXLWorksheet ws, CultureInfo c) =>
+        ws.RightToLeft = c.TwoLetterISOLanguageName == "ar";
+
+    private static int WriteBrandHeader(IXLWorksheet ws, string title, DateTime generatedAt, CultureInfo c)
     {
         ws.Cell(1, 1).Value = AppName;
         ws.Cell(1, 1).Style.Font.FontSize = 10;
         ws.Cell(2, 1).Value = title;
         ws.Cell(2, 1).Style.Font.FontSize = 16;
         ws.Cell(2, 1).Style.Font.Bold = true;
-        ws.Cell(3, 1).Value = $"Generated {generatedAt:dd MMM yyyy HH:mm}";
+        ws.Cell(3, 1).Value = $"{ReportResource.Get("Generated", c)} {generatedAt.ToString("dd MMM yyyy HH:mm", c)}";
         ws.Cell(3, 1).Style.Font.FontSize = 8;
         ws.Cell(3, 1).Style.Font.FontColor = XLColor.Gray;
         return 5;
@@ -296,10 +333,11 @@ public static class ReportExportService
         return row + 1;
     }
 
-    private static void WriteEmployeeRowsTable(IXLWorksheet ws, int startRow, string heading, IReadOnlyList<ReportEmployeeRow> rows)
+    private static void WriteEmployeeRowsTable(IXLWorksheet ws, int startRow, string heading, IReadOnlyList<ReportEmployeeRow> rows, CultureInfo c)
     {
         WriteDataTable(ws, startRow, heading,
-            new[] { "Employee Code", "Name", "Designation", "Overall Score", "Rating", "Status" },
+            new[] { ReportResource.Get("EmployeeCode", c), ReportResource.Get("Name", c), ReportResource.Get("Designation", c),
+                ReportResource.Get("OverallScore", c), ReportResource.Get("Rating", c), ReportResource.Get("Status", c) },
             rows.Select(r => new object?[] { r.EmpCode, r.Name, r.Designation, r.OverallScore, r.Rating, r.Status }));
     }
 
@@ -318,12 +356,14 @@ public static class ReportExportService
     /// values come from free-text database fields.</summary>
     private sealed class HtmlReportBuilder
     {
-        private static readonly string[] LongTextHeaders = { "Comments", "Note", "Remarks", "Target" };
+        private readonly CultureInfo _culture;
+        private readonly bool _isRtl;
         private readonly StringBuilder _body = new();
 
-        public HtmlReportBuilder(string title)
+        public HtmlReportBuilder(CultureInfo culture)
         {
-            _ = title; // reserved for a future <title> if reports gain a print-preview route
+            _culture = culture;
+            _isRtl = culture.TwoLetterISOLanguageName == "ar";
         }
 
         public void AddBrandHeader(string title, DateTime generatedAt)
@@ -331,7 +371,7 @@ public static class ReportExportService
             _body.Append($"""
                 <div class="brand">{Enc(AppName)}</div>
                 <div class="report-title">{Enc(title)}</div>
-                <div class="generated">Generated {generatedAt:dddd, dd MMMM yyyy} at {generatedAt:HH:mm}</div>
+                <div class="generated">{Enc(ReportResource.Get("Generated", _culture))} {Enc(generatedAt.ToString("dddd, dd MMMM yyyy", _culture))} {Enc(generatedAt.ToString("HH:mm", _culture))}</div>
                 <hr class="rule" />
                 """);
         }
@@ -344,25 +384,28 @@ public static class ReportExportService
             _body.Append("</table>");
         }
 
-        public void AddDataTable(string heading, string[] headers, IEnumerable<string[]> rows)
+        /// <summary>Column headers paired with whether that column carries long free text (comments/
+        /// notes/remarks/targets) and so needs roughly double the width of a plain data column —
+        /// left at equal widths, a comments column is exactly as cramped as a two-digit "Weight %"
+        /// column, illegible the moment anyone types a few words. Driven by an explicit flag per
+        /// column (rather than matching against the English header text) so it still works once
+        /// headers are localized to Arabic.</summary>
+        public void AddDataTable(string heading, (string Header, bool Wide)[] columns, IEnumerable<string[]> rows)
         {
             _body.Append($"<div class=\"section-heading\">{Enc(heading)}</div>");
 
-            // Long-text columns (Comments/Note/Remarks/Target) get roughly double the width of a
-            // plain data column — left at equal widths, a "Comments" column is exactly as cramped
-            // as a two-digit "Weight %" column, illegible the moment anyone types a few words.
-            var weights = headers.Select(hd => LongTextHeaders.Contains(hd) ? 2.0 : 1.0).ToArray();
+            var weights = columns.Select(col => col.Wide ? 2.0 : 1.0).ToArray();
             var totalWeight = weights.Sum();
 
             _body.Append("<table class=\"data\"><colgroup>");
             foreach (var w in weights) _body.Append($"<col style=\"width:{w / totalWeight * 100:0.00}%\" />");
             _body.Append("</colgroup><thead><tr>");
-            foreach (var hd in headers) _body.Append($"<th>{Enc(hd)}</th>");
+            foreach (var col in columns) _body.Append($"<th>{Enc(col.Header)}</th>");
             _body.Append("</tr></thead><tbody>");
             foreach (var cells in rows)
             {
                 _body.Append("<tr>");
-                for (var i = 0; i < headers.Length; i++)
+                for (var i = 0; i < columns.Length; i++)
                     _body.Append($"<td>{Enc(i < cells.Length ? cells[i] : "")}</td>");
                 _body.Append("</tr>");
             }
@@ -375,16 +418,18 @@ public static class ReportExportService
             _body.Append($"<div class=\"section-heading\">{Enc(heading)}</div><p class=\"para\">{Enc(text)}</p>");
         }
 
-        public void AddEmployeeRowsTable(string heading, IReadOnlyList<ReportEmployeeRow> rows)
+        public void AddEmployeeRowsTable(string heading, IReadOnlyList<ReportEmployeeRow> rows, CultureInfo c)
         {
             if (rows.Count == 0)
             {
-                AddParagraphSection(heading, "No employees found.");
+                AddParagraphSection(heading, ReportResource.Get("NoEmployeesFound", c));
                 return;
             }
             AddDataTable(heading,
-                new[] { "Employee Code", "Name", "Designation", "Overall Score", "Rating", "Status" },
-                rows.Select(r => new[] { r.EmpCode, r.Name, r.Designation ?? "", r.OverallScore.ToString("F2"), r.Rating, r.Status }));
+                new[] { (ReportResource.Get("EmployeeCode", c), false), (ReportResource.Get("Name", c), false),
+                    (ReportResource.Get("Designation", c), false), (ReportResource.Get("OverallScore", c), false),
+                    (ReportResource.Get("Rating", c), false), (ReportResource.Get("Status", c), false) },
+                rows.Select(r => new[] { r.EmpCode, r.Name, r.Designation ?? "", r.OverallScore.ToString("F2", c), r.Rating, r.Status }));
         }
 
         public string Build()
@@ -396,17 +441,18 @@ public static class ReportExportService
             // collide with C# interpolated raw-string escaping rules; the two font URLs are
             // substituted afterward via string.Format placeholders instead.
             var style = string.Format(StyleTemplate, latinFont, arabicFont);
+            var dir = _isRtl ? "rtl" : "ltr";
 
             return $"""
                 <!doctype html>
-                <html lang="en">
+                <html dir="{dir}" lang="{_culture.TwoLetterISOLanguageName}">
                 <head>
                 <meta charset="utf-8" />
                 <style>
                 {style}
                 </style>
                 </head>
-                <body>
+                <body dir="{dir}">
                 {_body}
                 </body>
                 </html>

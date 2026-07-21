@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="NewEmployeeTitle" xml:space="preserve"><value>موظف جديد</value></data>
+  <data name="EditEmployeeTitle" xml:space="preserve"><value>تعديل بيانات الموظف {0}</value></data>
+  <data name="NewEmployeeHeader" xml:space="preserve"><value>موظف جديد</value></data>
+  <data name="EditEmployeeHeader" xml:space="preserve"><value>تعديل بيانات الموظف — {0}</value></data>
+  <data name="EmployeeDetailsHeader" xml:space="preserve"><value>بيانات الموظف (مجموعة الحقول ذات الصلة بالأداء — راجع docs/legacy-mapping.md §5)</value></data>
+  <data name="NewCodeHint" xml:space="preserve"><value>تستخدم السجلات الجديدة أرقامًا من 4 خانات في الأرقام المرجعية لنماذج الأداء.</value></data>
+  <data name="LatinNameLabel" xml:space="preserve"><value>الاسم باللغة اللاتينية</value></data>
+  <data name="ArabicNameLabel" xml:space="preserve"><value>الاسم باللغة العربية</value></data>
+  <data name="DepartmentDisabledSuffix" xml:space="preserve"><value> (معطّل)</value></data>
+  <data name="DeptDisabledNotice" xml:space="preserve"><value>تم تعطيل القسم الحالي لهذا الموظف، ولا يمكن اختياره مجددًا لموظفين آخرين.</value></data>
+  <data name="JoinDateLabel" xml:space="preserve"><value>تاريخ الالتحاق</value></data>
+  <data name="TerminationDateLabel" xml:space="preserve"><value>تاريخ انتهاء الخدمة</value></data>
+  <data name="DirectManagerFormLabel" xml:space="preserve"><value>المدير المباشر (لأغراض نموذج الأداء)</value></data>
+  <data name="NoneOption" xml:space="preserve"><value>— بدون —</value></data>
+  <data name="ManagerHint" xml:space="preserve"><value>محدَّد لأغراض نموذج الأداء، وقد يختلف عن الهيكل التنظيمي الرسمي.</value></data>
+</root>

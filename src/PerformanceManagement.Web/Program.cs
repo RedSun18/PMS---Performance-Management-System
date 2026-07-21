@@ -114,9 +114,11 @@ builder.Services.Configure<RequestLocalizationOptions>(o =>
     o.DefaultRequestCulture = new RequestCulture("en");
     o.SupportedCultures = supportedCultures;
     o.SupportedUICultures = supportedCultures;
+    // Replaces the plain cookie provider — see SettingsAwareCultureProvider for the System
+    // Settings "Language Selection" toggle and per-user PreferredCulture fallback it adds.
     o.RequestCultureProviders = new List<IRequestCultureProvider>
     {
-        new CookieRequestCultureProvider { CookieName = CookieRequestCultureProvider.DefaultCookieName }
+        new PerformanceManagement.Web.Culture.SettingsAwareCultureProvider()
     };
 });
 
@@ -161,9 +163,13 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseStaticFiles();
-app.UseRequestLocalization(app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value);
 app.UseRouting();
+// Authentication before localization (not the more common order) so SettingsAwareCultureProvider
+// can read HttpContext.User — it falls back to the signed-in user's saved PreferredCulture when
+// no culture cookie is present yet (new browser/device), so language follows the account, not
+// just the browser. HttpContext.User is only populated once UseAuthentication has run.
 app.UseAuthentication();
+app.UseRequestLocalization(app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>().Value);
 app.UseAuthorization();
 app.UseSession();
 app.MapRazorPages();

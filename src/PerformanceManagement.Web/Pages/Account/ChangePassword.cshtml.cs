@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Account;
 
@@ -18,7 +19,11 @@ public class ChangePasswordModel : AppPageModel
 {
     private readonly PmDbContext _db;
     private readonly SettingsService _settings;
-    public ChangePasswordModel(PmDbContext db, SettingsService settings) { _db = db; _settings = settings; }
+    private readonly IStringLocalizer<ChangePasswordModel> _localizer;
+    public ChangePasswordModel(PmDbContext db, SettingsService settings, IStringLocalizer<ChangePasswordModel> localizer)
+    {
+        _db = db; _settings = settings; _localizer = localizer;
+    }
 
     public string? Error { get; set; }
     /// <summary>True when the user was forced here (vs. a voluntary password change from settings).</summary>
@@ -44,7 +49,7 @@ public class ChangePasswordModel : AppPageModel
 
         if (!DatabaseSeeder.VerifyPassword(user, currentPassword ?? ""))
         {
-            Error = "Current password is incorrect.";
+            Error = _localizer["CurrentPasswordIncorrect"];
             return Page();
         }
         var passwordError = InputValidation.ValidatePassword(newPassword ?? "", rules.MinimumPasswordLength, rules.PasswordComplexityRequired);
@@ -55,7 +60,7 @@ public class ChangePasswordModel : AppPageModel
         }
         if (newPassword != confirmPassword)
         {
-            Error = "New password and confirmation do not match.";
+            Error = _localizer["PasswordsDoNotMatch"];
             return Page();
         }
 
@@ -73,8 +78,8 @@ public class ChangePasswordModel : AppPageModel
 
     private async Task<string> BuildPasswordRuleHintAsync() => BuildPasswordRuleHint(await _settings.GetSecurityRulesAsync());
 
-    private static string BuildPasswordRuleHint(SecurityRules rules) =>
+    private string BuildPasswordRuleHint(SecurityRules rules) =>
         rules.PasswordComplexityRequired
-            ? $"At least {rules.MinimumPasswordLength} characters, including a letter and a number."
-            : $"At least {rules.MinimumPasswordLength} characters.";
+            ? _localizer["PasswordRuleWithComplexity", rules.MinimumPasswordLength]
+            : _localizer["PasswordRuleLengthOnly", rules.MinimumPasswordLength];
 }

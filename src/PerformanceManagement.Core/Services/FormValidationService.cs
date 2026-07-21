@@ -1,4 +1,5 @@
 using PerformanceManagement.Core.Domain;
+using PerformanceManagement.Core.Resources;
 
 namespace PerformanceManagement.Core.Services;
 
@@ -27,31 +28,36 @@ public class FormValidationService
         var errors = new List<string>();
         if (form.Kpis.Any(k => k.RecordSeq != editingSeq &&
                                k.KpiCode.Equals(master.KpiId, StringComparison.OrdinalIgnoreCase)))
-            errors.Add("Duplicate KPI is not allowed.");
+            errors.Add(ValidationResource.Get("DuplicateKpi"));
         if (editingSeq is null && form.Kpis.Count >= FormValidationRules.MaxKpiCount)
-            errors.Add($"Maximum {FormValidationRules.MaxKpiCount} KPIs allowed.");
+            errors.Add(ValidationResource.Get("MaxKpisAllowed", FormValidationRules.MaxKpiCount));
         if (weight < master.MinWeight || weight > master.MaxWeight)
-            errors.Add($"KPI '{master.Name}' weight must be between {master.MinWeight} and {master.MaxWeight}.");
+            errors.Add(ValidationResource.Get("KpiWeightRange", master.Name, master.MinWeight, master.MaxWeight));
         var otherWeight = form.Kpis.Where(k => k.RecordSeq != editingSeq).Sum(k => k.ItemWeight);
         if (otherWeight + weight > 100)
-            errors.Add($"Total weight cannot exceed 100%. Current: {otherWeight}%, available: {100 - otherWeight}%.");
+            errors.Add(ValidationResource.Get("TotalWeightExceeds100", otherWeight, 100 - otherWeight));
         return errors;
     }
 
+    /// <summary>
+    /// The Competency Master's configured weight range is reference/guidance information only
+    /// (shown to managers so they know the company's recommended values) — NOT a hard rule.
+    /// Managers may enter any weight; it previously blocked out-of-range values with a
+    /// validation error identical to the KPI rule above, which was wrong for Competencies
+    /// specifically (Phase 12 Part 3). Existing weighted-score calculations are unaffected since
+    /// they only ever read the weight the manager entered, never the master's min/max.
+    /// </summary>
     public static List<string> ValidateCompItem(PmForm form, CompetencyMaster master, int weight, int? editingSeq = null)
     {
         var errors = new List<string>();
         if (form.Competencies.Any(c => c.RecordSeq != editingSeq &&
                                        c.CompCode.Equals(master.CompId, StringComparison.OrdinalIgnoreCase)))
-            errors.Add("Duplicate Competency is not allowed.");
+            errors.Add(ValidationResource.Get("DuplicateCompetency"));
         if (editingSeq is null && form.Competencies.Count >= FormValidationRules.MaxCompCount)
-            errors.Add($"Maximum {FormValidationRules.MaxCompCount} Competencies allowed.");
-        if ((master.MinWeight > 0 || master.MaxWeight > 0) &&
-            (weight < master.MinWeight || weight > master.MaxWeight))
-            errors.Add($"Competency '{master.Name}' weight must be between {master.MinWeight} and {master.MaxWeight}.");
+            errors.Add(ValidationResource.Get("MaxCompetenciesAllowed", FormValidationRules.MaxCompCount));
         var otherWeight = form.Competencies.Where(c => c.RecordSeq != editingSeq).Sum(c => c.ItemWeight);
         if (otherWeight + weight > 100)
-            errors.Add($"Total weight cannot exceed 100%. Current: {otherWeight}%, available: {100 - otherWeight}%.");
+            errors.Add(ValidationResource.Get("TotalWeightExceeds100", otherWeight, 100 - otherWeight));
         return errors;
     }
 
@@ -67,23 +73,23 @@ public class FormValidationService
         if (kpiRequired)
         {
             if (form.Kpis.Count == 0)
-                errors.Add("Please add at least one KPI before sending to employee.");
+                errors.Add(ValidationResource.Get("AtLeastOneKpiRequired"));
             else
             {
                 var total = form.Kpis.Sum(k => k.ItemWeight);
                 if (total != FormValidationRules.TotalWeightRequired)
-                    errors.Add($"KPI weights must total 100% before sending to employee. Current total: {total}%.");
+                    errors.Add(ValidationResource.Get("KpiWeightsMustTotal100", total));
                 errors.AddRange(ValidatePerspectives(form, perspectiveExempt));
             }
         }
 
         if (form.Competencies.Count == 0)
-            errors.Add("Please add at least one Competency before sending to employee.");
+            errors.Add(ValidationResource.Get("AtLeastOneCompetencyRequired"));
         else
         {
             var total = form.Competencies.Sum(c => c.ItemWeight);
             if (total != FormValidationRules.TotalWeightRequired)
-                errors.Add($"Competency weights must total 100% before sending to employee. Current total: {total}%.");
+                errors.Add(ValidationResource.Get("CompWeightsMustTotal100", total));
         }
 
         return errors;
@@ -99,24 +105,24 @@ public class FormValidationService
 
         var missingKpi = form.Kpis.Where(k => k.AchievementScore == 0).Select(k => k.KpiName).ToList();
         if (form.Kpis.Count > 0 && missingKpi.Count > 0)
-            errors.Add("Cannot Submit to HR: achievement scores missing for KPIs: " + string.Join(", ", missingKpi) + ".");
+            errors.Add(ValidationResource.Get("MissingKpiAchievementScores", string.Join(", ", missingKpi)));
 
         var missingComp = form.Competencies.Where(c => c.AchievementScore == 0).Select(c => c.CompName).ToList();
         if (form.Competencies.Count > 0 && missingComp.Count > 0)
-            errors.Add("Cannot Submit to HR: achievement scores missing for Competencies: " + string.Join(", ", missingComp) + ".");
+            errors.Add(ValidationResource.Get("MissingCompAchievementScores", string.Join(", ", missingComp)));
 
         if (!jobFamilyConfigured)
-            errors.Add("Job Family is not configured in the system. Please contact admin.");
+            errors.Add(ValidationResource.Get("JobFamilyNotConfigured"));
 
         _ = int.TryParse((form.GradeSnapshot ?? "").Trim(), out var grade);
         var kpisRequired = form.KpiWeightTotal > 0 || grade >= FormValidationRules.MinGradeForKpi;
         if (kpisRequired)
         {
             if (form.Kpis.Count < FormValidationRules.MinKpiCount || form.Kpis.Count > FormValidationRules.MaxKpiCount)
-                errors.Add($"KPI validation failed: minimum {FormValidationRules.MinKpiCount}, maximum {FormValidationRules.MaxKpiCount} KPIs required. Current: {form.Kpis.Count}.");
+                errors.Add(ValidationResource.Get("KpiCountValidationFailed", FormValidationRules.MinKpiCount, FormValidationRules.MaxKpiCount, form.Kpis.Count));
             var totalKpi = form.Kpis.Sum(k => k.ItemWeight);
             if (totalKpi != FormValidationRules.TotalWeightRequired)
-                errors.Add($"KPI weight must be 100%. Current: {totalKpi}%.");
+                errors.Add(ValidationResource.Get("KpiWeightMustBe100", totalKpi));
             errors.AddRange(ValidatePerspectives(form, perspectiveExempt));
         }
 
@@ -124,10 +130,10 @@ public class FormValidationService
         if (compsRequired)
         {
             if (form.Competencies.Count < FormValidationRules.MinCompCount || form.Competencies.Count > FormValidationRules.MaxCompCount)
-                errors.Add($"Competency validation failed: minimum {FormValidationRules.MinCompCount}, maximum {FormValidationRules.MaxCompCount} Competencies required. Current: {form.Competencies.Count}.");
+                errors.Add(ValidationResource.Get("CompCountValidationFailed", FormValidationRules.MinCompCount, FormValidationRules.MaxCompCount, form.Competencies.Count));
             var totalComp = form.Competencies.Sum(c => c.ItemWeight);
             if (totalComp != FormValidationRules.TotalWeightRequired)
-                errors.Add($"Competency weight must be 100%. Current: {totalComp}%.");
+                errors.Add(ValidationResource.Get("CompWeightMustBe100", totalComp));
         }
 
         return errors;
@@ -144,6 +150,6 @@ public class FormValidationService
             .Where(p => p.Length > 0).Distinct().Count();
         return distinct >= FormValidationRules.RequiredPerspectives
             ? new List<string>()
-            : new List<string> { $"At least {FormValidationRules.RequiredPerspectives} different perspectives required. Current: {distinct}." };
+            : new List<string> { ValidationResource.Get("MinPerspectivesRequired", FormValidationRules.RequiredPerspectives, distinct) };
     }
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="DuplicateKpi" xml:space="preserve"><value>لا يُسمح بتكرار مؤشر الأداء.</value></data>
+  <data name="MaxKpisAllowed" xml:space="preserve"><value>الحد الأقصى المسموح به هو {0} مؤشرات أداء.</value></data>
+  <data name="KpiWeightRange" xml:space="preserve"><value>يجب أن يكون وزن مؤشر الأداء '{0}' بين {1} و {2}.</value></data>
+  <data name="TotalWeightExceeds100" xml:space="preserve"><value>لا يمكن أن يتجاوز إجمالي الوزن 100%. الحالي: {0}%، المتاح: {1}%.</value></data>
+  <data name="DuplicateCompetency" xml:space="preserve"><value>لا يُسمح بتكرار الكفاءة.</value></data>
+  <data name="MaxCompetenciesAllowed" xml:space="preserve"><value>الحد الأقصى المسموح به هو {0} كفاءات.</value></data>
+  <data name="AtLeastOneKpiRequired" xml:space="preserve"><value>يرجى إضافة مؤشر أداء واحد على الأقل قبل الإرسال إلى الموظف.</value></data>
+  <data name="KpiWeightsMustTotal100" xml:space="preserve"><value>يجب أن يصل إجمالي أوزان مؤشرات الأداء إلى 100% قبل الإرسال إلى الموظف. الإجمالي الحالي: {0}%.</value></data>
+  <data name="AtLeastOneCompetencyRequired" xml:space="preserve"><value>يرجى إضافة كفاءة واحدة على الأقل قبل الإرسال إلى الموظف.</value></data>
+  <data name="CompWeightsMustTotal100" xml:space="preserve"><value>يجب أن يصل إجمالي أوزان الكفاءات إلى 100% قبل الإرسال إلى الموظف. الإجمالي الحالي: {0}%.</value></data>
+  <data name="MissingKpiAchievementScores" xml:space="preserve"><value>لا يمكن الإرسال إلى الموارد البشرية: درجات الإنجاز مفقودة لمؤشرات الأداء التالية: {0}.</value></data>
+  <data name="MissingCompAchievementScores" xml:space="preserve"><value>لا يمكن الإرسال إلى الموارد البشرية: درجات الإنجاز مفقودة للكفاءات التالية: {0}.</value></data>
+  <data name="JobFamilyNotConfigured" xml:space="preserve"><value>لم يتم تهيئة الفئة الوظيفية في النظام. يرجى التواصل مع المسؤول.</value></data>
+  <data name="KpiCountValidationFailed" xml:space="preserve"><value>فشل التحقق من مؤشرات الأداء: الحد الأدنى {0}، والحد الأقصى {1} مؤشرات أداء. الحالي: {2}.</value></data>
+  <data name="KpiWeightMustBe100" xml:space="preserve"><value>يجب أن يكون وزن مؤشرات الأداء 100%. الحالي: {0}%.</value></data>
+  <data name="CompCountValidationFailed" xml:space="preserve"><value>فشل التحقق من الكفاءات: الحد الأدنى {0}، والحد الأقصى {1} كفاءات. الحالي: {2}.</value></data>
+  <data name="CompWeightMustBe100" xml:space="preserve"><value>يجب أن يكون وزن الكفاءات 100%. الحالي: {0}%.</value></data>
+  <data name="MinPerspectivesRequired" xml:space="preserve"><value>مطلوب {0} محاور مختلفة على الأقل. الحالي: {1}.</value></data>
+</root>

@@ -4,6 +4,7 @@ using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Employees;
 
@@ -11,7 +12,8 @@ namespace PerformanceManagement.Web.Pages.Employees;
 public class EditModel : AppPageModel
 {
     private readonly PmDbContext _db;
-    public EditModel(PmDbContext db) => _db = db;
+    private readonly IStringLocalizer<EditModel> _localizer;
+    public EditModel(PmDbContext db, IStringLocalizer<EditModel> localizer) { _db = db; _localizer = localizer; }
 
     [BindProperty(SupportsGet = true)] public string? Empcd { get; set; }
     [BindProperty] public Input Form { get; set; } = new();
@@ -66,12 +68,12 @@ public class EditModel : AppPageModel
         var code = (IsNew ? Form.EmpCode : Empcd)?.Trim() ?? "";
         if (code.Length == 0 || string.IsNullOrWhiteSpace(Form.LatinName))
         {
-            Error = "Employee code and name are required.";
+            Error = _localizer["CodeAndNameRequired"];
             return Page();
         }
         if (!string.IsNullOrWhiteSpace(Form.Email) && !InputValidation.IsValidEmail(Form.Email.Trim()))
         {
-            Error = $"'{Form.Email}' is not a valid email address.";
+            Error = _localizer["InvalidEmailFormat", Form.Email];
             return Page();
         }
 
@@ -84,7 +86,7 @@ public class EditModel : AppPageModel
         }
         else if (IsNew)
         {
-            Error = $"Employee {code} already exists.";
+            Error = _localizer["EmployeeAlreadyExists", code];
             return Page();
         }
         else if (e.Source == "HDR_SNAPSHOT")
@@ -99,7 +101,7 @@ public class EditModel : AppPageModel
             var targetDept = await _db.Departments.AsNoTracking().FirstOrDefaultAsync(x => x.Code == Form.DeptCode);
             if (targetDept is not null && !targetDept.IsActive)
             {
-                Error = $"Department '{targetDept.NameEn}' is disabled and cannot be assigned to an employee.";
+                Error = _localizer["DepartmentDisabledError", targetDept.NameEn];
                 return Page();
             }
         }
@@ -133,7 +135,7 @@ public class EditModel : AppPageModel
         }
 
         await _db.SaveChangesAsync();
-        Message = $"Employee {code} saved.";
+        Message = _localizer["EmployeeSavedMessage", code];
         return RedirectToPage("Index");
     }
 

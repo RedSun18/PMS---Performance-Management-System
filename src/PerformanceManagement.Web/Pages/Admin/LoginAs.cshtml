@@ -1,28 +1,29 @@
 @page
 @model PerformanceManagement.Web.Pages.Admin.LoginAsModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Login As";
+    ViewData["Title"] = SharedLocalizer["NavLoginAs"].Value;
 }
-<div class="page-header">Administrator — Login As</div>
+<div class="page-header">@Localizer["PageHeader", SharedLocalizer["NavLoginAs"]]</div>
 
 @if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
 
 @if (!Model.Verified)
 {
     <div class="card">
-        <div class="card-header">Administrator Verification</div>
+        <div class="card-header">@Localizer["VerificationHeader"]</div>
         <div class="card-body">
             <p class="muted" style="margin-top:0;">
-                Enter the secondary verification password to continue. This is separate from
-                your account password and is required before any user list is shown.
+                @Localizer["VerificationIntro"]
             </p>
             <form method="post" asp-page-handler="Verify">
                 <div style="max-width:340px;">
-                    <label for="verificationPassword">Verification Password</label>
+                    <label for="verificationPassword">@Localizer["VerificationPasswordLabel"]</label>
                     <input type="password" id="verificationPassword" name="verificationPassword" autofocus />
                 </div>
                 <div class="form-actions" style="margin-top:14px;">
-                    <button type="submit" class="btn btn-primary">Continue</button>
+                    <button type="submit" class="btn btn-primary">@SharedLocalizer["Continue"]</button>
                 </div>
             </form>
         </div>
@@ -31,21 +32,21 @@
 else
 {
     <div class="card">
-        <div class="card-header">Select User</div>
+        <div class="card-header">@Localizer["SelectUserHeader"]</div>
         <div class="card-body">
             <form method="post" asp-page-handler="Impersonate">
                 <div class="grid-2" style="align-items:end;">
                     <div>
-                        <label for="userSelect">User</label>
-                        <select name="userId" id="userSelect">
+                        <label for="userSelect">@Localizer["UserLabel"]</label>
+                        <select name="userId" id="userSelect" data-searchable>
                             @foreach (var u in Model.Users)
                             {
-                                <option value="@u.Id">@u.Id | @u.DisplayName@(string.IsNullOrEmpty(u.EmpCode) ? "" : $" | Employee {u.EmpCode}") (@u.UserName)</option>
+                                <option value="@u.Id">@u.Id | @u.DisplayName@(string.IsNullOrEmpty(u.EmpCode) ? "" : Localizer["EmployeeInlineLabel", u.EmpCode].Value) (@u.UserName)</option>
                             }
                         </select>
                     </div>
                     <div>
-                        <button type="submit" class="btn btn-danger">Login As User</button>
+                        <button type="submit" class="btn btn-danger">@Localizer["LoginAsUserButton"]</button>
                     </div>
                 </div>
             </form>
@@ -53,12 +54,12 @@ else
     </div>
 
     <div class="card">
-        <div class="card-header">Recent Impersonation History</div>
+        <div class="card-header">@Localizer["RecentHistoryHeader"]</div>
         <div class="card-body">
             <div class="table-scroll">
             <table class="grid">
                 <thead>
-                    <tr><th>Administrator</th><th>Impersonated User</th><th>Started</th><th>Ended</th><th>IP Address</th><th>Session</th></tr>
+                    <tr><th>@Localizer["AdministratorColumn"]</th><th>@Localizer["ImpersonatedUserColumn"]</th><th>@Localizer["StartedColumn"]</th><th>@Localizer["EndedColumn"]</th><th>@Localizer["IpAddressColumn"]</th><th>@Localizer["SessionColumn"]</th></tr>
                 </thead>
                 <tbody>
                 @foreach (var h in Model.RecentHistory)
@@ -67,7 +68,7 @@ else
                         <td>@h.AdminDisplayName (@h.AdminUserName)</td>
                         <td>@h.ImpersonatedDisplayName@(string.IsNullOrEmpty(h.ImpersonatedEmpCode) ? "" : $" ({h.ImpersonatedEmpCode})") (@h.ImpersonatedUserName)</td>
                         <td>@h.StartedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@(h.EndedAt?.ToString("yyyy-MM-dd HH:mm") ?? "— in progress —")</td>
+                        <td>@(h.EndedAt?.ToString("yyyy-MM-dd HH:mm") ?? Localizer["InProgressPlaceholder"].Value)</td>
                         <td>@h.IpAddress</td>
                         <td class="muted">@h.SessionId</td>
                     </tr>
@@ -77,7 +78,7 @@ else
             </div>
             @if (Model.RecentHistory.Count == 0)
             {
-                <p class="muted">No impersonation sessions recorded yet.</p>
+                <p class="muted">@Localizer["NoHistoryMessage"]</p>
             }
         </div>
     </div>

@@ -3,6 +3,7 @@ using PerformanceManagement.Core.Domain;
 using PerformanceManagement.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
+using System.Globalization;
 
 namespace PerformanceManagement.Web.Jobs;
 
@@ -211,7 +212,11 @@ public class DailyReminderJob : IJob
 
             var userName = string.IsNullOrEmpty(empCode) ? "" : await UserNameForEmpCodeAsync(empCode);
             var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, userName);
-            var (subject, body) = EmailTemplates.Reminder(form, recipientLabel, requiredAction, days, actionUrl, _clock.Now);
+            // Employee/Manager cases resolve to one named account whose own language preference the
+            // reminder should honor; the HR Team case (empCode is null) is a role-based broadcast with
+            // no single recipient, so it falls back to the default (English).
+            var culture = string.IsNullOrEmpty(empCode) ? null : await CultureForEmpCodeAsync(empCode);
+            var (subject, body) = EmailTemplates.Reminder(form, recipientLabel, requiredAction, days, actionUrl, _clock.Now, culture);
             await _email.DispatchAsync(new EmailSpec("REMINDER", recipients, Array.Empty<string>(),
                 subject, body, form.LegacyRefNo, $"REMINDER-{form.LegacyRefNo}-{today:yyyyMMdd}"));
 
@@ -234,6 +239,13 @@ public class DailyReminderJob : IJob
         if (string.IsNullOrWhiteSpace(empCode)) return "";
         var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim() && x.IsActive);
         return u?.UserName ?? "";
+    }
+
+    private async Task<CultureInfo?> CultureForEmpCodeAsync(string? empCode)
+    {
+        if (string.IsNullOrWhiteSpace(empCode)) return null;
+        var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim() && x.IsActive);
+        return string.IsNullOrWhiteSpace(u?.PreferredCulture) ? null : new CultureInfo(u!.PreferredCulture!);
     }
 
     private async Task<IReadOnlyList<string>> HrAdminEmailsAsync() =>

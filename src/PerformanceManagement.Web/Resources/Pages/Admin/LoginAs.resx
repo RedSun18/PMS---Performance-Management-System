@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageHeader" xml:space="preserve"><value>Administrator — {0}</value></data>
+  <data name="VerificationHeader" xml:space="preserve"><value>Administrator Verification</value></data>
+  <data name="VerificationIntro" xml:space="preserve"><value>Enter the secondary verification password to continue. This is separate from your account password and is required before any user list is shown.</value></data>
+  <data name="VerificationPasswordLabel" xml:space="preserve"><value>Verification Password</value></data>
+  <data name="SelectUserHeader" xml:space="preserve"><value>Select User</value></data>
+  <data name="UserLabel" xml:space="preserve"><value>User</value></data>
+  <data name="EmployeeInlineLabel" xml:space="preserve"><value> | Employee {0}</value></data>
+  <data name="LoginAsUserButton" xml:space="preserve"><value>Login As User</value></data>
+  <data name="RecentHistoryHeader" xml:space="preserve"><value>Recent Impersonation History</value></data>
+  <data name="AdministratorColumn" xml:space="preserve"><value>Administrator</value></data>
+  <data name="ImpersonatedUserColumn" xml:space="preserve"><value>Impersonated User</value></data>
+  <data name="StartedColumn" xml:space="preserve"><value>Started</value></data>
+  <data name="EndedColumn" xml:space="preserve"><value>Ended</value></data>
+  <data name="IpAddressColumn" xml:space="preserve"><value>IP Address</value></data>
+  <data name="SessionColumn" xml:space="preserve"><value>Session</value></data>
+  <data name="InProgressPlaceholder" xml:space="preserve"><value>— in progress —</value></data>
+  <data name="NoHistoryMessage" xml:space="preserve"><value>No impersonation sessions recorded yet.</value></data>
+</root>

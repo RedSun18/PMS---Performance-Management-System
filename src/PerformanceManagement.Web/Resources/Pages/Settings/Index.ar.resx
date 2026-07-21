@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TabGeneral" xml:space="preserve"><value>عام</value></data>
+  <data name="TabReview" xml:space="preserve"><value>مراجعة الأداء</value></data>
+  <data name="TabEmail" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="TabAuth" xml:space="preserve"><value>المصادقة</value></data>
+  <data name="TabSecurity" xml:space="preserve"><value>الأمان</value></data>
+  <data name="TabDashboard" xml:space="preserve"><value>لوحة المعلومات</value></data>
+  <data name="TabBranding" xml:space="preserve"><value>الهوية البصرية</value></data>
+
+  <data name="CompanyNameLabel" xml:space="preserve"><value>اسم الشركة</value></data>
+  <data name="ApplicationNameLabel" xml:space="preserve"><value>اسم التطبيق</value></data>
+  <data name="ApplicationNamePlaceholder" xml:space="preserve"><value>نظام إدارة الأداء</value></data>
+  <data name="CompanyAddressLabel" xml:space="preserve"><value>عنوان الشركة</value></data>
+  <data name="ContactEmailLabel" xml:space="preserve"><value>البريد الإلكتروني للتواصل</value></data>
+  <data name="AppBaseUrlLabel" xml:space="preserve"><value>رابط التطبيق الأساسي</value></data>
+  <data name="AppBaseUrlHint" xml:space="preserve"><value>يُستخدم لإنشاء روابط الإجراءات داخل رسائل البريد الإلكتروني الصادرة — على سبيل المثال "https://localhost:5273" للاختبار المحلي.</value></data>
+  <data name="LogoManagedHint" xml:space="preserve"><value>تتم إدارة شعار الشركة من تبويب {0}.</value></data>
+  <data name="LanguageSelectionLabel" xml:space="preserve"><value>اختيار اللغة</value></data>
+  <data name="LanguageSelectionHint" xml:space="preserve"><value>عند التفعيل، يمكن للمستخدمين التبديل بين اللغتين الإنجليزية والعربية. وعند التعطيل، يتم إخفاء مبدّل اللغة في كل مكان ويعمل التطبيق دائمًا باللغة الإنجليزية، بغض النظر عن أي لغة محفوظة مسبقًا في ملفات تعريف الارتباط أو التفضيلات.</value></data>
+  <data name="SaveGeneralButton" xml:space="preserve"><value>حفظ الإعدادات العامة</value></data>
+
+  <data name="CurrentReviewYearLabel" xml:space="preserve"><value>سنة المراجعة الحالية</value></data>
+  <data name="CurrentReviewYearHint" xml:space="preserve"><value>قيمة افتراضية للعرض فقط في التطبيق — التواريخ أدناه هي التي تتحكم فعليًا في تقييم الإنجاز وتوفر خيار "الإرسال إلى الموارد البشرية".</value></data>
+  <data name="MidYearStartLabel" xml:space="preserve"><value>بداية منتصف العام</value></data>
+  <data name="MidYearEndLabel" xml:space="preserve"><value>نهاية منتصف العام</value></data>
+  <data name="EndYearStartLabel" xml:space="preserve"><value>بداية نهاية العام</value></data>
+  <data name="EndYearEndLabel" xml:space="preserve"><value>نهاية نهاية العام</value></data>
+  <data name="ReviewDatesHeader" xml:space="preserve"><value>تواريخ مراجعة الأداء</value></data>
+  <data name="ReviewDatesIntro" xml:space="preserve"><value>يتحكم في متى تصبح حقول الإنجاز (%) قابلة للتعديل ومتى يتوفر خيار "الإرسال إلى الموارد البشرية"، لكل نموذج. اترك أي تاريخ فارغًا للرجوع إلى الأول من ديسمبر من سنة تقييم النموذج (السلوك الافتراضي الأصلي).</value></data>
+  <data name="MidYearAchievementStartDateLabel" xml:space="preserve"><value>تاريخ بدء إنجاز منتصف العام</value></data>
+  <data name="MidYearAchievementHint" xml:space="preserve"><value>اختياري — يُستخدم فقط في حال وجود دورة إنجاز لمنتصف العام.</value></data>
+  <data name="EndYearAchievementStartDateLabel" xml:space="preserve"><value>تاريخ بدء إنجاز نهاية العام</value></data>
+  <data name="SubmitToHrStartDateLabel" xml:space="preserve"><value>تاريخ بدء الإرسال إلى الموارد البشرية</value></data>
+  <data name="SaveReviewButton" xml:space="preserve"><value>حفظ إعدادات مراجعة الأداء</value></data>
+
+  <data name="EmailSettingsHeader" xml:space="preserve"><value>إعدادات البريد الإلكتروني (SMTP)</value></data>
+  <data name="SmtpHostLabel" xml:space="preserve"><value>مضيف SMTP</value></data>
+  <data name="SmtpPortLabel" xml:space="preserve"><value>منفذ SMTP</value></data>
+  <data name="PasswordKeepCurrentPlaceholder" xml:space="preserve"><value>•••••••• (اتركه فارغًا للاحتفاظ بكلمة المرور الحالية)</value></data>
+  <data name="NotSetPlaceholder" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="SenderNameLabel" xml:space="preserve"><value>اسم المُرسل</value></data>
+  <data name="SenderEmailLabel" xml:space="preserve"><value>البريد الإلكتروني للمُرسل</value></data>
+  <data name="EnableSslLabel" xml:space="preserve"><value>تفعيل SSL / STARTTLS</value></data>
+  <data name="EnableEmailNotificationsLabel" xml:space="preserve"><value>تفعيل إشعارات البريد الإلكتروني</value></data>
+  <data name="DevRedirectLabel" xml:space="preserve"><value>إعادة توجيه بيئة التطوير</value></data>
+  <data name="DevRedirectHint" xml:space="preserve"><value>إجراء وقائي: عند ضبط هذا الحقل، تتم إعادة توجيه كل رسائل سير العمل إليه بدلاً من عنوان الموظف الفعلي.</value></data>
+  <data name="LastUpdatedByLabel" xml:space="preserve"><value>آخر تحديث {0} بالتوقيت العالمي (UTC) بواسطة {1}</value></data>
+  <data name="SaveEmailButton" xml:space="preserve"><value>حفظ إعدادات البريد الإلكتروني</value></data>
+  <data name="SendTestEmailButton" xml:space="preserve"><value>إرسال بريد إلكتروني تجريبي</value></data>
+
+  <data name="DefaultPasswordLabel" xml:space="preserve"><value>كلمة المرور الافتراضية</value></data>
+  <data name="MinPasswordLengthLabel" xml:space="preserve"><value>الحد الأدنى لطول كلمة المرور</value></data>
+  <data name="PasswordComplexityLabel" xml:space="preserve"><value>اشتراط تعقيد كلمة المرور (حرف + رقم)</value></data>
+  <data name="MaxLoginAttemptsLabel" xml:space="preserve"><value>الحد الأقصى لمحاولات تسجيل الدخول</value></data>
+  <data name="SessionTimeoutLabel" xml:space="preserve"><value>مهلة الجلسة (بالدقائق)</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>يسري المفعول بعد إعادة تشغيل التطبيق.</value></data>
+  <data name="LoginAsVerificationPasswordLabel" xml:space="preserve"><value>كلمة مرور التحقق لتسجيل الدخول كـ</value></data>
+  <data name="KeepCurrentPlaceholder" xml:space="preserve"><value>•••••••• (اتركه فارغًا للاحتفاظ بالكلمة الحالية)</value></data>
+  <data name="UsingDevDefaultPlaceholder" xml:space="preserve"><value>يُستخدم الإعداد الافتراضي لبيئة التطوير</value></data>
+  <data name="SaveAuthButton" xml:space="preserve"><value>حفظ إعدادات المصادقة</value></data>
+
+  <data name="EnableAuditLoggingLabel" xml:space="preserve"><value>تفعيل سجل التدقيق</value></data>
+  <data name="AccountLockoutLabel" xml:space="preserve"><value>مدة قفل الحساب (بالدقائق)</value></data>
+  <data name="PasswordExpiryLabel" xml:space="preserve"><value>مدة صلاحية كلمة المرور (بالأيام)</value></data>
+  <data name="PasswordExpiryHint" xml:space="preserve"><value>0 = كلمات المرور لا تنتهي صلاحيتها أبدًا.</value></data>
+  <data name="RememberMeDurationLabel" xml:space="preserve"><value>مدة "تذكرني" (بالأيام)</value></data>
+  <data name="SaveSecurityButton" xml:space="preserve"><value>حفظ إعدادات الأمان</value></data>
+
+  <data name="WelcomeMessageLabel" xml:space="preserve"><value>رسالة الترحيب</value></data>
+  <data name="WelcomeMessagePlaceholder" xml:space="preserve"><value>مثال: مرحبًا بك في نظام إدارة الأداء</value></data>
+  <data name="AnnouncementBannerLabel" xml:space="preserve"><value>شريط الإعلانات</value></data>
+  <data name="AnnouncementBannerPlaceholder" xml:space="preserve"><value>يظهر للجميع أعلى لوحة المعلومات، مثل إشعارات الصيانة</value></data>
+  <data name="SaveDashboardButton" xml:space="preserve"><value>حفظ إعدادات لوحة المعلومات</value></data>
+
+  <data name="CompanyLogoLabel" xml:space="preserve"><value>شعار الشركة</value></data>
+  <data name="CurrentLogoAlt" xml:space="preserve"><value>الشعار الحالي للشركة</value></data>
+  <data name="LogoHint" xml:space="preserve"><value>PNG أو JPG أو GIF أو SVG، بحد أقصى 2 ميغابايت.</value></data>
+  <data name="PrimaryColorLabel" xml:space="preserve"><value>اللون الأساسي</value></data>
+  <data name="SecondaryColorLabel" xml:space="preserve"><value>اللون الثانوي</value></data>
+  <data name="FooterTextLabel" xml:space="preserve"><value>نص التذييل</value></data>
+  <data name="FooterTextPlaceholder" xml:space="preserve"><value>مثال: © 2026 شركتك. جميع الحقوق محفوظة.</value></data>
+  <data name="SaveBrandingButton" xml:space="preserve"><value>حفظ إعدادات الهوية البصرية</value></data>
+</root>

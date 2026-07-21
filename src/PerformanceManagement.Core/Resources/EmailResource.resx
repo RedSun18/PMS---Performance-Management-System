@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Reused across every workflow email template -->
+  <data name="Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Employee" xml:space="preserve"><value>Employee</value></data>
+  <data name="ReviewYear" xml:space="preserve"><value>Review Year</value></data>
+  <data name="CurrentStatus" xml:space="preserve"><value>Current Status</value></data>
+  <data name="RequiredAction" xml:space="preserve"><value>Required Action</value></data>
+  <data name="PreviousActionBy" xml:space="preserve"><value>Previous Action By</value></data>
+  <data name="NextActionRequiredBy" xml:space="preserve"><value>Next Action Required By</value></data>
+  <data name="KpisSet" xml:space="preserve"><value>KPIs Set</value></data>
+  <data name="Competencies" xml:space="preserve"><value>Competencies</value></data>
+  <data name="AcknowledgedOn" xml:space="preserve"><value>Acknowledged On</value></data>
+  <data name="KpiScore" xml:space="preserve"><value>KPI Score</value></data>
+  <data name="CompetencyScore" xml:space="preserve"><value>Competency Score</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>Overall Score</value></data>
+  <data name="Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="ReviewedBy" xml:space="preserve"><value>Reviewed By</value></data>
+  <data name="ApprovedBy" xml:space="preserve"><value>Approved By</value></data>
+  <data name="Score" xml:space="preserve"><value>Score</value></data>
+  <data name="DaysWaiting" xml:space="preserve"><value>Days Waiting</value></data>
+  <data name="HrComments" xml:space="preserve"><value>HR Comments</value></data>
+  <data name="HrRemarks" xml:space="preserve"><value>HR remarks:</value></data>
+  <data name="EmployeeComments" xml:space="preserve"><value>Employee comments:</value></data>
+  <data name="DearHrTeam" xml:space="preserve"><value>Dear HR Team,</value></data>
+  <data name="DearTeam" xml:space="preserve"><value>Dear Team,</value></data>
+  <data name="ViewPerformanceForm" xml:space="preserve"><value>View Performance Form</value></data>
+  <data name="ReviewEmployeeSubmission" xml:space="preserve"><value>Review Employee Submission</value></data>
+  <data name="OpenHrReview" xml:space="preserve"><value>Open HR Review</value></data>
+  <data name="ViewFinalPerformanceReview" xml:space="preserve"><value>View Final Performance Review</value></data>
+  <data name="RevisePerformanceForm" xml:space="preserve"><value>Revise Performance Form</value></data>
+  <data name="ButtonFallbackHint" xml:space="preserve"><value>If the button does not work, copy and paste this link into your browser:</value></data>
+  <data name="FooterAutomatedMessage" xml:space="preserve"><value>This is an automated message, please do not reply.</value></data>
+  <data name="FooterContactHr" xml:space="preserve"><value>For assistance, contact the HR Department.</value></data>
+  <data name="SentOn" xml:space="preserve"><value>Sent</value></data>
+  <data name="At" xml:space="preserve"><value>at</value></data>
+
+  <!-- Salutation / role formats -->
+  <data name="DearName" xml:space="preserve"><value>Dear &lt;strong&gt;{0}&lt;/strong&gt;,</value></data>
+  <data name="DearPlain" xml:space="preserve"><value>Dear {0},</value></data>
+  <data name="RoleManager" xml:space="preserve"><value>{0} (Manager)</value></data>
+  <data name="RoleYou" xml:space="preserve"><value>{0} (You)</value></data>
+  <data name="RoleEmployee" xml:space="preserve"><value>{0} (Employee)</value></data>
+  <data name="RoleYouManager" xml:space="preserve"><value>{0} (You, Manager)</value></data>
+  <data name="RoleHrReviewer1" xml:space="preserve"><value>{0} (HR Reviewer 1)</value></data>
+  <data name="RoleHrReviewer2" xml:space="preserve"><value>{0} (HR Reviewer 2)</value></data>
+  <data name="HrTeamPlain" xml:space="preserve"><value>HR Team</value></data>
+  <data name="HrReviewer1Plain" xml:space="preserve"><value>HR Reviewer 1</value></data>
+  <data name="HrReviewer2FinalPlain" xml:space="preserve"><value>HR Reviewer 2 (Final Approval)</value></data>
+  <data name="NonePlain" xml:space="preserve"><value>None</value></data>
+  <data name="NoCommentsProvided" xml:space="preserve"><value>No specific comments provided.</value></data>
+
+  <!-- AcknowledgementRequest -->
+  <data name="AckReqSubject" xml:space="preserve"><value>ACTION REQUIRED: Review Your Performance Objectives | {0} | {1}</value></data>
+  <data name="AckReqTitle" xml:space="preserve"><value>Performance Objectives Ready for Review</value></data>
+  <data name="AckReqIntro" xml:space="preserve"><value>Your manager has set your performance objectives. Please review and acknowledge them within 7 days.</value></data>
+  <data name="AckReqRequiredAction" xml:space="preserve"><value>Review and acknowledge your objectives</value></data>
+
+  <!-- EmployeeAcknowledged -->
+  <data name="EmpAckSubject" xml:space="preserve"><value>Employee Acknowledged Objectives: {0} | {1}</value></data>
+  <data name="EmpAckTitle" xml:space="preserve"><value>Employee Submitted Performance Review</value></data>
+  <data name="EmpAckIntro" xml:space="preserve"><value>{0} has acknowledged their objectives for {1}.</value></data>
+  <data name="EmpAckRequiredAction" xml:space="preserve"><value>Review the acknowledged objectives; achievement scoring opens {0}</value></data>
+
+  <!-- SubmittedToHr -->
+  <data name="SubToHrSubject" xml:space="preserve"><value>PM Form Ready for HR Review | {0} | {1}</value></data>
+  <data name="SubToHrTitle" xml:space="preserve"><value>Performance Review Ready for HR</value></data>
+  <data name="SubToHrIntro" xml:space="preserve"><value>A Performance Management form has been completed by the manager and is ready for your review:</value></data>
+  <data name="SubToHrRequiredAction" xml:space="preserve"><value>Complete first HR review</value></data>
+
+  <!-- Hr1Approved -->
+  <data name="Hr1ApprovedSubject" xml:space="preserve"><value>PM Form - Ready for Final HR Review (HR Rep 2) | {0} | {1}</value></data>
+  <data name="Hr1ApprovedTitle" xml:space="preserve"><value>Final HR Review Required</value></data>
+  <data name="Hr1ApprovedRequiredAction" xml:space="preserve"><value>Complete final HR review and approval</value></data>
+
+  <!-- FinalApproved -->
+  <data name="FinalApprovedSubject" xml:space="preserve"><value>PM Form - APPROVED (Final) | {0} | {1}</value></data>
+  <data name="FinalApprovedTitle" xml:space="preserve"><value>Performance Review Finalized</value></data>
+  <data name="FinalApprovedIntro" xml:space="preserve"><value>This Performance Management form is now finalized and archived.</value></data>
+  <data name="FinalApprovedRequiredAction" xml:space="preserve"><value>None — this review is complete</value></data>
+
+  <!-- Reverted -->
+  <data name="RevertedSubject" xml:space="preserve"><value>PM Form Requires Revision | {0} | {1}</value></data>
+  <data name="RevertedTitle" xml:space="preserve"><value>Performance Form Requires Revision</value></data>
+  <data name="RevertedIntro" xml:space="preserve"><value>The Performance Management form below has been reviewed by HR and requires revisions:</value></data>
+  <data name="RevertedRequiredAction" xml:space="preserve"><value>Revise the form per HR's comments and resubmit</value></data>
+
+  <!-- Reminder -->
+  <data name="ReminderSubject" xml:space="preserve"><value>REMINDER: Action Needed | {0} | {1}</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Reminder: Action Needed</value></data>
+  <data name="ReminderIntro" xml:space="preserve"><value>The performance review below has been waiting for action for {0} day(s).</value></data>
+
+  <!-- EscalationDigest -->
+  <data name="EscalationSubject" xml:space="preserve"><value>ESCALATION: {0} Overdue Performance Review(s)</value></data>
+  <data name="EscalationTitle" xml:space="preserve"><value>Weekly Escalation: Overdue Reviews</value></data>
+  <data name="EscalationIntro" xml:space="preserve"><value>{0} performance review(s) have been outstanding beyond the normal window and require escalation:</value></data>
+  <data name="EscalationColAwaiting" xml:space="preserve"><value>Awaiting</value></data>
+  <data name="EscalationColWaitingStatus" xml:space="preserve"><value>Waiting / Status</value></data>
+  <data name="EscalationDaysSuffix" xml:space="preserve"><value>{0}d</value></data>
+</root>

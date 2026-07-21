@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>نموذج إدارة الأداء</value></data>
+  <data name="PageHeader" xml:space="preserve"><value>نموذج إدارة الأداء (مؤشرات الأداء + الكفاءات)</value></data>
+  <data name="EmployeeSelectionHeader" xml:space="preserve"><value>اختيار الموظف</value></data>
+  <data name="SelectDepartmentLabel" xml:space="preserve"><value>اختر القسم</value></data>
+  <data name="SelectEmployeeLabel" xml:space="preserve"><value>اختر الموظف</value></data>
+  <data name="EvaluationYearLabel" xml:space="preserve"><value>سنة التقييم</value></data>
+  <data name="EmployeeInfoHeader" xml:space="preserve"><value>معلومات الموظف</value></data>
+  <data name="EmployeeDetailsGroupTitle" xml:space="preserve"><value>بيانات الموظف</value></data>
+  <data name="EmployeeIdLabel" xml:space="preserve"><value>رقم الموظف</value></data>
+  <data name="CurrentPositionLabel" xml:space="preserve"><value>المنصب الحالي</value></data>
+  <data name="EvaluationContextGroupTitle" xml:space="preserve"><value>سياق التقييم</value></data>
+  <data name="KpiWeightPercentLabel" xml:space="preserve"><value>وزن مؤشرات الأداء (%)</value></data>
+  <data name="CompWeightPercentLabel" xml:space="preserve"><value>وزن الكفاءات (%)</value></data>
+  <data name="RefNoLabel" xml:space="preserve"><value>الرقم المرجعي</value></data>
+  <data name="TodaysDateLabel" xml:space="preserve"><value>تاريخ اليوم</value></data>
+  <data name="ReportingStructureGroupTitle" xml:space="preserve"><value>هيكل التبعية</value></data>
+  <data name="JobFamilyLabel" xml:space="preserve"><value>الفئة الوظيفية</value></data>
+  <data name="SubDepartmentLabel" xml:space="preserve"><value>القسم الفرعي</value></data>
+  <data name="JoiningDateLabel" xml:space="preserve"><value>تاريخ الالتحاق</value></data>
+  <data name="LastReviewDateLabel" xml:space="preserve"><value>تاريخ آخر مراجعة</value></data>
+  <data name="StepSubmittedByManager" xml:space="preserve"><value>تم الإرسال من قبل المدير</value></data>
+  <data name="StepReceivedByHr" xml:space="preserve"><value>تم الاستلام من قبل الموارد البشرية</value></data>
+  <data name="StepUnderHrReview" xml:space="preserve"><value>قيد مراجعة الموارد البشرية</value></data>
+  <data name="FormApprovedFinalizedTitle" xml:space="preserve"><value>تم اعتماد النموذج وإنهاؤه</value></data>
+  <data name="FormLockedUnderReviewTitle" xml:space="preserve"><value>النموذج مقفل — قيد المراجعة</value></data>
+  <data name="FormApprovedMessage" xml:space="preserve"><value>تم اعتماد هذا النموذج من قبل كلا مندوبي الموارد البشرية وأصبح نهائيًا الآن. لا يمكن إجراء أي تغييرات أخرى عليه.</value></data>
+  <data name="AwaitingHrReviewMessage" xml:space="preserve"><value>هذا النموذج بانتظار مراجعة الموارد البشرية. يرجى مراجعة بيانات الأداء واتخاذ الإجراء المناسب أدناه.</value></data>
+  <data name="SubmittedUnderReviewMessage" xml:space="preserve"><value>تم إرسال هذا النموذج إلى الموارد البشرية وهو قيد المراجعة حاليًا. لا يمكن إجراء أي تغييرات في الوقت الحالي.</value></data>
+  <data name="NoEditPermissionMessage" xml:space="preserve"><value>ليس لديك صلاحية لتعديل هذا النموذج. يمكن فقط للمدير المباشر لهذا الموظف إجراء التغييرات.</value></data>
+  <data name="HrCannotEditMessage" xml:space="preserve"><value>يمكن للموارد البشرية مراجعة النماذج واعتمادها بعد إرسالها، لكن لا يمكنها تعديلها مباشرة.</value></data>
+  <data name="StatusLabelPrefix" xml:space="preserve"><value>الحالة:</value></data>
+  <data name="SaveDraftButton" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="SendToEmployeeButton" xml:space="preserve"><value>إرسال إلى الموظف</value></data>
+  <data name="DeleteRecordsButton" xml:space="preserve"><value>حذف السجلات</value></data>
+  <data name="ConfirmDeleteRecords" xml:space="preserve"><value>هل أنت متأكد من حذف جميع سجلات التقييم الخاصة بـ {0} لعام {1}؟</value></data>
+  <data name="SubmitToHrButton" xml:space="preserve"><value>إرسال إلى الموارد البشرية</value></data>
+  <data name="SubmitToHrAvailableFromMessage" xml:space="preserve"><value>يتوفر الإرسال إلى الموارد البشرية اعتبارًا من {0} بعد إدخال درجات الإنجاز.</value></data>
+  <data name="KpiTabLabel" xml:space="preserve"><value>مؤشرات الأداء الرئيسية (KPI)</value></data>
+  <data name="CompetenciesTabLabel" xml:space="preserve"><value>الكفاءات</value></data>
+  <data name="AddEditKpiHeader" xml:space="preserve"><value>إضافة/تعديل مؤشر أداء</value></data>
+  <data name="PerspectiveLabel" xml:space="preserve"><value>المنظور</value></data>
+  <data name="SelectPlaceholderOption" xml:space="preserve"><value>-- اختر --</value></data>
+  <data name="PerspectiveFinancial" xml:space="preserve"><value>مالي</value></data>
+  <data name="PerspectiveCustomer" xml:space="preserve"><value>العملاء</value></data>
+  <data name="PerspectiveInternal" xml:space="preserve"><value>العمليات الداخلية</value></data>
+  <data name="PerspectiveLearning" xml:space="preserve"><value>التعلم والنمو</value></data>
+  <data name="KpiNameLabel" xml:space="preserve"><value>اسم مؤشر الأداء</value></data>
+  <data name="PurposeDefinitionLabel" xml:space="preserve"><value>الغرض/التعريف</value></data>
+  <data name="FormulaMetricGuideLabel" xml:space="preserve"><value>دليل الصيغة/المقياس</value></data>
+  <data name="EnterWeightPlaceholder" xml:space="preserve"><value>أدخل نسبة الوزن %</value></data>
+  <data name="ToBeEnteredAtYearEnd" xml:space="preserve"><value>سيتم إدخاله في نهاية العام</value></data>
+  <data name="LockedUntilDate" xml:space="preserve"><value>مقفل حتى {0:dd/MM/yyyy}</value></data>
+  <data name="WtAchLabel" xml:space="preserve"><value>الوزن * الإنجاز/100</value></data>
+  <data name="AddKpiButton" xml:space="preserve"><value>إضافة مؤشر أداء</value></data>
+  <data name="UpdateKpiButton" xml:space="preserve"><value>تحديث مؤشر الأداء</value></data>
+  <data name="NoColumnHeader" xml:space="preserve"><value>م.</value></data>
+  <data name="KpiColumnHeader" xml:space="preserve"><value>مؤشر الأداء</value></data>
+  <data name="FormulaMetricColumnHeader" xml:space="preserve"><value>الصيغة/المقياس</value></data>
+  <data name="WtAchColumnHeader" xml:space="preserve"><value>الوزن*الإنجاز/100</value></data>
+  <data name="ActionColumnHeader" xml:space="preserve"><value>إجراء</value></data>
+  <data name="ConfirmDeleteKpi" xml:space="preserve"><value>هل تريد حذف مؤشر الأداء هذا؟</value></data>
+  <data name="TotalsLabel" xml:space="preserve"><value>الإجماليات</value></data>
+  <data name="TotalKpiWeightLabel" xml:space="preserve"><value>إجمالي وزن مؤشرات الأداء</value></data>
+  <data name="TargetMetMessage" xml:space="preserve"><value>تم تحقيق الهدف!</value></data>
+  <data name="NeedMoreWeightMessage" xml:space="preserve"><value>يلزم {0}% إضافية</value></data>
+  <data name="ExceedsWeightMessage" xml:space="preserve"><value>يتجاوز بنسبة {0}%</value></data>
+  <data name="KpiScoreLabel" xml:space="preserve"><value>درجة مؤشرات الأداء</value></data>
+  <data name="KpiCountSuffix" xml:space="preserve"><value>{0} مؤشرات أداء</value></data>
+  <data name="AddEditCompHeader" xml:space="preserve"><value>إضافة/تعديل كفاءة</value></data>
+  <data name="CompetencyTypeLabel" xml:space="preserve"><value>نوع الكفاءة</value></data>
+  <data name="CompTypeBehavioral" xml:space="preserve"><value>سلوكية</value></data>
+  <data name="CompTypeTechnical" xml:space="preserve"><value>فنية</value></data>
+  <data name="CompetencyNameLabel" xml:space="preserve"><value>اسم الكفاءة</value></data>
+  <data name="DescriptionDefinitionLabel" xml:space="preserve"><value>الوصف/التعريف</value></data>
+  <data name="WeightRangeLabel" xml:space="preserve"><value>نطاق الوزن المقترح</value></data>
+  <data name="WeightRangeGuidanceText" xml:space="preserve"><value>إرشادي فقط — يمكن إدخال أي وزن.</value></data>
+  <data name="WeightTimesAchievementLabel" xml:space="preserve"><value>الوزن × الإنجاز</value></data>
+  <data name="AddCompButton" xml:space="preserve"><value>إضافة كفاءة</value></data>
+  <data name="UpdateCompButton" xml:space="preserve"><value>تحديث الكفاءة</value></data>
+  <data name="CompetencyIdColumnHeader" xml:space="preserve"><value>رقم الكفاءة</value></data>
+  <data name="WeightAchColumnHeader" xml:space="preserve"><value>الوزن*الإنجاز/100</value></data>
+  <data name="ConfirmDeleteComp" xml:space="preserve"><value>هل تريد حذف هذه الكفاءة؟</value></data>
+  <data name="TotalCompWeightLabel" xml:space="preserve"><value>إجمالي وزن الكفاءات</value></data>
+  <data name="CompScoreLabel" xml:space="preserve"><value>درجة الكفاءات</value></data>
+  <data name="CompCountSuffix" xml:space="preserve"><value>{0} كفاءات</value></data>
+  <data name="SelfAssessmentHeader" xml:space="preserve"><value>التقييم الذاتي للموظف في نهاية العام</value></data>
+  <data name="DevelopmentPlanHeader" xml:space="preserve"><value>خطة التطوير للعام القادم</value></data>
+  <data name="PromotionFeedbackHeader" xml:space="preserve"><value>تقييم الترقية</value></data>
+  <data name="PromotionQuestionText" xml:space="preserve"><value>بناءً على معايير الدور للمستوى التالي، هل توصي بالترقية؟</value></data>
+  <data name="PromotionYesOption" xml:space="preserve"><value>نعم، يستوفي توقعات المستوى التالي باستمرار</value></data>
+  <data name="PromotionBorderlineOption" xml:space="preserve"><value>حدّي، يظهر بعض سلوكيات المستوى التالي لكن ليس باستمرار</value></data>
+  <data name="PromotionNoOption" xml:space="preserve"><value>لا، لا يستوفي بعد توقعات المستوى التالي</value></data>
+  <data name="ManagerCommentsLabel" xml:space="preserve"><value>تعليقات المدير</value></data>
+  <data name="ManagerOnlyNoteText" xml:space="preserve"><value>ملاحظة: هذا القسم مخصص للمدير/المقيّم فقط.</value></data>
+  <data name="PerformanceSummaryHeader" xml:space="preserve"><value>ملخص الأداء</value></data>
+  <data name="KpiWeightedScoreCaption" xml:space="preserve"><value>الدرجة المرجحة لمؤشرات الأداء</value></data>
+  <data name="OverallPerformanceScoreLabel" xml:space="preserve"><value>درجة الأداء الإجمالية</value></data>
+  <data name="CombinedScoreCaption" xml:space="preserve"><value>الدرجة المجمعة</value></data>
+  <data name="OverallRatingCaption" xml:space="preserve"><value>التقييم الإجمالي</value></data>
+  <data name="EmployeeAcknowledgementHeader" xml:space="preserve"><value>إقرار الموظف</value></data>
+  <data name="AckInstructionText" xml:space="preserve"><value>يرجى مراجعة أهداف أدائك لهذه الفترة التقييمية والإقرار بها.</value></data>
+  <data name="EmployeeSignatureLabel" xml:space="preserve"><value>توقيع الموظف</value></data>
+  <data name="AcknowledgeButton" xml:space="preserve"><value>إقرار</value></data>
+  <data name="EmployeeCommentsOptionalLabel" xml:space="preserve"><value>تعليقات الموظف (اختياري)</value></data>
+  <data name="PendingAckStatusText" xml:space="preserve"><value>بانتظار إقرار الموظف</value></data>
+  <data name="EmployeeAckedStatusText" xml:space="preserve"><value>تم إقرار الموظف</value></data>
+  <data name="EmployeeCommentsLabel" xml:space="preserve"><value>تعليقات الموظف</value></data>
+  <data name="SignaturesApprovalsHeader" xml:space="preserve"><value>التوقيعات والاعتمادات</value></data>
+  <data name="EmployeeNameLabel" xml:space="preserve"><value>اسم الموظف</value></data>
+  <data name="ManagerNameLabel" xml:space="preserve"><value>اسم المدير</value></data>
+  <data name="ManagerSignatureLabel" xml:space="preserve"><value>توقيع المدير</value></data>
+  <data name="HrReviewFirstHeader" xml:space="preserve"><value>مراجعة الموارد البشرية — المراجع الأول</value></data>
+  <data name="Hr1NameLabel" xml:space="preserve"><value>اسم مراجع الموارد البشرية الأول *</value></data>
+  <data name="ReviewDateLabel" xml:space="preserve"><value>تاريخ المراجعة</value></data>
+  <data name="ReviewerSignatureLabel" xml:space="preserve"><value>توقيع المراجع</value></data>
+  <data name="HrCommentsRemarksLabel" xml:space="preserve"><value>تعليقات/ملاحظات الموارد البشرية</value></data>
+  <data name="HrReviewSecondHeader" xml:space="preserve"><value>مراجعة الموارد البشرية — المراجع الثاني (نهائي)</value></data>
+  <data name="SegregationOfDutiesWarning" xml:space="preserve"><value>لا يمكنك إجراء المراجعة الثانية للموارد البشرية لأنك كنت المراجع الأول. يجب أن يكمل ممثل آخر من الموارد البشرية المراجعة النهائية للامتثال لمبدأ فصل المهام.</value></data>
+  <data name="Hr2NameLabel" xml:space="preserve"><value>اسم مراجع الموارد البشرية الثاني (نهائي) *</value></data>
+  <data name="HrActionLabel" xml:space="preserve"><value>إجراء الموارد البشرية *</value></data>
+  <data name="ApproveSendToHr2Option" xml:space="preserve"><value>اعتماد (إرسال إلى المراجع الثاني)</value></data>
+  <data name="RevertToManagerOption" xml:space="preserve"><value>إعادة إلى المدير</value></data>
+  <data name="FinalApprovalOption" xml:space="preserve"><value>الاعتماد النهائي</value></data>
+  <data name="SubmitHrActionButton" xml:space="preserve"><value>إرسال إجراء الموارد البشرية</value></data>
+  <data name="SuggestedWeightRangePrefix" xml:space="preserve"><value>المقترح</value></data>
+</root>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="EmployeeNotFound" xml:space="preserve"><value>Employee {0} not found.</value></data>
+  <data name="NotRatedLabel" xml:space="preserve"><value>Not Rated</value></data>
+  <data name="PleaseSelectKpi" xml:space="preserve"><value>Please select a KPI.</value></data>
+  <data name="PleaseSelectPerspective" xml:space="preserve"><value>Please select a Perspective.</value></data>
+  <data name="PleaseEnterTarget" xml:space="preserve"><value>Please enter a Target.</value></data>
+  <data name="PleaseEnterKpiWeight" xml:space="preserve"><value>Please enter KPI Weight.</value></data>
+  <data name="PleaseSelectCompetency" xml:space="preserve"><value>Please select a Competency.</value></data>
+  <data name="PleaseSelectCompetencyType" xml:space="preserve"><value>Please select Competency Type.</value></data>
+  <data name="PleaseEnterCompWeight" xml:space="preserve"><value>Please enter Competency Weight.</value></data>
+  <data name="DraftSavedMessage" xml:space="preserve"><value>Draft saved successfully. You can continue editing or click 'Send to Employee' when ready.</value></data>
+  <data name="FormSentToEmployeeMessage" xml:space="preserve"><value>Form sent to employee successfully. Notification email has been logged.</value></data>
+  <data name="FormSubmittedToHrMessage" xml:space="preserve"><value>Form submitted to HR successfully.</value></data>
+  <data name="AcknowledgementRecordedMessage" xml:space="preserve"><value>Thank you! Your acknowledgement has been recorded and your manager has been notified.</value></data>
+  <data name="PleaseSelectHrAction" xml:space="preserve"><value>Please select an HR Action.</value></data>
+  <data name="FirstHrReviewCompletedMessage" xml:space="preserve"><value>First HR review completed. Form moved to Second HR Reviewer.</value></data>
+  <data name="FinalHrApprovalCompletedMessage" xml:space="preserve"><value>Final HR approval completed successfully. Form is now locked.</value></data>
+  <data name="FormRevertedToManagerMessage" xml:space="preserve"><value>Form reverted to Manager status successfully.</value></data>
+  <data name="EvaluationRecordsDeletedMessage" xml:space="preserve"><value>Evaluation records deleted successfully.</value></data>
+  <data name="NoEmployeeSelectedError" xml:space="preserve"><value>No employee selected.</value></data>
+  <data name="NoAccessToEmployeeFormError" xml:space="preserve"><value>You do not have access to employee {0}'s PM form.</value></data>
+  <data name="OnlyManagerCanPerformError" xml:space="preserve"><value>Only the direct manager of this employee can perform this action.</value></data>
+  <data name="OnlyHrCanPerformError" xml:space="preserve"><value>Only an HR administrator can perform this action.</value></data>
+  <data name="OnlyOwnFormError" xml:space="preserve"><value>You may only act on your own PM form.</value></data>
+  <data name="FormNotEditableInStatusError" xml:space="preserve"><value>This form cannot be edited in its current status ({0}).</value></data>
+</root>

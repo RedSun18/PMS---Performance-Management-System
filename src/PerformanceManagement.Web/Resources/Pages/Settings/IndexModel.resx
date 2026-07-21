@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="GeneralSettingsSaved" xml:space="preserve"><value>General settings saved.</value></data>
+  <data name="ReviewSettingsSaved" xml:space="preserve"><value>Performance review settings saved.</value></data>
+  <data name="EmailSettingsSaved" xml:space="preserve"><value>Email settings saved.</value></data>
+  <data name="SmtpNotConfigured" xml:space="preserve"><value>SMTP is not configured (host/username missing). Save your settings first.</value></data>
+  <data name="TestEmailSuccess" xml:space="preserve"><value>Test email sent successfully to {0}. Check the inbox to confirm delivery.</value></data>
+  <data name="TestEmailFailed" xml:space="preserve"><value>Test email failed: {0}</value></data>
+  <data name="AuthSettingsSaved" xml:space="preserve"><value>Authentication settings saved. Session timeout changes take effect after the app restarts.</value></data>
+  <data name="SecuritySettingsSaved" xml:space="preserve"><value>Security settings saved.</value></data>
+  <data name="DashboardSettingsSaved" xml:space="preserve"><value>Dashboard settings saved.</value></data>
+  <data name="LogoMustBeImage" xml:space="preserve"><value>Logo must be an image file (PNG, JPG, GIF or SVG).</value></data>
+  <data name="LogoTooLarge" xml:space="preserve"><value>Logo file must be smaller than 2 MB.</value></data>
+  <data name="BrandingSettingsSaved" xml:space="preserve"><value>Branding settings saved.</value></data>
+</root>

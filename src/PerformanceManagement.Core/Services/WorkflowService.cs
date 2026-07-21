@@ -1,6 +1,7 @@
 using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace PerformanceManagement.Core.Services;
 
@@ -57,7 +58,7 @@ public class WorkflowService
                 if (form.IsLocked && form.Status != PmFormStatus.EmployeeAcknowledged)
                     return WorkflowResult.Fail("This form is locked and cannot be edited.");
 
-                ApplyContent(form, content, actor);
+                await ApplyContentAsync(form, content, actor);
 
                 if (form.Status is PmFormStatus.Draft or PmFormStatus.Ready)
                 {
@@ -89,7 +90,7 @@ public class WorkflowService
                 ? "This form has already been sent to the employee." : null,
             action: async form =>
             {
-                ApplyContent(form, content, actor);
+                await ApplyContentAsync(form, content, actor);
 
                 var errors = FormValidationService.ValidateForSendToEmployee(form, exempt);
                 if (errors.Count > 0) return WorkflowResult.Fail(errors);
@@ -104,7 +105,8 @@ public class WorkflowService
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
                 var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
-                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
                 await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "ACK_REQUEST")));
@@ -138,7 +140,9 @@ public class WorkflowService
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
                 var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
-                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now);
+                var achievementOpenDate = await _gate.AchievementOpenDateAsync(form.EvalYear);
+                var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
+                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture);
                 await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "EMP_ACKNOWLEDGED")));
@@ -152,8 +156,11 @@ public class WorkflowService
     {
         if (!perms.CanActAsManager)
             return WorkflowResult.Fail("Only the direct manager of this employee can submit to HR.");
-        if (!_gate.IsOpen(content.EvalYear))
-            return WorkflowResult.Fail($"Submit to HR is available from 01/12/{content.EvalYear} after achievement scores are entered.");
+        if (!await _gate.IsSubmitToHrOpenAsync(content.EvalYear))
+        {
+            var opensOn = await _gate.SubmitToHrOpenDateAsync(content.EvalYear);
+            return WorkflowResult.Fail($"Submit to HR is available from {opensOn:dd/MM/yyyy} after achievement scores are entered.");
+        }
 
         var exempt = await _permissions.HasExceptionAsync(content.EmpCode, ExceptionRule.PerspectiveMinExempt);
 
@@ -161,7 +168,7 @@ public class WorkflowService
             expectedStatuses: new[] { PmFormStatus.EmployeeAcknowledged },
             action: async form =>
             {
-                ApplyContent(form, content, actor);
+                await ApplyContentAsync(form, content, actor);
 
                 var errors = FormValidationService.ValidateForSubmitToHr(form, jobFamilyConfigured, exempt);
                 if (errors.Count > 0) return WorkflowResult.Fail(errors);
@@ -256,7 +263,8 @@ public class WorkflowService
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
                 var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
-                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
                 await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "FINAL_APPROVED")));
@@ -288,7 +296,8 @@ public class WorkflowService
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
                 var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
-                var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now);
+                var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
+                var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now, culture);
                 await _email.DispatchAsync(new EmailSpec("HR_REVERTED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await HrAdminEmailsAsync(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR_REVERTED")));
@@ -331,8 +340,12 @@ public class WorkflowService
         string? PromotionRecommendation, string? PromotionComments,
         IReadOnlyList<PmFormKpi> Kpis, IReadOnlyList<PmFormCompetency> Competencies);
 
-    private void ApplyContent(PmForm form, PmFormContent c, string actor)
+    private async Task ApplyContentAsync(PmForm form, PmFormContent c, string actor)
     {
+        // Computed once per save rather than per KPI/competency row — same result either way
+        // since it only depends on form.EvalYear, not the individual item.
+        var achievementOpen = await _gate.IsAchievementOpenAsync(form.EvalYear);
+
         form.EmpNameSnapshot = c.EmpName;
         form.DesignationSnapshot = c.DesignationCode;
         form.DeptCode = c.DeptCode;
@@ -367,7 +380,7 @@ public class WorkflowService
                 FormulaMetric = k.FormulaMetric,
                 Target = k.Target,
                 ItemWeight = k.ItemWeight,
-                AchievementScore = _gate.NormalizeAchievement(form.EvalYear, k.AchievementScore),
+                AchievementScore = NormalizeAchievement(achievementOpen, k.AchievementScore),
                 Comments = k.Comments
             });
         }
@@ -386,13 +399,19 @@ public class WorkflowService
                 CompName = cp.CompName,
                 Description = cp.Description,
                 ItemWeight = cp.ItemWeight,
-                AchievementScore = _gate.NormalizeAchievement(form.EvalYear, cp.AchievementScore),
+                AchievementScore = NormalizeAchievement(achievementOpen, cp.AchievementScore),
                 Comments = cp.Comments
             });
         }
 
         ScoringService.Recalculate(form);
         Audit(form, actor);
+    }
+
+    private static int NormalizeAchievement(bool achievementOpen, int? value)
+    {
+        if (!achievementOpen || value is null) return 0;
+        return Math.Clamp(value.Value, 0, 100);
     }
 
     private async Task<WorkflowResult> ExecuteAsync(
@@ -509,6 +528,17 @@ public class WorkflowService
         if (string.IsNullOrWhiteSpace(empCode)) return "";
         var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim() && x.IsActive);
         return u?.UserName ?? "";
+    }
+
+    /// <summary>The recipient's own saved language preference, for rendering a workflow email in
+    /// the recipient's chosen language rather than whatever culture happens to be ambient on the
+    /// request thread that triggered the transition. Falls back to English (null → CurrentUICulture,
+    /// which is English outside a request) when there's no account or no preference saved yet.</summary>
+    private async Task<CultureInfo?> CultureForEmpCodeAsync(string? empCode)
+    {
+        if (string.IsNullOrWhiteSpace(empCode)) return null;
+        var u = await _db.AppUsers.AsNoTracking().FirstOrDefaultAsync(x => x.EmpCode == empCode.Trim() && x.IsActive);
+        return string.IsNullOrWhiteSpace(u?.PreferredCulture) ? null : new CultureInfo(u!.PreferredCulture!);
     }
 
     private async Task<IReadOnlyList<string>> EmailsAsync(string? empCode)

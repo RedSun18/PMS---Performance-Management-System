@@ -1,8 +1,10 @@
 @page
 @using System.Text.Json
 @model PerformanceManagement.Web.Pages.PmForm.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Performance Management Form";
+    ViewData["Title"] = Localizer["PageTitle"].Value;
     var perms = Model.Perms;
     var canManage = perms?.CanActAsManager == true;
     var isSelf = perms?.IsSelf == true;
@@ -17,19 +19,25 @@
     var canEditHr2 = perms?.CanActAsHr == true && status == PmFormStatus.HrReview1Approved && !isSameAsHr1;
 }
 
-<div class="page-header">Performance Management Form (KPI + Competency)</div>
+<div class="page-header">@Localizer["PageHeader"]</div>
 
 
 @* ============================ Employee Selection ============================ *@
 <div class="card">
-    <div class="card-header">👤 Employee Selection</div>
+    <div class="card-header">👤 @Localizer["EmployeeSelectionHeader"]</div>
     <div class="card-body">
-        <form method="post" asp-page-handler="Select" id="selectForm">
+        @* This form only ever carries the Department/Employee/Year filter selects — OnPostSelect
+           is a pure redirect, never a data save — so it's opted out of the global unsaved-changes
+           dirty-check below. Without this, changing Department set the page "dirty" via the
+           select's change event before its own auto-submit could reset the flag (form.submit()
+           bypasses the submit event the reset relies on), so the browser's native "leave page?"
+           confirmation fired on every department switch even though nothing was actually unsaved. *@
+        <form method="post" asp-page-handler="Select" id="selectForm" data-no-dirty-check>
             <div class="grid-3">
                 <div>
-                    <label for="deptSelect">Select Department</label>
-                    <select name="dept" id="deptSelect" onchange="this.form.empcd.value='';this.form.submit()" @(Model.CanChangeDept ? "" : "disabled")>
-                        <option value="">(All)</option>
+                    <label for="deptSelect">@Localizer["SelectDepartmentLabel"]</label>
+                    <select name="dept" id="deptSelect" data-searchable onchange="this.form.empcd.value='';this.form.submit()" @(Model.CanChangeDept ? "" : "disabled")>
+                        <option value="">(@SharedLocalizer["All"])</option>
                         @foreach (var d in Model.Departments)
                         {
                             <option value="@d.Code" selected="@(d.Code == Model.Dept)">@d.NameEn</option>
@@ -37,9 +45,9 @@
                     </select>
                 </div>
                 <div>
-                    <label for="empcdSelect">Select Employee</label>
-                    <select name="empcd" id="empcdSelect" onchange="this.form.submit()" @(Model.CanChangeEmployee ? "" : "disabled")>
-                        <option value="">Select Employee</option>
+                    <label for="empcdSelect">@Localizer["SelectEmployeeLabel"]</label>
+                    <select name="empcd" id="empcdSelect" data-searchable onchange="this.form.submit()" @(Model.CanChangeEmployee ? "" : "disabled")>
+                        <option value="">@Localizer["SelectEmployeeLabel"]</option>
                         @foreach (var (code, label) in Model.EmployeeOptions)
                         {
                             <option value="@code" selected="@(code == Model.Empcd)">@label</option>
@@ -47,7 +55,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="yearSelect">Evaluation Year</label>
+                    <label for="yearSelect">@Localizer["EvaluationYearLabel"]</label>
                     <select name="year" id="yearSelect" onchange="this.form.submit()" @(Model.SelectedEmployee is null ? "disabled" : "")>
                         @foreach (var y in Model.YearOptions.DefaultIfEmpty(Model.EvalYear))
                         {
@@ -66,32 +74,32 @@
 
     @* ============================ Employee Information ============================ *@
     <div class="card">
-        <div class="card-header">📋 Employee Information</div>
+        <div class="card-header">📋 @Localizer["EmployeeInfoHeader"]</div>
         <div class="card-body">
             <div class="emp-info-grid">
                 <div class="emp-info-group">
-                    <div class="emp-info-group-title">Employee Details</div>
-                    <div class="emp-info-row"><span class="emp-lbl">Employee ID</span><span class="emp-val">@e.EmpCode</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Name</span><span class="emp-val">@e.LatinName</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Department</span><span class="emp-val">@Model.DeptName</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Current Position</span><span class="emp-val">@Model.DesignationName</span></div>
+                    <div class="emp-info-group-title">@Localizer["EmployeeDetailsGroupTitle"]</div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["EmployeeIdLabel"]</span><span class="emp-val">@e.EmpCode</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Name"]</span><span class="emp-val">@e.LatinName</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Department"]</span><span class="emp-val">@Model.DeptName</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["CurrentPositionLabel"]</span><span class="emp-val">@Model.DesignationName</span></div>
                 </div>
                 <div class="emp-info-group">
-                    <div class="emp-info-group-title">Evaluation Context</div>
-                    <div class="emp-info-row"><span class="emp-lbl">Evaluation Year</span><span class="emp-val">@Model.EvalYear</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">KPI Weight (%)</span><span class="emp-val emp-val-accent">@Model.KpiWeightTotal%</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Competency Weight (%)</span><span class="emp-val emp-val-accent">@Model.CompWeightTotal%</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Ref. No</span><span class="emp-val"><span class="badge-refno">@Model.RefNo</span></span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Today's Date</span><span class="emp-val">@DateTime.Today.ToString("dd/MM/yyyy")</span></div>
+                    <div class="emp-info-group-title">@Localizer["EvaluationContextGroupTitle"]</div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["EvaluationYearLabel"]</span><span class="emp-val">@Model.EvalYear</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["KpiWeightPercentLabel"]</span><span class="emp-val emp-val-accent">@Model.KpiWeightTotal%</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["CompWeightPercentLabel"]</span><span class="emp-val emp-val-accent">@Model.CompWeightTotal%</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["RefNoLabel"]</span><span class="emp-val"><span class="badge-refno">@Model.RefNo</span></span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["TodaysDateLabel"]</span><span class="emp-val">@DateTime.Today.ToString("dd/MM/yyyy")</span></div>
                 </div>
                 <div class="emp-info-group">
-                    <div class="emp-info-group-title">Reporting Structure</div>
-                    <div class="emp-info-row"><span class="emp-lbl">Direct Manager</span><span class="emp-val">@Model.ManagerName</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Job Family</span><span class="emp-val">@Model.JobFamilyName</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Grade</span><span class="emp-val">@e.Grade</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Sub-Department</span><span class="emp-val">@Model.SectionName</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Joining Date</span><span class="emp-val">@e.JoinDate?.ToString("dd/MM/yyyy")</span></div>
-                    <div class="emp-info-row"><span class="emp-lbl">Last Review Date</span><span class="emp-val">@Model.Form?.LastReviewDate?.ToString("dd/MM/yyyy")</span></div>
+                    <div class="emp-info-group-title">@Localizer["ReportingStructureGroupTitle"]</div>
+                    <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["DirectManager"]</span><span class="emp-val">@Model.ManagerName</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["JobFamilyLabel"]</span><span class="emp-val">@Model.JobFamilyName</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Grade"]</span><span class="emp-val">@e.Grade</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["SubDepartmentLabel"]</span><span class="emp-val">@Model.SectionName</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["JoiningDateLabel"]</span><span class="emp-val">@e.JoinDate?.ToString("dd/MM/yyyy")</span></div>
+                    <div class="emp-info-row"><span class="emp-lbl">@Localizer["LastReviewDateLabel"]</span><span class="emp-val">@Model.Form?.LastReviewDate?.ToString("dd/MM/yyyy")</span></div>
                 </div>
             </div>
         </div>
@@ -106,15 +114,15 @@
             PmFormStatus.HrReview1Approved => new[] { "done", "done", "active", "pending" },
             _ => new[] { "done", "done", "done", "done" }
         };
-        var names = new[] { "Submitted by Manager", "Received by HR", "Under HR Review", "Approved" };
+        var names = new[] { Localizer["StepSubmittedByManager"].Value, Localizer["StepReceivedByHr"].Value, Localizer["StepUnderHrReview"].Value, SharedLocalizer["Approved"].Value };
         <div class="lock-notice">
-            <strong>@(status == PmFormStatus.Approved ? "Form Approved & Finalised" : "Form Locked — Under Review")</strong>
+            <strong>@(status == PmFormStatus.Approved ? Localizer["FormApprovedFinalizedTitle"] : Localizer["FormLockedUnderReviewTitle"])</strong>
             <p style="margin:6px 0 0;font-size:13.5px;">
                 @(status == PmFormStatus.Approved
-                    ? "This form has been approved by both HR representatives and is now finalized. No further changes can be made."
+                    ? Localizer["FormApprovedMessage"]
                     : perms.IsHrAdmin
-                        ? "This form is awaiting HR review. Please review the performance data and take appropriate action below."
-                        : "This form has been submitted to HR and is currently under review. No changes can be made at this time.")
+                        ? Localizer["AwaitingHrReviewMessage"]
+                        : Localizer["SubmittedUnderReviewMessage"])
             </p>
             <div class="lock-timeline">
                 @for (var i = 0; i < 4; i++)
@@ -128,8 +136,8 @@
     else if (!editable && canManage == false && !isSelf && status is PmFormStatus.Draft or PmFormStatus.Ready)
     {
         <div class="alert alert-warn">
-            You do not have permission to edit this form. Only the direct manager of this employee can make changes.
-            @(perms.IsHrAdmin ? "HR can review and approve forms after submission, but cannot edit them directly." : "")
+            @Localizer["NoEditPermissionMessage"]
+            @(perms.IsHrAdmin ? Localizer["HrCannotEditMessage"].Value : "")
         </div>
     }
 
@@ -137,27 +145,27 @@
     <div class="card">
         <div class="card-body" style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
             <div style="flex:1;min-width:240px;">
-                <span class="status-chip"><span class="status-dot"></span> Status: @PmFormStatus.DisplayName(status)</span>
+                <span class="status-chip"><span class="status-dot"></span> @Localizer["StatusLabelPrefix"] @PmFormStatus.DisplayName(status)</span>
                 <div class="progress-outer"><div class="progress-inner" style="width:@Model.ProgressPercent%;">@Model.ProgressPercent%</div></div>
             </div>
             <div class="form-actions">
                 @if (canManage && status is PmFormStatus.Draft or PmFormStatus.Ready)
                 {
-                    <button type="submit" form="mainForm" class="btn btn-secondary" asp-page-handler="SaveDraft">💾 Save Draft</button>
-                    <button type="submit" form="mainForm" class="btn btn-primary" asp-page-handler="SendToEmployee">✉ Send to Employee</button>
+                    <button type="submit" form="mainForm" class="btn btn-secondary" asp-page-handler="SaveDraft">💾 @Localizer["SaveDraftButton"]</button>
+                    <button type="submit" form="mainForm" class="btn btn-primary" asp-page-handler="SendToEmployee">✉ @Localizer["SendToEmployeeButton"]</button>
                     <button type="submit" form="mainForm" class="btn btn-danger" asp-page-handler="CancelDelete"
-                            onclick="return confirm('Are you sure you want to delete all evaluation records for @e.LatinName for @Model.EvalYear?');">✕ Delete Records</button>
+                            onclick="return confirm(@Html.Raw(JsonSerializer.Serialize(string.Format(Localizer["ConfirmDeleteRecords"].Value, e.LatinName, Model.EvalYear))));">✕ @Localizer["DeleteRecordsButton"]</button>
                 }
                 @if (canManage && status == PmFormStatus.EmployeeAcknowledged)
                 {
-                    <button type="submit" form="mainForm" class="btn btn-secondary" asp-page-handler="SaveDraft">💾 Save</button>
-                    @if (Model.AchievementOpen)
+                    <button type="submit" form="mainForm" class="btn btn-secondary" asp-page-handler="SaveDraft">💾 @SharedLocalizer["Save"]</button>
+                    @if (Model.SubmitToHrOpen)
                     {
-                        <button type="submit" form="mainForm" class="btn btn-primary" asp-page-handler="SubmitToHr">📤 Submit to HR</button>
+                        <button type="submit" form="mainForm" class="btn btn-primary" asp-page-handler="SubmitToHr">📤 @Localizer["SubmitToHrButton"]</button>
                     }
                     else
                     {
-                        <span class="muted">Submit to HR is available from 01/12/@Model.EvalYear after achievement scores are entered.</span>
+                        <span class="muted">@Localizer["SubmitToHrAvailableFromMessage", Model.SubmitToHrOpenDate.ToString("dd/MM/yyyy")]</span>
                     }
                 }
             </div>
@@ -168,9 +176,9 @@
     <div class="tabs">
         @if (Model.ShowKpiTab)
         {
-            <a href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=kpi&keep=true" class="@(Model.Tab == "kpi" ? "active" : "")">KPI (Key Performance Indicators)</a>
+            <a href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=kpi&keep=true" class="@(Model.Tab == "kpi" ? "active" : "")">@Localizer["KpiTabLabel"]</a>
         }
-        <a href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=comp&keep=true" class="@(Model.Tab == "comp" ? "active" : "")">Competencies</a>
+        <a href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=comp&keep=true" class="@(Model.Tab == "comp" ? "active" : "")">@Localizer["CompetenciesTabLabel"]</a>
     </div>
 
     @if (Model.Tab == "kpi" && Model.ShowKpiTab)
@@ -180,65 +188,65 @@
         {
             var ek = Model.KpiBeingEdited;
             <div class="card">
-                <div class="card-header">➕ Add/Edit KPI</div>
+                <div class="card-header">➕ @Localizer["AddEditKpiHeader"]</div>
                 <div class="card-body">
                     <form method="post" asp-page-handler="AddKpi" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear" asp-route-tab="kpi">
                         <input type="hidden" name="editingSeq" value="@ek?.Seq" />
                         <div class="grid-3" style="margin-bottom:12px;">
                             <div>
-                                <label for="kpiPerspective">Perspective</label>
+                                <label for="kpiPerspective">@Localizer["PerspectiveLabel"]</label>
                                 <select name="perspective" id="kpiPerspective" onchange="filterKpis()">
-                                    <option value="">-- Select --</option>
-                                    <option value="F" selected="@(ek?.Kind == "F")">Financial</option>
-                                    <option value="C" selected="@(ek?.Kind == "C")">Customer</option>
-                                    <option value="I" selected="@(ek?.Kind == "I")">Internal Processes</option>
-                                    <option value="L" selected="@(ek?.Kind == "L")">Learning &amp; Growth</option>
+                                    <option value="">@Localizer["SelectPlaceholderOption"]</option>
+                                    <option value="F" selected="@(ek?.Kind == "F")">@Localizer["PerspectiveFinancial"]</option>
+                                    <option value="C" selected="@(ek?.Kind == "C")">@Localizer["PerspectiveCustomer"]</option>
+                                    <option value="I" selected="@(ek?.Kind == "I")">@Localizer["PerspectiveInternal"]</option>
+                                    <option value="L" selected="@(ek?.Kind == "L")">@Localizer["PerspectiveLearning"]</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="kpiSelect">KPI Name</label>
-                                <select name="kpiCode" id="kpiSelect" onchange="showKpiDetails()" data-selected="@ek?.Code"></select>
+                                <label for="kpiSelect">@Localizer["KpiNameLabel"]</label>
+                                <select name="kpiCode" id="kpiSelect" data-searchable onchange="showKpiDetails()" data-selected="@ek?.Code"></select>
                             </div>
                             <div>
-                                <label for="kpiTarget">Target</label>
+                                <label for="kpiTarget">@SharedLocalizer["Target"]</label>
                                 <input type="text" name="target" id="kpiTarget" maxlength="250" value="@ek?.Target" />
                             </div>
                         </div>
                         <div class="grid-2" style="margin-bottom:12px;">
                             <div>
-                                <label for="kpiDefinition">Purpose/Definition</label>
+                                <label for="kpiDefinition">@Localizer["PurposeDefinitionLabel"]</label>
                                 <textarea id="kpiDefinition" readonly>@ek?.Definition</textarea>
                             </div>
                             <div>
-                                <label for="kpiFormula">Formula/Metric Guide</label>
+                                <label for="kpiFormula">@Localizer["FormulaMetricGuideLabel"]</label>
                                 <textarea id="kpiFormula" readonly>@ek?.Formula</textarea>
                             </div>
                         </div>
                         <div class="grid-4">
                             <div>
-                                <label for="kpiWeight">Weight (%)</label>
-                                <input type="number" name="weight" id="kpiWeight" min="0" max="100" value="@(ek?.Weight > 0 ? ek.Weight.ToString() : "")" placeholder="Enter weight %" oninput="calcKpiScore()" />
+                                <label for="kpiWeight">@SharedLocalizer["WeightPercent"]</label>
+                                <input type="number" name="weight" id="kpiWeight" min="0" max="100" value="@(ek?.Weight > 0 ? ek.Weight.ToString() : "")" placeholder="@Localizer["EnterWeightPlaceholder"]" oninput="calcKpiScore()" />
                                 <span class="muted" id="kpiWeightRange"></span>
                             </div>
                             <div>
-                                <label for="kpiAchievement">Achievement (%)</label>
+                                <label for="kpiAchievement">@SharedLocalizer["AchievementPercent"]</label>
                                 <input type="number" name="achievement" id="kpiAchievement" min="0" max="100"
                                        value="@(ek?.Achievement > 0 ? ek.Achievement.ToString() : "")"
-                                       placeholder="@(Model.AchievementOpen ? "To be entered at year end" : $"Locked until 01/12/{Model.EvalYear}")"
+                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : Localizer["LockedUntilDate", Model.AchievementOpenDate].Value)"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcKpiScore()" />
                             </div>
                             <div>
-                                <label for="kpiWeighted">WT * Ach/100</label>
+                                <label for="kpiWeighted">@Localizer["WtAchLabel"]</label>
                                 <input type="text" id="kpiWeighted" readonly />
                             </div>
                             <div>
-                                <label for="kpiComments">Comments</label>
+                                <label for="kpiComments">@SharedLocalizer["Comments"]</label>
                                 <input type="text" name="comments" id="kpiComments" maxlength="1000" value="@ek?.Comments" />
                             </div>
                         </div>
                         <div class="form-actions" style="margin-top:14px;">
-                            <button type="submit" class="btn btn-primary">@(ek is null ? "Add KPI" : "Update KPI")</button>
-                            <a class="btn btn-secondary" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=kpi&keep=true">Clear</a>
+                            <button type="submit" class="btn btn-primary">@(ek is null ? Localizer["AddKpiButton"] : Localizer["UpdateKpiButton"])</button>
+                            <a class="btn btn-secondary" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=kpi&keep=true">@SharedLocalizer["Clear"]</a>
                         </div>
                     </form>
                 </div>
@@ -261,11 +269,11 @@
         <table class="grid">
             <thead>
                 <tr>
-                    <th>No.</th><th>Perspective</th><th>KPI</th><th>Purpose/Definition</th><th>Formula/Metric</th>
-                    <th>Target</th><th>Weight</th>
-                    @if (showScores) { <th>Achievement</th><th>WT*Ach/100</th> }
-                    <th>Rating</th><th>Comments</th>
-                    @if (editable) { <th>Action</th> }
+                    <th>@Localizer["NoColumnHeader"]</th><th>@Localizer["PerspectiveLabel"]</th><th>@Localizer["KpiColumnHeader"]</th><th>@Localizer["PurposeDefinitionLabel"]</th><th>@Localizer["FormulaMetricColumnHeader"]</th>
+                    <th>@SharedLocalizer["Target"]</th><th>@SharedLocalizer["Weight"]</th>
+                    @if (showScores) { <th>@SharedLocalizer["Achievement"]</th><th>@Localizer["WtAchColumnHeader"]</th> }
+                    <th>@SharedLocalizer["Rating"]</th><th>@SharedLocalizer["Comments"]</th>
+                    @if (editable) { <th>@Localizer["ActionColumnHeader"]</th> }
                 </tr>
             </thead>
             <tbody>
@@ -273,7 +281,7 @@
             {
                 <tr>
                     <td>@k.Seq</td>
-                    <td>@(k.Kind switch { "F" => "Financial", "C" => "Customer", "I" => "Internal Processes", "L" => "Learning & Growth", _ => k.Kind })</td>
+                    <td>@(k.Kind switch { "F" => Localizer["PerspectiveFinancial"].Value, "C" => Localizer["PerspectiveCustomer"].Value, "I" => Localizer["PerspectiveInternal"].Value, "L" => Localizer["PerspectiveLearning"].Value, _ => k.Kind })</td>
                     <td><strong>@k.Name</strong></td>
                     <td>@k.Definition</td>
                     <td>@k.Formula</td>
@@ -291,7 +299,7 @@
                         <td style="white-space:nowrap;">
                             <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=kpi&keep=true&editKpi=@k.Seq">✎</a>
                             <form method="post" asp-page-handler="DeleteKpi" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear" asp-route-tab="kpi" class="inline-form"
-                                  onsubmit="return confirm('Delete this KPI?');">
+                                  onsubmit="return confirm(@Html.Raw(JsonSerializer.Serialize(Localizer["ConfirmDeleteKpi"].Value)));">
                                 <input type="hidden" name="seq" value="@k.Seq" />
                                 <button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:12px;">✕</button>
                             </form>
@@ -303,7 +311,7 @@
             @if (Model.Work.Kpis.Count > 0)
             {
                 <tfoot><tr>
-                    <td colspan="6">Totals</td>
+                    <td colspan="6">@Localizer["TotalsLabel"]</td>
                     <td>@Model.Work.Kpis.Sum(k => k.Weight)%</td>
                     @if (showScores)
                     {
@@ -321,14 +329,14 @@
             var kw = Model.Work.Kpis.Sum(k => k.Weight);
             <div class="summary-cards">
                 <div class="summary-card @ScoringService.CardColor(kw)">
-                    <div class="label">Total KPI Weight</div>
+                    <div class="label">@Localizer["TotalKpiWeightLabel"]</div>
                     <div class="value">@kw%</div>
-                    <div class="sub">@(kw == 100 ? "✓ Target met!" : kw < 100 ? $"Need {100 - kw}% more" : $"Exceeds by {kw - 100}%")</div>
+                    <div class="sub">@(kw == 100 ? ("✓ " + Localizer["TargetMetMessage"]) : kw < 100 ? Localizer["NeedMoreWeightMessage", 100 - kw].Value : Localizer["ExceedsWeightMessage", kw - 100].Value)</div>
                 </div>
                 <div class="summary-card blue">
-                    <div class="label">KPI Score</div>
+                    <div class="label">@Localizer["KpiScoreLabel"]</div>
                     <div class="value">@Model.KpiScore.ToString("F2")</div>
-                    <div class="sub">@Model.Work.Kpis.Count KPIs</div>
+                    <div class="sub">@Localizer["KpiCountSuffix", Model.Work.Kpis.Count]</div>
                 </div>
             </div>
         }
@@ -340,56 +348,57 @@
         {
             var ec = Model.CompBeingEdited;
             <div class="card">
-                <div class="card-header">➕ Add/Edit Competency</div>
+                <div class="card-header">➕ @Localizer["AddEditCompHeader"]</div>
                 <div class="card-body">
                     <form method="post" asp-page-handler="AddComp" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear" asp-route-tab="comp">
                         <input type="hidden" name="editingSeq" value="@ec?.Seq" />
                         <div class="grid-4" style="margin-bottom:12px;">
                             <div>
-                                <label for="compType">Competency Type</label>
+                                <label for="compType">@Localizer["CompetencyTypeLabel"]</label>
                                 <select name="compType" id="compType" onchange="filterComps()">
-                                    <option value="">-- Select --</option>
-                                    <option value="B" selected="@(ec?.Kind == "B")">Behavioral</option>
-                                    <option value="T" selected="@(ec?.Kind == "T")">Technical</option>
+                                    <option value="">@Localizer["SelectPlaceholderOption"]</option>
+                                    <option value="B" selected="@(ec?.Kind == "B")">@Localizer["CompTypeBehavioral"]</option>
+                                    <option value="T" selected="@(ec?.Kind == "T")">@Localizer["CompTypeTechnical"]</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="compSelect">Competency Name</label>
-                                <select name="compCode" id="compSelect" onchange="showCompDetails()" data-selected="@ec?.Code"></select>
+                                <label for="compSelect">@Localizer["CompetencyNameLabel"]</label>
+                                <select name="compCode" id="compSelect" data-searchable onchange="showCompDetails()" data-selected="@ec?.Code"></select>
                             </div>
                             <div>
-                                <label for="compDesc">Description/Definition</label>
+                                <label for="compDesc">@Localizer["DescriptionDefinitionLabel"]</label>
                                 <textarea id="compDesc" readonly>@ec?.Definition</textarea>
                             </div>
                             <div>
-                                <label for="compWeightRange">Weight Range</label>
+                                <label for="compWeightRange">@Localizer["WeightRangeLabel"]</label>
                                 <textarea id="compWeightRange" readonly></textarea>
+                                <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["WeightRangeGuidanceText"]</p>
                             </div>
                         </div>
                         <div class="grid-4">
                             <div>
-                                <label for="compWeight">Weight (%)</label>
-                                <input type="number" name="weight" id="compWeight" min="0" max="100" value="@(ec?.Weight > 0 ? ec.Weight.ToString() : "")" placeholder="Enter weight %" oninput="calcCompScore()" />
+                                <label for="compWeight">@SharedLocalizer["WeightPercent"]</label>
+                                <input type="number" name="weight" id="compWeight" min="0" max="100" value="@(ec?.Weight > 0 ? ec.Weight.ToString() : "")" placeholder="@Localizer["EnterWeightPlaceholder"]" oninput="calcCompScore()" />
                             </div>
                             <div>
-                                <label for="compAchievement">Achievement (%)</label>
+                                <label for="compAchievement">@SharedLocalizer["AchievementPercent"]</label>
                                 <input type="number" name="achievement" id="compAchievement" min="0" max="100"
                                        value="@(ec?.Achievement > 0 ? ec.Achievement.ToString() : "")"
-                                       placeholder="@(Model.AchievementOpen ? "To be entered at year end" : $"Locked until 01/12/{Model.EvalYear}")"
+                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : Localizer["LockedUntilDate", Model.AchievementOpenDate].Value)"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcCompScore()" />
                             </div>
                             <div>
-                                <label for="compWeighted">Weight × Achievement</label>
+                                <label for="compWeighted">@Localizer["WeightTimesAchievementLabel"]</label>
                                 <input type="text" id="compWeighted" readonly />
                             </div>
                             <div>
-                                <label for="compComments">Comments</label>
+                                <label for="compComments">@SharedLocalizer["Comments"]</label>
                                 <input type="text" name="comments" id="compComments" maxlength="1000" value="@ec?.Comments" />
                             </div>
                         </div>
                         <div class="form-actions" style="margin-top:14px;">
-                            <button type="submit" class="btn btn-primary">@(ec is null ? "Add Competency" : "Update Competency")</button>
-                            <a class="btn btn-secondary" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=comp&keep=true">Clear</a>
+                            <button type="submit" class="btn btn-primary">@(ec is null ? Localizer["AddCompButton"] : Localizer["UpdateCompButton"])</button>
+                            <a class="btn btn-secondary" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=comp&keep=true">@SharedLocalizer["Clear"]</a>
                         </div>
                     </form>
                 </div>
@@ -411,11 +420,11 @@
         <table class="grid">
             <thead>
                 <tr>
-                    <th>No.</th><th>Type</th><th>Competency ID</th><th>Competency Name</th><th>Description</th>
-                    <th>Weight</th>
-                    @if (showScores) { <th>Achievement</th><th>Weight*Ach/100</th> }
-                    <th>Rating</th><th>Comments</th>
-                    @if (editable) { <th>Action</th> }
+                    <th>@Localizer["NoColumnHeader"]</th><th>@SharedLocalizer["Type"]</th><th>@Localizer["CompetencyIdColumnHeader"]</th><th>@Localizer["CompetencyNameLabel"]</th><th>@SharedLocalizer["Description"]</th>
+                    <th>@SharedLocalizer["Weight"]</th>
+                    @if (showScores) { <th>@SharedLocalizer["Achievement"]</th><th>@Localizer["WeightAchColumnHeader"]</th> }
+                    <th>@SharedLocalizer["Rating"]</th><th>@SharedLocalizer["Comments"]</th>
+                    @if (editable) { <th>@Localizer["ActionColumnHeader"]</th> }
                 </tr>
             </thead>
             <tbody>
@@ -423,7 +432,7 @@
             {
                 <tr>
                     <td>@c.Seq</td>
-                    <td>@(c.Kind == "B" ? "Behavioral" : c.Kind == "T" ? "Technical" : c.Kind)</td>
+                    <td>@(c.Kind == "B" ? Localizer["CompTypeBehavioral"].Value : c.Kind == "T" ? Localizer["CompTypeTechnical"].Value : c.Kind)</td>
                     <td>@c.Code</td>
                     <td><strong>@c.Name</strong></td>
                     <td>@c.Definition</td>
@@ -440,7 +449,7 @@
                         <td style="white-space:nowrap;">
                             <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" href="?dept=@Model.Dept&empcd=@Model.Empcd&year=@Model.EvalYear&tab=comp&keep=true&editComp=@c.Seq">✎</a>
                             <form method="post" asp-page-handler="DeleteComp" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear" asp-route-tab="comp" class="inline-form"
-                                  onsubmit="return confirm('Delete this Competency?');">
+                                  onsubmit="return confirm(@Html.Raw(JsonSerializer.Serialize(Localizer["ConfirmDeleteComp"].Value)));">
                                 <input type="hidden" name="seq" value="@c.Seq" />
                                 <button type="submit" class="btn btn-danger" style="padding:4px 10px;font-size:12px;">✕</button>
                             </form>
@@ -452,7 +461,7 @@
             @if (Model.Work.Comps.Count > 0)
             {
                 <tfoot><tr>
-                    <td colspan="5">Totals</td>
+                    <td colspan="5">@Localizer["TotalsLabel"]</td>
                     <td>@Model.Work.Comps.Sum(c => c.Weight)%</td>
                     @if (showScores)
                     {
@@ -470,14 +479,14 @@
             var cw = Model.Work.Comps.Sum(c => c.Weight);
             <div class="summary-cards">
                 <div class="summary-card @ScoringService.CardColor(cw)">
-                    <div class="label">Total Competency Weight</div>
+                    <div class="label">@Localizer["TotalCompWeightLabel"]</div>
                     <div class="value">@cw%</div>
-                    <div class="sub">@(cw == 100 ? "✓ Target met!" : cw < 100 ? $"Need {100 - cw}% more" : $"Exceeds by {cw - 100}%")</div>
+                    <div class="sub">@(cw == 100 ? ("✓ " + Localizer["TargetMetMessage"]) : cw < 100 ? Localizer["NeedMoreWeightMessage", 100 - cw].Value : Localizer["ExceedsWeightMessage", cw - 100].Value)</div>
                 </div>
                 <div class="summary-card blue">
-                    <div class="label">Competency Score</div>
+                    <div class="label">@Localizer["CompScoreLabel"]</div>
                     <div class="value">@Model.CompScore.ToString("F2")</div>
-                    <div class="sub">@Model.Work.Comps.Count Competencies</div>
+                    <div class="sub">@Localizer["CompCountSuffix", Model.Work.Comps.Count]</div>
                 </div>
             </div>
         }
@@ -494,13 +503,13 @@
 
         <div class="grid-2" style="margin-bottom:20px;">
             <div class="card" style="margin-bottom:0;">
-                <div class="card-header">📝 Employee Year-End Self-Assessment</div>
+                <div class="card-header">📝 @Localizer["SelfAssessmentHeader"]</div>
                 <div class="card-body">
                     <textarea name="fields.SelfAssessment" rows="4" @(editable ? "" : "readonly")>@Model.Work.SelfAssessment</textarea>
                 </div>
             </div>
             <div class="card" style="margin-bottom:0;">
-                <div class="card-header">🎯 Development Plan for Coming Year</div>
+                <div class="card-header">🎯 @Localizer["DevelopmentPlanHeader"]</div>
                 <div class="card-body">
                     <textarea name="fields.DevelopmentPlan" rows="4" @(editable ? "" : "readonly")>@Model.Work.DevelopmentPlan</textarea>
                 </div>
@@ -511,17 +520,17 @@
         @if (canManage && status is PmFormStatus.Draft or PmFormStatus.Ready or PmFormStatus.EmployeeAcknowledged)
         {
             <div class="card">
-                <div class="card-header">⭐ Promotion Feedback</div>
+                <div class="card-header">⭐ @Localizer["PromotionFeedbackHeader"]</div>
                 <div class="card-body">
-                    <p style="margin-top:0;font-size:14px;">Based on the role criteria for the next level, do you recommend promotion?</p>
+                    <p style="margin-top:0;font-size:14px;">@Localizer["PromotionQuestionText"]</p>
                     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
-                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="YES" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "YES")" /> Yes, meets next-level expectations consistently</label>
-                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="BORDERLINE" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "BORDERLINE")" /> Borderline, some next-level behaviors, not consistent yet</label>
-                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="NO" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "NO")" /> No, does not yet meet next-level expectations</label>
+                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="YES" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "YES")" /> @Localizer["PromotionYesOption"]</label>
+                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="BORDERLINE" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "BORDERLINE")" /> @Localizer["PromotionBorderlineOption"]</label>
+                        <label style="text-transform:none;font-size:13.5px;"><input type="radio" name="fields.PromotionRecommendation" value="NO" style="width:auto;" checked="@(Model.Work.PromotionRecommendation == "NO")" /> @Localizer["PromotionNoOption"]</label>
                     </div>
-                    <label for="promotionComments">Manager Comments</label>
+                    <label for="promotionComments">@Localizer["ManagerCommentsLabel"]</label>
                     <textarea name="fields.PromotionComments" id="promotionComments" rows="3">@Model.Work.PromotionComments</textarea>
-                    <p class="muted" style="margin-bottom:0;">ⓘ Note: Only the manager/appraiser can view this section.</p>
+                    <p class="muted" style="margin-bottom:0;">ⓘ @Localizer["ManagerOnlyNoteText"]</p>
                 </div>
             </div>
         }
@@ -536,15 +545,15 @@
     @if (showScores || employeeRatingOnly)
     {
         <div class="card">
-            <div class="card-header">📊 Performance Summary</div>
+            <div class="card-header">📊 @Localizer["PerformanceSummaryHeader"]</div>
             <div class="perf-metrics">
                 @if (showScores)
                 {
-                    <div class="perf-metric"><div class="label">KPI Score</div><div class="value">@Model.KpiScore.ToString("F2")</div><div class="muted">KPI Weighted Score</div></div>
-                    <div class="perf-metric"><div class="label">Competency Score</div><div class="value">@Model.CompScore.ToString("F2")</div><div class="muted">Competency Score</div></div>
-                    <div class="perf-metric"><div class="label">Overall Performance Score</div><div class="value">@Model.OverallScore.ToString("F2")</div><div class="muted">Combined Score</div></div>
+                    <div class="perf-metric"><div class="label">@Localizer["KpiScoreLabel"]</div><div class="value">@Model.KpiScore.ToString("F2")</div><div class="muted">@Localizer["KpiWeightedScoreCaption"]</div></div>
+                    <div class="perf-metric"><div class="label">@Localizer["CompScoreLabel"]</div><div class="value">@Model.CompScore.ToString("F2")</div><div class="muted">@Localizer["CompScoreLabel"]</div></div>
+                    <div class="perf-metric"><div class="label">@Localizer["OverallPerformanceScoreLabel"]</div><div class="value">@Model.OverallScore.ToString("F2")</div><div class="muted">@Localizer["CombinedScoreCaption"]</div></div>
                 }
-                <div class="perf-metric"><div class="label">Rating</div><div class="value" style="font-size:18px;">@Model.RatingName</div><div class="muted">Overall Rating</div></div>
+                <div class="perf-metric"><div class="label">@SharedLocalizer["Rating"]</div><div class="value" style="font-size:18px;">@Model.RatingName</div><div class="muted">@Localizer["OverallRatingCaption"]</div></div>
             </div>
         </div>
     }
@@ -554,19 +563,19 @@
                    PmFormStatus.SubmittedToHr or PmFormStatus.HrReview1Approved or PmFormStatus.Approved)
     {
         <div class="card">
-            <div class="card-header green">✓ Employee Acknowledgement</div>
+            <div class="card-header green">✓ @Localizer["EmployeeAcknowledgementHeader"]</div>
             <div class="card-body">
-                <p style="margin-top:0;font-size:13.5px;">Please review and acknowledge your performance objectives for this evaluation period.</p>
+                <p style="margin-top:0;font-size:13.5px;">@Localizer["AckInstructionText"]</p>
                 @if (status == PmFormStatus.PendingEmployeeAck && isSelf)
                 {
                     <form method="post" asp-page-handler="Acknowledge" asp-route-dept="@Model.Dept" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.EvalYear">
                         <div class="grid-3" style="align-items:end;">
-                            <div><label for="empAckSign">Employee Signature</label><input type="text" id="empAckSign" value="@Model.Empcd" readonly /></div>
-                            <div><label for="empAckDate">Date</label><input type="text" id="empAckDate" value="@DateTime.Today.ToString("dd/MM/yyyy")" readonly /></div>
-                            <div><button type="submit" class="btn btn-success">✓ Acknowledge</button></div>
+                            <div><label for="empAckSign">@Localizer["EmployeeSignatureLabel"]</label><input type="text" id="empAckSign" value="@Model.Empcd" readonly /></div>
+                            <div><label for="empAckDate">@SharedLocalizer["Date"]</label><input type="text" id="empAckDate" value="@DateTime.Today.ToString("dd/MM/yyyy")" readonly /></div>
+                            <div><button type="submit" class="btn btn-success">✓ @Localizer["AcknowledgeButton"]</button></div>
                         </div>
                         <div style="margin-top:12px;">
-                            <label for="ackComments">Employee Comments (Optional)</label>
+                            <label for="ackComments">@Localizer["EmployeeCommentsOptionalLabel"]</label>
                             <textarea name="ackComments" id="ackComments" rows="2"></textarea>
                         </div>
                     </form>
@@ -574,13 +583,13 @@
                 else
                 {
                     <div class="grid-3">
-                        <div><label for="empAckSignRO">Employee Signature</label><input type="text" id="empAckSignRO" value="@Model.Form?.EmpAckSign" readonly /></div>
-                        <div><label for="empAckDateRO">Date</label><input type="text" id="empAckDateRO" value="@Model.Form?.EmpAckDate?.ToString("dd/MM/yyyy")" readonly /></div>
-                        <div><label for="empAckStatusRO">Status</label><input type="text" id="empAckStatusRO" value="@(status == PmFormStatus.PendingEmployeeAck ? "Pending Employee Acknowledgement" : "Employee Acknowledged")" readonly /></div>
+                        <div><label for="empAckSignRO">@Localizer["EmployeeSignatureLabel"]</label><input type="text" id="empAckSignRO" value="@Model.Form?.EmpAckSign" readonly /></div>
+                        <div><label for="empAckDateRO">@SharedLocalizer["Date"]</label><input type="text" id="empAckDateRO" value="@Model.Form?.EmpAckDate?.ToString("dd/MM/yyyy")" readonly /></div>
+                        <div><label for="empAckStatusRO">@SharedLocalizer["Status"]</label><input type="text" id="empAckStatusRO" value="@(status == PmFormStatus.PendingEmployeeAck ? Localizer["PendingAckStatusText"].Value : Localizer["EmployeeAckedStatusText"].Value)" readonly /></div>
                     </div>
                     @if (!string.IsNullOrWhiteSpace(Model.Form?.EmpAckComments))
                     {
-                        <div style="margin-top:12px;"><label for="empAckCommentsRO">Employee Comments</label><textarea id="empAckCommentsRO" readonly rows="2">@Model.Form!.EmpAckComments</textarea></div>
+                        <div style="margin-top:12px;"><label for="empAckCommentsRO">@Localizer["EmployeeCommentsLabel"]</label><textarea id="empAckCommentsRO" readonly rows="2">@Model.Form!.EmpAckComments</textarea></div>
                     }
                 }
             </div>
@@ -589,30 +598,30 @@
 
     @* ============================ Signatures & Approvals ============================ *@
     <div class="card">
-        <div class="card-header">✎ Signatures &amp; Approvals</div>
+        <div class="card-header">✎ @Localizer["SignaturesApprovalsHeader"]</div>
         <div class="card-body">
             <div class="grid-2" style="margin-bottom:12px;">
-                <div><label for="sigEmpName">Employee Name</label><input type="text" id="sigEmpName" value="@e.LatinName" readonly /></div>
-                <div><label for="sigMgrName">Manager Name</label><input type="text" id="sigMgrName" value="@Model.ManagerName" readonly /></div>
+                <div><label for="sigEmpName">@Localizer["EmployeeNameLabel"]</label><input type="text" id="sigEmpName" value="@e.LatinName" readonly /></div>
+                <div><label for="sigMgrName">@Localizer["ManagerNameLabel"]</label><input type="text" id="sigMgrName" value="@Model.ManagerName" readonly /></div>
             </div>
             <div class="grid-2">
-                <div><label for="sigEmpSign">Employee Signature</label><input type="text" id="sigEmpSign" value="@(Model.Form?.EmployeeSign ?? e.EmpCode)" readonly /></div>
-                <div><label for="sigMgrSign">Manager Signature</label><input type="text" id="sigMgrSign" value="@(Model.Form?.ManagerSign ?? Model.ManagerCode)" readonly /></div>
+                <div><label for="sigEmpSign">@Localizer["EmployeeSignatureLabel"]</label><input type="text" id="sigEmpSign" value="@(Model.Form?.EmployeeSign ?? e.EmpCode)" readonly /></div>
+                <div><label for="sigMgrSign">@Localizer["ManagerSignatureLabel"]</label><input type="text" id="sigMgrSign" value="@(Model.Form?.ManagerSign ?? Model.ManagerCode)" readonly /></div>
             </div>
         </div>
     </div>
 
     @* ============================ HR Review sections ============================ *@
     <div class="card">
-        <div class="card-header">📋 HR Review — First Reviewer</div>
+        <div class="card-header">📋 @Localizer["HrReviewFirstHeader"]</div>
         <div class="card-body">
             <div class="grid-2" style="margin-bottom:12px;">
-                <div><label for="hr1Name">HR Reviewer 1 Name *</label><input type="text" form="hrForm" id="hr1Name" name="hr1Name" value="@(Model.Form?.Hr1ReviewerName ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentDisplayName : ""))" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly") /></div>
-                <div><label for="hr1ReviewDate">Review Date</label><input type="text" id="hr1ReviewDate" value="@(Model.Form?.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? (status == PmFormStatus.SubmittedToHr ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
+                <div><label for="hr1Name">@Localizer["Hr1NameLabel"]</label><input type="text" form="hrForm" id="hr1Name" name="hr1Name" value="@(Model.Form?.Hr1ReviewerName ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentDisplayName : ""))" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly") /></div>
+                <div><label for="hr1ReviewDate">@Localizer["ReviewDateLabel"]</label><input type="text" id="hr1ReviewDate" value="@(Model.Form?.Hr1ReviewDate?.ToString("dd/MM/yyyy") ?? (status == PmFormStatus.SubmittedToHr ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
             </div>
             <div class="grid-2">
-                <div><label for="hr1Sign">Reviewer Signature</label><input type="text" id="hr1Sign" value="@(Model.Form?.Hr1Sign ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentEmpCode : ""))" readonly /></div>
-                <div><label for="hr1Remarks">HR Comments / Remarks</label><textarea form="hrForm" id="hr1Remarks" name="hr1Remarks" rows="2" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly")>@Model.Form?.Hr1Remarks</textarea></div>
+                <div><label for="hr1Sign">@Localizer["ReviewerSignatureLabel"]</label><input type="text" id="hr1Sign" value="@(Model.Form?.Hr1Sign ?? (perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? Model.CurrentEmpCode : ""))" readonly /></div>
+                <div><label for="hr1Remarks">@Localizer["HrCommentsRemarksLabel"]</label><textarea form="hrForm" id="hr1Remarks" name="hr1Remarks" rows="2" @(perms.CanActAsHr && status == PmFormStatus.SubmittedToHr ? "" : "readonly")>@Model.Form?.Hr1Remarks</textarea></div>
             </div>
         </div>
     </div>
@@ -620,19 +629,19 @@
     @if (status is PmFormStatus.HrReview1Approved or PmFormStatus.Approved)
     {
         <div class="card">
-            <div class="card-header green">✓ HR Review — Second Reviewer (Final)</div>
+            <div class="card-header green">✓ @Localizer["HrReviewSecondHeader"]</div>
             <div class="card-body">
                 @if (perms.CanActAsHr && status == PmFormStatus.HrReview1Approved && isSameAsHr1)
                 {
-                    <div class="alert alert-warn">You cannot perform the second HR review because you were the first HR reviewer. Another HR representative must complete the final review for segregation of duties compliance.</div>
+                    <div class="alert alert-warn">@Localizer["SegregationOfDutiesWarning"]</div>
                 }
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="hr2Name">HR Reviewer 2 Name (Final) *</label><input type="text" form="hrForm" id="hr2Name" name="hr2Name" value="@(Model.Form?.Hr2ReviewerName ?? (canEditHr2 ? Model.CurrentDisplayName : ""))" @(canEditHr2 ? "" : "readonly") /></div>
-                    <div><label for="hr2ReviewDate">Review Date</label><input type="text" id="hr2ReviewDate" value="@(Model.Form?.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? (canEditHr2 ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
+                    <div><label for="hr2Name">@Localizer["Hr2NameLabel"]</label><input type="text" form="hrForm" id="hr2Name" name="hr2Name" value="@(Model.Form?.Hr2ReviewerName ?? (canEditHr2 ? Model.CurrentDisplayName : ""))" @(canEditHr2 ? "" : "readonly") /></div>
+                    <div><label for="hr2ReviewDate">@Localizer["ReviewDateLabel"]</label><input type="text" id="hr2ReviewDate" value="@(Model.Form?.Hr2ReviewDate?.ToString("dd/MM/yyyy") ?? (canEditHr2 ? DateTime.Today.ToString("dd/MM/yyyy") : ""))" readonly /></div>
                 </div>
                 <div class="grid-2">
-                    <div><label for="hr2Sign">Reviewer Signature</label><input type="text" id="hr2Sign" value="@(Model.Form?.Hr2Sign ?? (canEditHr2 ? Model.CurrentEmpCode : ""))" readonly /></div>
-                    <div><label for="hr2Remarks">HR Comments / Remarks</label><textarea form="hrForm" id="hr2Remarks" name="hr2Remarks" rows="2" @(canEditHr2 ? "" : "readonly")>@Model.Form?.Hr2Remarks</textarea></div>
+                    <div><label for="hr2Sign">@Localizer["ReviewerSignatureLabel"]</label><input type="text" id="hr2Sign" value="@(Model.Form?.Hr2Sign ?? (canEditHr2 ? Model.CurrentEmpCode : ""))" readonly /></div>
+                    <div><label for="hr2Remarks">@Localizer["HrCommentsRemarksLabel"]</label><textarea form="hrForm" id="hr2Remarks" name="hr2Remarks" rows="2" @(canEditHr2 ? "" : "readonly")>@Model.Form?.Hr2Remarks</textarea></div>
                 </div>
             </div>
         </div>
@@ -645,21 +654,21 @@
             <div class="card">
                 <div class="card-body" style="display:flex;gap:16px;align-items:end;">
                     <div style="flex:0 0 340px;">
-                        <label for="hrAction">HR Action *</label>
+                        <label for="hrAction">@Localizer["HrActionLabel"]</label>
                         <select name="hrAction" id="hrAction">
                             @if (status == PmFormStatus.SubmittedToHr)
                             {
-                                <option value="@PmFormStatus.HrReview1Approved">Approve (Send to HR 2)</option>
-                                <option value="@PmFormStatus.EmployeeAcknowledged">Revert to Manager</option>
+                                <option value="@PmFormStatus.HrReview1Approved">@Localizer["ApproveSendToHr2Option"]</option>
+                                <option value="@PmFormStatus.EmployeeAcknowledged">@Localizer["RevertToManagerOption"]</option>
                             }
                             else
                             {
-                                <option value="@PmFormStatus.Approved">Final Approval</option>
-                                <option value="@PmFormStatus.EmployeeAcknowledged">Revert to Manager</option>
+                                <option value="@PmFormStatus.Approved">@Localizer["FinalApprovalOption"]</option>
+                                <option value="@PmFormStatus.EmployeeAcknowledged">@Localizer["RevertToManagerOption"]</option>
                             }
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit HR Action</button>
+                    <button type="submit" class="btn btn-primary">@Localizer["SubmitHrActionButton"]</button>
                 </div>
             </div>
         </form>
@@ -677,6 +686,7 @@
                                  id = c.CompId, name = c.Name, t = c.CompType.Trim(),
                                  desc = c.Description, min = c.MinWeight, max = c.MaxWeight
                              })));
+        const SUGGESTED_TEXT = @Html.Raw(JsonSerializer.Serialize(Localizer["SuggestedWeightRangePrefix"].Value));
 
         function fillSelect(sel, items, selected) {
             sel.innerHTML = '<option value="">-- Select --</option>';
@@ -699,7 +709,7 @@
             const k = KPI_MASTERS.find(x => x.id === sel?.value);
             document.getElementById('kpiDefinition').value = k?.desc || '';
             document.getElementById('kpiFormula').value = k?.formula || '';
-            document.getElementById('kpiWeightRange').textContent = k ? `Suggested ${k.min}–${k.max}%` : '';
+            document.getElementById('kpiWeightRange').textContent = k ? `${SUGGESTED_TEXT} ${k.min}–${k.max}%` : '';
         }
         function calcKpiScore() {
             const w = parseFloat(document.getElementById('kpiWeight')?.value) || 0;

@@ -297,6 +297,12 @@ public class AppUser
     /// <summary>Drives Security:PasswordExpiryDays — null (never set) never expires.</summary>
     public DateTime? PasswordChangedAt { get; set; }
 
+    /// <summary>Two-letter culture code ("en"/"ar"), set whenever this user picks a language via
+    /// the switcher while signed in. Outlives any single browser's cookie — read by EmailService
+    /// so workflow emails render in the recipient's own last-selected language rather than
+    /// whatever culture happened to be active on the sender's request.</summary>
+    public string? PreferredCulture { get; set; }
+
     public List<UserRole> RolesList { get; set; } = new();
 }
 
@@ -344,6 +350,10 @@ public class SystemSettings
     public string? ContactEmail { get; set; }
     /// <summary>Public origin used to build absolute links in outgoing email, e.g. "https://pms.company.com".</summary>
     public string? ApplicationBaseUrl { get; set; }
+    /// <summary>Master switch for the language switcher (Phase 11 Part 6). Disabled ⇒ the switcher
+    /// is hidden everywhere and every request is forced to English regardless of any culture
+    /// cookie or a user's saved PreferredCulture — see the culture provider in Program.cs.</summary>
+    public bool LanguageSelectionEnabled { get; set; } = true;
 
     // ---- Performance Review ----------------------------------------------
     /// <summary>Informational default only — workflow gating (AchievementGate etc.) still uses the calendar year.</summary>
@@ -352,6 +362,15 @@ public class SystemSettings
     public DateOnly? MidYearEnd { get; set; }
     public DateOnly? EndYearStart { get; set; }
     public DateOnly? EndYearEnd { get; set; }
+    /// <summary>Date the Mid-Year achievement fields open for editing. Null ⇒ feature not in use
+    /// for the mid-year cycle (some deployments only score end-year).</summary>
+    public DateOnly? MidYearAchievementStartDate { get; set; }
+    /// <summary>Date the End-Year achievement fields open for editing. Replaces the previously
+    /// hardcoded 1 December cutoff (Phase 12 Part 1).</summary>
+    public DateOnly? EndYearAchievementStartDate { get; set; }
+    /// <summary>Date the "Submit to HR" action becomes available. Replaces the previously
+    /// hardcoded 1 December cutoff (Phase 12 Part 1).</summary>
+    public DateOnly? SubmitToHrStartDate { get; set; }
 
     // ---- Email -------------------------------------------------------------
     public string? SmtpHost { get; set; }

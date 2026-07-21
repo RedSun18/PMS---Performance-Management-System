@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Settings;
 
@@ -20,7 +21,11 @@ public class IndexModel : AppPageModel
 
     private readonly SettingsService _settings;
     private readonly IWebHostEnvironment _env;
-    public IndexModel(SettingsService settings, IWebHostEnvironment env) { _settings = settings; _env = env; }
+    private readonly IStringLocalizer<IndexModel> _localizer;
+    public IndexModel(SettingsService settings, IWebHostEnvironment env, IStringLocalizer<IndexModel> localizer)
+    {
+        _settings = settings; _env = env; _localizer = localizer;
+    }
 
     private static readonly string[] KnownTabs = { "general", "review", "email", "auth", "security", "dashboard", "branding" };
     private string _tab = "general";
@@ -62,6 +67,7 @@ public class IndexModel : AppPageModel
         public string? CompanyAddress { get; set; }
         public string? ContactEmail { get; set; }
         public string? ApplicationBaseUrl { get; set; }
+        public bool LanguageSelectionEnabled { get; set; } = true;
     }
 
     public class ReviewForm
@@ -71,6 +77,9 @@ public class IndexModel : AppPageModel
         public DateOnly? MidYearEnd { get; set; }
         public DateOnly? EndYearStart { get; set; }
         public DateOnly? EndYearEnd { get; set; }
+        public DateOnly? MidYearAchievementStartDate { get; set; }
+        public DateOnly? EndYearAchievementStartDate { get; set; }
+        public DateOnly? SubmitToHrStartDate { get; set; }
     }
 
     public class EmailForm
@@ -125,8 +134,8 @@ public class IndexModel : AppPageModel
     {
         await _settings.SaveGeneralSettingsAsync(new GeneralSettings(
             General.CompanyName, General.ApplicationName, null, General.CompanyAddress,
-            General.ContactEmail, General.ApplicationBaseUrl), CurrentUserName);
-        Message = "General settings saved.";
+            General.ContactEmail, General.ApplicationBaseUrl, General.LanguageSelectionEnabled), CurrentUserName);
+        Message = _localizer["GeneralSettingsSaved"];
         return RedirectToPage(new { Tab = "general" });
     }
 
@@ -134,8 +143,9 @@ public class IndexModel : AppPageModel
     public async Task<IActionResult> OnPostSaveReviewAsync()
     {
         await _settings.SavePerformanceReviewSettingsAsync(new PerformanceReviewSettings(
-            Review.CurrentReviewYear, Review.MidYearStart, Review.MidYearEnd, Review.EndYearStart, Review.EndYearEnd), CurrentUserName);
-        Message = "Performance review settings saved.";
+            Review.CurrentReviewYear, Review.MidYearStart, Review.MidYearEnd, Review.EndYearStart, Review.EndYearEnd,
+            Review.MidYearAchievementStartDate, Review.EndYearAchievementStartDate, Review.SubmitToHrStartDate), CurrentUserName);
+        Message = _localizer["ReviewSettingsSaved"];
         return RedirectToPage(new { Tab = "review" });
     }
 
@@ -146,7 +156,7 @@ public class IndexModel : AppPageModel
             Email.SmtpHost, Email.SmtpPort, Email.SmtpUsername, Email.NewPassword,
             Email.SenderName, Email.SenderEmail, Email.EnableSsl, Email.EnableEmailNotifications,
             Email.DevelopmentRedirectEmail), CurrentUserName);
-        Message = "Email settings saved.";
+        Message = _localizer["EmailSettingsSaved"];
         return RedirectToPage(new { Tab = "email" });
     }
 
@@ -156,7 +166,7 @@ public class IndexModel : AppPageModel
         var creds = await _settings.GetSmtpCredentialsAsync();
         if (creds is null)
         {
-            ErrorMessage = "SMTP is not configured (host/username missing). Save your settings first.";
+            ErrorMessage = _localizer["SmtpNotConfigured"];
             return RedirectToPage(new { Tab = "email" });
         }
 
@@ -165,11 +175,11 @@ public class IndexModel : AppPageModel
         try
         {
             await EmailService.SendTestEmailAsync(creds, target, appName);
-            Message = $"Test email sent successfully to {target}. Check the inbox to confirm delivery.";
+            Message = _localizer["TestEmailSuccess", target];
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Test email failed: {ex.Message}";
+            ErrorMessage = _localizer["TestEmailFailed", ex.Message];
         }
         return RedirectToPage(new { Tab = "email" });
     }
@@ -180,7 +190,7 @@ public class IndexModel : AppPageModel
         await _settings.SaveAuthenticationSettingsAsync(new AuthenticationSettingsInput(
             Auth.DefaultUserPassword, Auth.PasswordComplexityRequired, Auth.MinimumPasswordLength,
             Auth.SessionTimeoutMinutes, Auth.NewLoginAsVerificationPassword, Auth.MaxLoginAttempts), CurrentUserName);
-        Message = "Authentication settings saved. Session timeout changes take effect after the app restarts.";
+        Message = _localizer["AuthSettingsSaved"];
         return RedirectToPage(new { Tab = "auth" });
     }
 
@@ -190,7 +200,7 @@ public class IndexModel : AppPageModel
         await _settings.SaveSecuritySettingsAsync(new SecuritySettings(
             Security.EnableAuditLogging, Security.AccountLockoutMinutes,
             Security.PasswordExpiryDays, Security.RememberMeDurationDays), CurrentUserName);
-        Message = "Security settings saved.";
+        Message = _localizer["SecuritySettingsSaved"];
         return RedirectToPage(new { Tab = "security" });
     }
 
@@ -199,7 +209,7 @@ public class IndexModel : AppPageModel
     {
         await _settings.SaveDashboardSettingsAsync(new DashboardSettings(
             DashboardSettings.WelcomeMessage, DashboardSettings.AnnouncementBanner), CurrentUserName);
-        Message = "Dashboard settings saved.";
+        Message = _localizer["DashboardSettingsSaved"];
         return RedirectToPage(new { Tab = "dashboard" });
     }
 
@@ -212,13 +222,13 @@ public class IndexModel : AppPageModel
             var ext = Path.GetExtension(LogoFile.FileName).ToLowerInvariant();
             if (!AllowedLogoExtensions.Contains(ext) || !LogoFile.ContentType.StartsWith("image/"))
             {
-                ErrorMessage = "Logo must be an image file (PNG, JPG, GIF or SVG).";
+                ErrorMessage = _localizer["LogoMustBeImage"];
                 await LoadAsync();
                 return Page();
             }
             if (LogoFile.Length > MaxLogoBytes)
             {
-                ErrorMessage = "Logo file must be smaller than 2 MB.";
+                ErrorMessage = _localizer["LogoTooLarge"];
                 await LoadAsync();
                 return Page();
             }
@@ -233,7 +243,7 @@ public class IndexModel : AppPageModel
 
         await _settings.SaveBrandingSettingsAsync(new BrandingSettings(
             logoPath, Branding.PrimaryColorHex, Branding.SecondaryColorHex, Branding.FooterText), CurrentUserName);
-        Message = "Branding settings saved.";
+        Message = _localizer["BrandingSettingsSaved"];
         return RedirectToPage(new { Tab = "branding" });
     }
 
@@ -245,14 +255,17 @@ public class IndexModel : AppPageModel
         {
             CompanyName = general.CompanyName, ApplicationName = general.ApplicationName,
             CompanyAddress = general.CompanyAddress, ContactEmail = general.ContactEmail,
-            ApplicationBaseUrl = general.ApplicationBaseUrl
+            ApplicationBaseUrl = general.ApplicationBaseUrl, LanguageSelectionEnabled = general.LanguageSelectionEnabled
         };
 
         var review = await _settings.GetPerformanceReviewSettingsAsync();
         Review = new ReviewForm
         {
             CurrentReviewYear = review.CurrentReviewYear, MidYearStart = review.MidYearStart,
-            MidYearEnd = review.MidYearEnd, EndYearStart = review.EndYearStart, EndYearEnd = review.EndYearEnd
+            MidYearEnd = review.MidYearEnd, EndYearStart = review.EndYearStart, EndYearEnd = review.EndYearEnd,
+            MidYearAchievementStartDate = review.MidYearAchievementStartDate,
+            EndYearAchievementStartDate = review.EndYearAchievementStartDate,
+            SubmitToHrStartDate = review.SubmitToHrStartDate
         };
 
         var email = await _settings.GetEmailSettingsAsync();

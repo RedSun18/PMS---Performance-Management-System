@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EmployeePerformanceReport" xml:space="preserve"><value>تقرير أداء الموظف</value></data>
+  <data name="DepartmentSummaryReport" xml:space="preserve"><value>تقرير ملخص القسم</value></data>
+  <data name="ManagerSummaryReport" xml:space="preserve"><value>تقرير ملخص المدير</value></data>
+  <data name="OverallOrganizationSummary" xml:space="preserve"><value>الملخص العام للمؤسسة</value></data>
+  <data name="Generated" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="EmployeeInformation" xml:space="preserve"><value>بيانات الموظف</value></data>
+  <data name="DepartmentInformation" xml:space="preserve"><value>بيانات القسم</value></data>
+  <data name="ManagerInformation" xml:space="preserve"><value>بيانات المدير</value></data>
+  <data name="OrganizationOverview" xml:space="preserve"><value>نظرة عامة على المؤسسة</value></data>
+  <data name="OverallScoreHeading" xml:space="preserve"><value>الدرجة الإجمالية</value></data>
+  <data name="KpiBreakdown" xml:space="preserve"><value>تفاصيل مؤشرات الأداء</value></data>
+  <data name="CompetencyBreakdown" xml:space="preserve"><value>تفاصيل الكفاءات</value></data>
+  <data name="SelfAssessment" xml:space="preserve"><value>التقييم الذاتي</value></data>
+  <data name="DevelopmentPlan" xml:space="preserve"><value>خطة التطوير</value></data>
+  <data name="EmployeeAcknowledgementComments" xml:space="preserve"><value>ملاحظات إقرار الموظف</value></data>
+  <data name="ApprovalHistory" xml:space="preserve"><value>سجل الاعتماد</value></data>
+  <data name="WorkflowHistory" xml:space="preserve"><value>سجل سير العمل</value></data>
+  <data name="Employees" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="TeamMembers" xml:space="preserve"><value>أعضاء الفريق</value></data>
+  <data name="DepartmentBreakdown" xml:space="preserve"><value>تفاصيل الأقسام</value></data>
+  <data name="Employee" xml:space="preserve"><value>الموظف</value></data>
+  <data name="Department" xml:space="preserve"><value>القسم</value></data>
+  <data name="Designation" xml:space="preserve"><value>المسمى الوظيفي</value></data>
+  <data name="Grade" xml:space="preserve"><value>الدرجة الوظيفية</value></data>
+  <data name="DirectManager" xml:space="preserve"><value>المدير المباشر</value></data>
+  <data name="ReviewYear" xml:space="preserve"><value>سنة التقييم</value></data>
+  <data name="ReferenceNumber" xml:space="preserve"><value>الرقم المرجعي</value></data>
+  <data name="FinalStatus" xml:space="preserve"><value>الحالة النهائية</value></data>
+  <data name="KpiScore" xml:space="preserve"><value>درجة مؤشرات الأداء</value></data>
+  <data name="CompetencyScore" xml:space="preserve"><value>درجة الكفاءات</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>الدرجة الإجمالية</value></data>
+  <data name="Rating" xml:space="preserve"><value>التقييم</value></data>
+  <data name="Manager" xml:space="preserve"><value>المدير</value></data>
+  <data name="EmployeeCount" xml:space="preserve"><value>عدد الموظفين</value></data>
+  <data name="FinalizedReviews" xml:space="preserve"><value>التقييمات المكتملة</value></data>
+  <data name="AverageOverallScore" xml:space="preserve"><value>متوسط الدرجة الإجمالية</value></data>
+  <data name="TeamSize" xml:space="preserve"><value>حجم الفريق</value></data>
+  <data name="TotalEmployees" xml:space="preserve"><value>إجمالي الموظفين</value></data>
+  <data name="FormsGenerated" xml:space="preserve"><value>النماذج المُصدرة</value></data>
+  <data name="HrReviewer1" xml:space="preserve"><value>مراجع الموارد البشرية الأول</value></data>
+  <data name="HrReview1Date" xml:space="preserve"><value>تاريخ المراجعة الأولى</value></data>
+  <data name="HrReviewer1Remarks" xml:space="preserve"><value>ملاحظات المراجع الأول</value></data>
+  <data name="HrReviewer2Final" xml:space="preserve"><value>مراجع الموارد البشرية الثاني (نهائي)</value></data>
+  <data name="HrReview2Date" xml:space="preserve"><value>تاريخ المراجعة الثانية</value></data>
+  <data name="HrReviewer2Remarks" xml:space="preserve"><value>ملاحظات المراجع الثاني</value></data>
+  <data name="Perspective" xml:space="preserve"><value>المنظور</value></data>
+  <data name="Kpi" xml:space="preserve"><value>مؤشر الأداء</value></data>
+  <data name="Target" xml:space="preserve"><value>الهدف</value></data>
+  <data name="WeightPercent" xml:space="preserve"><value>الوزن %</value></data>
+  <data name="AchievementPercent" xml:space="preserve"><value>نسبة الإنجاز %</value></data>
+  <data name="Weighted" xml:space="preserve"><value>الوزن المرجح</value></data>
+  <data name="Comments" xml:space="preserve"><value>التعليقات</value></data>
+  <data name="Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="Competency" xml:space="preserve"><value>الكفاءة</value></data>
+  <data name="Technical" xml:space="preserve"><value>فنية</value></data>
+  <data name="Behavioral" xml:space="preserve"><value>سلوكية</value></data>
+  <data name="From" xml:space="preserve"><value>من</value></data>
+  <data name="To" xml:space="preserve"><value>إلى</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>تم التغيير بواسطة</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>تاريخ التغيير</value></data>
+  <data name="Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="EmployeeCode" xml:space="preserve"><value>رقم الموظف</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Finalized" xml:space="preserve"><value>نهائي</value></data>
+  <data name="CompletionPercent" xml:space="preserve"><value>نسبة الإكمال %</value></data>
+  <data name="AverageScore" xml:space="preserve"><value>متوسط الدرجة</value></data>
+  <data name="NoEmployeesFound" xml:space="preserve"><value>لا يوجد موظفون.</value></data>
+  <data name="CommentsAndDevelopment" xml:space="preserve"><value>التعليقات والتطوير</value></data>
+</root>

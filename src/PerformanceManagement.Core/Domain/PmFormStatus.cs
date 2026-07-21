@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace PerformanceManagement.Core.Domain;
 
 /// <summary>
@@ -23,18 +25,30 @@ public static class PmFormStatus
         SubmittedToHr, HrReview1Approved, Approved
     };
 
-    public static string DisplayName(string? status) => (status ?? "").Trim() switch
+    /// <summary>
+    /// Single source of truth for the human-readable status label, in whichever language is
+    /// requested — used by Razor views, PDF reports, Excel exports, and workflow emails alike,
+    /// so all four surfaces always agree on wording instead of each carrying its own copy of the
+    /// same translation (and risking drift). Defaults to the ambient request culture (set by the
+    /// localization middleware for the page/PDF/Excel path) when none is passed explicitly, which
+    /// covers the email path where the recipient's own preferred culture is passed in.
+    /// </summary>
+    public static string DisplayName(string? status, CultureInfo? culture = null)
     {
-        Ready => "Ready / Not Started",
-        Draft => "Draft",
-        PendingEmployeeAck => "Pending Employee Acknowledgment",
-        EmployeeAcknowledged => "Employee Acknowledged",
-        SubmittedToHr => "Submitted to HR",
-        HrReview1Approved => "HR Review 1 Approved",
-        Approved => "Approved",
-        "" => "N/A",
-        var other => other
-    };
+        var isArabic = (culture ?? CultureInfo.CurrentUICulture).TwoLetterISOLanguageName == "ar";
+        return (status ?? "").Trim() switch
+        {
+            Ready => isArabic ? "جاهز / لم يبدأ" : "Ready / Not Started",
+            Draft => isArabic ? "مسودة" : "Draft",
+            PendingEmployeeAck => isArabic ? "بانتظار إقرار الموظف" : "Pending Employee Acknowledgment",
+            EmployeeAcknowledged => isArabic ? "تم إقرار الموظف" : "Employee Acknowledged",
+            SubmittedToHr => isArabic ? "تم الإرسال إلى الموارد البشرية" : "Submitted to HR",
+            HrReview1Approved => isArabic ? "اعتماد المراجعة الأولى" : "HR Review 1 Approved",
+            Approved => isArabic ? "معتمد" : "Approved",
+            "" => isArabic ? "غير متاح" : "N/A",
+            var other => other
+        };
+    }
 
     /// <summary>Statuses in which the form content may be edited by the direct manager.</summary>
     public static bool AllowsEdit(string status) =>

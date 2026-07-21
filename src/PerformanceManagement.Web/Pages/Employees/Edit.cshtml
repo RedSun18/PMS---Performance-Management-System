@@ -1,52 +1,54 @@
 @page
 @model PerformanceManagement.Web.Pages.Employees.EditModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Model.IsNew ? "New Employee" : $"Edit Employee {Model.Empcd}";
+    ViewData["Title"] = Model.IsNew ? Localizer["NewEmployeeTitle"].Value : Localizer["EditEmployeeTitle", Model.Empcd!].Value;
 }
-<div class="page-header">@(Model.IsNew ? "New Employee" : $"Edit Employee — {Model.Empcd}")</div>
+<div class="page-header">@(Model.IsNew ? Localizer["NewEmployeeHeader"].Value : Localizer["EditEmployeeHeader", Model.Empcd!].Value)</div>
 
 @if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
 
 <div class="card">
-    <div class="card-header">Employee Details (PM-relevant subset — see docs/legacy-mapping.md §5)</div>
+    <div class="card-header">@Localizer["EmployeeDetailsHeader"]</div>
     <div class="card-body">
         <form method="post">
             <div class="grid-3" style="margin-bottom:12px;">
                 <div>
-                    <label for="empCode">Employee Code</label>
+                    <label for="empCode">@SharedLocalizer["EmployeeCode"]</label>
                     @if (Model.IsNew)
                     {
                         <input type="text" id="empCode" name="Form.EmpCode" value="@Model.Form.EmpCode" maxlength="10" />
-                        <span class="muted">New records use padded 4-digit codes in PM reference numbers.</span>
+                        <span class="muted">@Localizer["NewCodeHint"]</span>
                     }
                     else
                     {
                         <input type="text" id="empCode" value="@Model.Empcd" readonly />
                     }
                 </div>
-                <div><label for="latinName">Latin Name</label><input type="text" id="latinName" name="Form.LatinName" value="@Model.Form.LatinName" maxlength="100" /></div>
-                <div><label for="arabicName">Arabic Name</label><input type="text" id="arabicName" name="Form.ArabicName" value="@Model.Form.ArabicName" maxlength="100" dir="rtl" /></div>
+                <div><label for="latinName">@Localizer["LatinNameLabel"]</label><input type="text" id="latinName" name="Form.LatinName" value="@Model.Form.LatinName" maxlength="100" /></div>
+                <div><label for="arabicName">@Localizer["ArabicNameLabel"]</label><input type="text" id="arabicName" name="Form.ArabicName" value="@Model.Form.ArabicName" maxlength="100" dir="rtl" /></div>
             </div>
             <div class="grid-3" style="margin-bottom:12px;">
                 <div>
-                    <label for="deptCode">Department</label>
-                    <select name="Form.DeptCode" id="deptCode">
+                    <label for="deptCode">@SharedLocalizer["Department"]</label>
+                    <select name="Form.DeptCode" id="deptCode" data-searchable>
                         <option value="">—</option>
                         @foreach (var d in Model.Departments)
                         {
-                            <option value="@d.Code" selected="@(d.Code == Model.Form.DeptCode)">@d.Code — @d.NameEn@(d.IsActive ? "" : " (disabled)")</option>
+                            <option value="@d.Code" selected="@(d.Code == Model.Form.DeptCode)">@d.Code — @d.NameEn@(d.IsActive ? "" : Localizer["DepartmentDisabledSuffix"].Value)</option>
                         }
                     </select>
                     @if (Model.Departments.Any(d => d.Code == Model.Form.DeptCode && !d.IsActive))
                     {
                         <p class="muted" style="margin:4px 0 0;font-size:12px;">
-                            This employee's current department has been disabled and cannot be re-selected for other employees.
+                            @Localizer["DeptDisabledNotice"]
                         </p>
                     }
                 </div>
                 <div>
-                    <label for="sectionCode">Section</label>
-                    <select name="Form.SectionCode" id="sectionCode">
+                    <label for="sectionCode">@SharedLocalizer["Section"]</label>
+                    <select name="Form.SectionCode" id="sectionCode" data-searchable>
                         <option value="">—</option>
                         @foreach (var s in Model.Sections)
                         {
@@ -55,8 +57,8 @@
                     </select>
                 </div>
                 <div>
-                    <label for="designationCode">Designation</label>
-                    <select name="Form.DesignationCode" id="designationCode">
+                    <label for="designationCode">@SharedLocalizer["Designation"]</label>
+                    <select name="Form.DesignationCode" id="designationCode" data-searchable>
                         <option value="">—</option>
                         @foreach (var d in Model.Designations)
                         {
@@ -66,27 +68,27 @@
                 </div>
             </div>
             <div class="grid-4" style="margin-bottom:12px;">
-                <div><label for="grade">Grade</label><input type="text" id="grade" name="Form.Grade" value="@Model.Form.Grade" maxlength="10" /></div>
-                <div><label for="joinDate">Join Date</label><input type="date" id="joinDate" name="Form.JoinDate" value="@Model.Form.JoinDate?.ToString("yyyy-MM-dd")" /></div>
-                <div><label for="termDate">Termination Date</label><input type="date" id="termDate" name="Form.TermDate" value="@Model.Form.TermDate?.ToString("yyyy-MM-dd")" /></div>
-                <div><label for="empEmail">Email</label><input type="text" id="empEmail" name="Form.Email" value="@Model.Form.Email" /></div>
+                <div><label for="grade">@SharedLocalizer["Grade"]</label><input type="text" id="grade" name="Form.Grade" value="@Model.Form.Grade" maxlength="10" /></div>
+                <div><label for="joinDate">@Localizer["JoinDateLabel"]</label><input type="date" id="joinDate" name="Form.JoinDate" value="@Model.Form.JoinDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label for="termDate">@Localizer["TerminationDateLabel"]</label><input type="date" id="termDate" name="Form.TermDate" value="@Model.Form.TermDate?.ToString("yyyy-MM-dd")" /></div>
+                <div><label for="empEmail">@SharedLocalizer["Email"]</label><input type="text" id="empEmail" name="Form.Email" value="@Model.Form.Email" /></div>
             </div>
             <div class="grid-2" style="margin-bottom:16px;">
                 <div>
-                    <label for="managerEmpCode">Direct Manager (PM Form designation)</label>
-                    <select name="Form.ManagerEmpCode" id="managerEmpCode">
-                        <option value="">— none —</option>
+                    <label for="managerEmpCode">@Localizer["DirectManagerFormLabel"]</label>
+                    <select name="Form.ManagerEmpCode" id="managerEmpCode" data-searchable>
+                        <option value="">@Localizer["NoneOption"]</option>
                         @foreach (var (code, label) in Model.ManagerOptions)
                         {
                             <option value="@code" selected="@(code == Model.Form.ManagerEmpCode)">@label</option>
                         }
                     </select>
-                    <span class="muted">Designated for the PM Form; may differ from the formal org chart.</span>
+                    <span class="muted">@Localizer["ManagerHint"]</span>
                 </div>
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save</button>
-                <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+                <button type="submit" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+                <a class="btn btn-secondary" asp-page="Index">@SharedLocalizer["Cancel"]</a>
             </div>
         </form>
     </div>

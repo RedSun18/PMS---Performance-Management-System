@@ -1,19 +1,21 @@
 @page
 @model PerformanceManagement.Web.Pages.PmFormSummary.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "PM Form Summary";
+    ViewData["Title"] = SharedLocalizer["NavPmFormSummary"].Value;
 }
-<div class="page-header">PM Form Summary — HR Tracking</div>
+<div class="page-header">@Localizer["PageHeader"]</div>
 
 <div class="card">
-    <div class="card-header">Filters</div>
+    <div class="card-header">@Localizer["FiltersHeader"]</div>
     <div class="card-body">
         <form method="get">
             <div class="filters-6">
                 <div>
-                    <label for="summaryDept">Department</label>
-                    <select name="dept" id="summaryDept" onchange="this.form.empcd.value='';this.form.submit()">
-                        <option value="">All Departments</option>
+                    <label for="summaryDept">@SharedLocalizer["Department"]</label>
+                    <select name="dept" id="summaryDept" data-searchable onchange="this.form.empcd.value='';this.form.submit()">
+                        <option value="">@SharedLocalizer["AllDepartments"]</option>
                         @foreach (var d in Model.Departments)
                         {
                             <option value="@d.Code" selected="@(d.Code == Model.Dept)">@d.NameEn</option>
@@ -21,9 +23,9 @@
                     </select>
                 </div>
                 <div>
-                    <label for="summaryEmpcd">Employee</label>
-                    <select name="empcd" id="summaryEmpcd" onchange="this.form.submit()">
-                        <option value="">All Employees</option>
+                    <label for="summaryEmpcd">@SharedLocalizer["Employee"]</label>
+                    <select name="empcd" id="summaryEmpcd" data-searchable onchange="this.form.submit()">
+                        <option value="">@SharedLocalizer["AllEmployees"]</option>
                         @foreach (var (code, label) in Model.EmployeeOptions)
                         {
                             <option value="@code" selected="@(code == Model.Empcd)">@label</option>
@@ -31,9 +33,9 @@
                     </select>
                 </div>
                 <div>
-                    <label for="summaryYear">Evaluation Year</label>
+                    <label for="summaryYear">@SharedLocalizer["ReviewYear"]</label>
                     <select name="year" id="summaryYear" onchange="this.form.submit()">
-                        <option value="">All Years</option>
+                        <option value="">@Localizer["AllYearsOption"]</option>
                         @foreach (var y in Model.YearOptions)
                         {
                             <option value="@y" selected="@(y.ToString() == Model.Year)">@y</option>
@@ -41,9 +43,9 @@
                     </select>
                 </div>
                 <div>
-                    <label for="summaryStatus">Status</label>
+                    <label for="summaryStatus">@SharedLocalizer["Status"]</label>
                     <select name="status" id="summaryStatus" onchange="this.form.submit()">
-                        <option value="">All Statuses</option>
+                        <option value="">@SharedLocalizer["AllStatuses"]</option>
                         @foreach (var s in PmFormStatus.All)
                         {
                             <option value="@s" selected="@(s == Model.Status)">@PmFormStatus.DisplayName(s)</option>
@@ -51,26 +53,26 @@
                     </select>
                 </div>
                 <div>
-                    <label for="summaryManager">Manager</label>
-                    <select name="manager" id="summaryManager" onchange="this.form.submit()">
-                        <option value="">All Managers</option>
+                    <label for="summaryManager">@SharedLocalizer["Manager"]</label>
+                    <select name="manager" id="summaryManager" data-searchable onchange="this.form.submit()">
+                        <option value="">@SharedLocalizer["AllManagers"]</option>
                         @foreach (var (code, label) in Model.ManagerOptions)
                         {
                             <option value="@code" selected="@(code == Model.Manager)">@label</option>
                         }
                     </select>
                 </div>
-                <div><button type="submit" class="btn btn-primary">Apply</button></div>
+                <div><button type="submit" class="btn btn-primary">@SharedLocalizer["Apply"]</button></div>
             </div>
         </form>
     </div>
 </div>
 
-<h3 style="margin:14px 2px;">@Model.Title (@Model.Rows.Count forms)</h3>
+<h3 style="margin:14px 2px;">@Model.Title @Localizer["FormsCountSuffix", Model.Rows.Count]</h3>
 
 @if (Model.Rows.Count == 0)
 {
-    <div class="alert alert-warn">No PM forms match the selected filters.</div>
+    <div class="alert alert-warn">@Localizer["NoFormsMatch"]</div>
 }
 else
 {
@@ -78,10 +80,10 @@ else
     <table class="grid">
         <thead>
             <tr>
-                <th>SRL. No</th><th>Employee</th><th>Department</th><th>Designation</th>
-                <th>KPI Score %</th><th>Competency Score %</th><th>Overall Score %</th>
-                <th>Rating Score</th><th>Rating</th><th>Status</th><th>Ref No</th>
-                <th>Last Updated</th><th>View Form</th>
+                <th>@Localizer["SrlNoHeader"]</th><th>@SharedLocalizer["Employee"]</th><th>@SharedLocalizer["Department"]</th><th>@SharedLocalizer["Designation"]</th>
+                <th>@Localizer["KpiScoreHeader"]</th><th>@Localizer["CompScoreHeader"]</th><th>@Localizer["OverallScoreHeader"]</th>
+                <th>@Localizer["RatingScoreHeader"]</th><th>@SharedLocalizer["Rating"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["RefNoHeader"]</th>
+                <th>@Localizer["LastUpdatedHeader"]</th><th>@Localizer["ViewFormHeader"]</th>
             </tr>
         </thead>
         <tbody>
@@ -101,7 +103,7 @@ else
                 <td>@r.RefNo</td>
                 <td>@r.LastUpdated</td>
                 <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" target="_blank"
-                       asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode">View</a></td>
+                       asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode">@SharedLocalizer["View"]</a></td>
             </tr>
         }
         </tbody>

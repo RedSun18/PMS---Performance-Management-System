@@ -1,8 +1,24 @@
+using System.Globalization;
+using System.Resources;
+
 namespace PerformanceManagement.Web.Validation;
 
 /// <summary>Small shared input checks used by more than one page (Users/Edit, Employees/Edit).</summary>
 public static class InputValidation
 {
+    // Plain ResourceManager rather than IStringLocalizer<T> since these are static helper
+    // methods called from several pages' code-behind, none of which is a natural "owner" to
+    // inject a page-scoped localizer for — same reasoning as PmFormStatus.DisplayName and
+    // Core's ValidationResource.
+    private static readonly ResourceManager Resources = new(
+        "PerformanceManagement.Web.Resources.InputValidationResource", typeof(InputValidation).Assembly);
+
+    private static string Get(string key, params object[] args)
+    {
+        var format = Resources.GetString(key, CultureInfo.CurrentUICulture) ?? key;
+        return args.Length == 0 ? format : string.Format(format, args);
+    }
+
     /// <summary>Floor used only before the Security Rules row is available (e.g. seeding) — everywhere
     /// a password is actually set, prefer <see cref="ValidatePassword"/> with the live admin-configured rule.</summary>
     public const int MinPasswordLength = 6;
@@ -21,9 +37,9 @@ public static class InputValidation
     public static string? ValidatePassword(string password, int minLength, bool requireComplexity)
     {
         if (string.IsNullOrWhiteSpace(password) || password.Length < minLength)
-            return $"Password must be at least {minLength} characters.";
+            return Get("PasswordMinLength", minLength);
         if (requireComplexity && !(password.Any(char.IsLetter) && password.Any(char.IsDigit)))
-            return "Password must contain at least one letter and one number.";
+            return Get("PasswordNeedsLetterAndNumber");
         return null;
     }
 }

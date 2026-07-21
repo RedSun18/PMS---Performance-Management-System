@@ -4,6 +4,7 @@ using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.PmFormSummary;
 
@@ -15,7 +16,8 @@ namespace PerformanceManagement.Web.Pages.PmFormSummary;
 public class IndexModel : AppPageModel
 {
     private readonly PmDbContext _db;
-    public IndexModel(PmDbContext db) => _db = db;
+    private readonly IStringLocalizer<IndexModel> _localizer;
+    public IndexModel(PmDbContext db, IStringLocalizer<IndexModel> localizer) { _db = db; _localizer = localizer; }
 
     [BindProperty(SupportsGet = true)] public string? Dept { get; set; }
     [BindProperty(SupportsGet = true)] public string? Empcd { get; set; }
@@ -28,7 +30,7 @@ public class IndexModel : AppPageModel
     public List<(string Code, string Label)> ManagerOptions { get; set; } = new();
     public List<int> YearOptions { get; set; } = new();
     public List<Row> Rows { get; set; } = new();
-    public string Title { get; set; } = "PM Summary for All Departments";
+    public string Title { get; set; } = "";
 
     public record Row(int Srl, string Employee, string Designation, decimal KpiScore, decimal CompScore,
         decimal OverallScore, int RatingScore, string Rating, string Status, string RefNo,
@@ -84,7 +86,7 @@ public class IndexModel : AppPageModel
                 desigs.GetValueOrDefault(x.e.DesignationCode ?? "", x.e.DesignationCode ?? ""),
                 x.f.KpiScore, x.f.CompScore, x.f.PerformanceScore,
                 ratingScore,
-                rating?.NameEn ?? "N/A",
+                rating?.NameEn ?? _localizer["RatingNotAvailable"].Value,
                 PmFormStatus.DisplayName(x.f.Status),
                 x.f.LegacyRefNo,
                 x.f.UpdatedAt?.ToString("dd/MM/yyyy") ?? "",
@@ -92,6 +94,8 @@ public class IndexModel : AppPageModel
                 depts.GetValueOrDefault(x.e.DeptCode ?? "", x.e.DeptCode ?? "")));
         }
 
-        Title = "PM Summary for " + (string.IsNullOrEmpty(Dept) ? "All Departments" : depts.GetValueOrDefault(Dept, Dept));
+        Title = string.IsNullOrEmpty(Dept)
+            ? _localizer["TitleAllDepartments"].Value
+            : _localizer["TitleFormat", depts.GetValueOrDefault(Dept, Dept)].Value;
     }
 }

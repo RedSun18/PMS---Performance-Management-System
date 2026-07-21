@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MyReviewCardHeader" xml:space="preserve"><value>تقييم أدائي لعام {0}</value></data>
+  <data name="CurrentStageLabel" xml:space="preserve"><value>المرحلة الحالية:</value></data>
+  <data name="CompletionBreakdownHeader" xml:space="preserve"><value>تفاصيل الإنجاز</value></data>
+  <data name="OverallProgressLabel" xml:space="preserve"><value>التقدم الإجمالي</value></data>
+  <data name="KpiCompletionLabel" xml:space="preserve"><value>إنجاز مؤشرات الأداء</value></data>
+  <data name="CompCompletionLabel" xml:space="preserve"><value>إنجاز الكفاءات</value></data>
+  <data name="ItemsRecordedLabel" xml:space="preserve"><value>العناصر المسجلة</value></data>
+  <data name="RecentNotificationsHeader" xml:space="preserve"><value>أحدث الإشعارات</value></data>
+  <data name="OpenMyPmFormButton" xml:space="preserve"><value>فتح نموذج أدائي</value></data>
+  <data name="TeamMembersLabel" xml:space="preserve"><value>أعضاء الفريق</value></data>
+  <data name="WaitingForReviewLabel" xml:space="preserve"><value>بانتظار مراجعتك</value></data>
+  <data name="ReturnedByHrLabel" xml:space="preserve"><value>أعادتها الموارد البشرية</value></data>
+  <data name="CompletedLabel" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="GoToPmFormButton" xml:space="preserve"><value>الذهاب إلى نموذج الأداء</value></data>
+  <data name="ViewTeamSummaryButton" xml:space="preserve"><value>عرض ملخص الفريق</value></data>
+  <data name="EmployeesLabel" xml:space="preserve"><value>الموظفون</value></data>
+  <data name="FormsGeneratedLabel" xml:space="preserve"><value>النماذج المُنشأة ({0})</value></data>
+  <data name="OverallCompletionLabel" xml:space="preserve"><value>الإنجاز الإجمالي</value></data>
+  <data name="FormStatusBreakdownHeader" xml:space="preserve"><value>تفاصيل حالة النماذج</value></data>
+  <data name="DeptCompletionHeader" xml:space="preserve"><value>إنجاز الأقسام وتقدمها وأداؤها</value></data>
+  <data name="NoDeptDataMessage" xml:space="preserve"><value>لا توجد بيانات أقسام متاحة. يجب إسناد الموظفين إلى قسم في بيانات الموظفين، ومطابقته مع سجل في الأقسام ضمن البيانات المرجعية.</value></data>
+  <data name="OpenPmFormSummaryButton" xml:space="preserve"><value>فتح ملخص نماذج الأداء</value></data>
+  <data name="RecentActivityHeader" xml:space="preserve"><value>النشاط الأخير</value></data>
+  <data name="NoRecentActivityMessage" xml:space="preserve"><value>لا يوجد نشاط حديث.</value></data>
+</root>

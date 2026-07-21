@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Account;
 
@@ -17,11 +18,13 @@ public class LoginModel : PageModel
     private readonly PmDbContext _db;
     private readonly SettingsService _settings;
     private readonly IClock _clock;
-    public LoginModel(PmDbContext db, SettingsService settings, IClock clock)
+    private readonly IStringLocalizer<LoginModel> _localizer;
+    public LoginModel(PmDbContext db, SettingsService settings, IClock clock, IStringLocalizer<LoginModel> localizer)
     {
         _db = db;
         _settings = settings;
         _clock = clock;
+        _localizer = localizer;
     }
 
     public string? Error { get; set; }
@@ -51,7 +54,7 @@ public class LoginModel : PageModel
         if (user is not null && !isAdminUser && user.LockedOutUntil is { } lockedUntil && lockedUntil > now)
         {
             var minutesLeft = Math.Max(1, (int)Math.Ceiling((lockedUntil - now).TotalMinutes));
-            Error = $"This account is temporarily locked due to repeated failed sign-in attempts. Try again in {minutesLeft} minute(s).";
+            Error = _localizer["AccountLockedError", minutesLeft];
             return Page();
         }
 
@@ -67,7 +70,7 @@ public class LoginModel : PageModel
                 }
                 await _db.SaveChangesAsync();
             }
-            Error = "Invalid username or password.";
+            Error = _localizer["InvalidCredentialsError"];
             return Page();
         }
 

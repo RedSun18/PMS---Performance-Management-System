@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Performance Management Form</value></data>
+  <data name="PageHeader" xml:space="preserve"><value>Performance Management Form (KPI + Competency)</value></data>
+  <data name="EmployeeSelectionHeader" xml:space="preserve"><value>Employee Selection</value></data>
+  <data name="SelectDepartmentLabel" xml:space="preserve"><value>Select Department</value></data>
+  <data name="SelectEmployeeLabel" xml:space="preserve"><value>Select Employee</value></data>
+  <data name="EvaluationYearLabel" xml:space="preserve"><value>Evaluation Year</value></data>
+  <data name="EmployeeInfoHeader" xml:space="preserve"><value>Employee Information</value></data>
+  <data name="EmployeeDetailsGroupTitle" xml:space="preserve"><value>Employee Details</value></data>
+  <data name="EmployeeIdLabel" xml:space="preserve"><value>Employee ID</value></data>
+  <data name="CurrentPositionLabel" xml:space="preserve"><value>Current Position</value></data>
+  <data name="EvaluationContextGroupTitle" xml:space="preserve"><value>Evaluation Context</value></data>
+  <data name="KpiWeightPercentLabel" xml:space="preserve"><value>KPI Weight (%)</value></data>
+  <data name="CompWeightPercentLabel" xml:space="preserve"><value>Competency Weight (%)</value></data>
+  <data name="RefNoLabel" xml:space="preserve"><value>Ref. No</value></data>
+  <data name="TodaysDateLabel" xml:space="preserve"><value>Today's Date</value></data>
+  <data name="ReportingStructureGroupTitle" xml:space="preserve"><value>Reporting Structure</value></data>
+  <data name="JobFamilyLabel" xml:space="preserve"><value>Job Family</value></data>
+  <data name="SubDepartmentLabel" xml:space="preserve"><value>Sub-Department</value></data>
+  <data name="JoiningDateLabel" xml:space="preserve"><value>Joining Date</value></data>
+  <data name="LastReviewDateLabel" xml:space="preserve"><value>Last Review Date</value></data>
+  <data name="StepSubmittedByManager" xml:space="preserve"><value>Submitted by Manager</value></data>
+  <data name="StepReceivedByHr" xml:space="preserve"><value>Received by HR</value></data>
+  <data name="StepUnderHrReview" xml:space="preserve"><value>Under HR Review</value></data>
+  <data name="FormApprovedFinalizedTitle" xml:space="preserve"><value>Form Approved &amp; Finalised</value></data>
+  <data name="FormLockedUnderReviewTitle" xml:space="preserve"><value>Form Locked — Under Review</value></data>
+  <data name="FormApprovedMessage" xml:space="preserve"><value>This form has been approved by both HR representatives and is now finalized. No further changes can be made.</value></data>
+  <data name="AwaitingHrReviewMessage" xml:space="preserve"><value>This form is awaiting HR review. Please review the performance data and take appropriate action below.</value></data>
+  <data name="SubmittedUnderReviewMessage" xml:space="preserve"><value>This form has been submitted to HR and is currently under review. No changes can be made at this time.</value></data>
+  <data name="NoEditPermissionMessage" xml:space="preserve"><value>You do not have permission to edit this form. Only the direct manager of this employee can make changes.</value></data>
+  <data name="HrCannotEditMessage" xml:space="preserve"><value>HR can review and approve forms after submission, but cannot edit them directly.</value></data>
+  <data name="StatusLabelPrefix" xml:space="preserve"><value>Status:</value></data>
+  <data name="SaveDraftButton" xml:space="preserve"><value>Save Draft</value></data>
+  <data name="SendToEmployeeButton" xml:space="preserve"><value>Send to Employee</value></data>
+  <data name="DeleteRecordsButton" xml:space="preserve"><value>Delete Records</value></data>
+  <data name="ConfirmDeleteRecords" xml:space="preserve"><value>Are you sure you want to delete all evaluation records for {0} for {1}?</value></data>
+  <data name="SubmitToHrButton" xml:space="preserve"><value>Submit to HR</value></data>
+  <data name="SubmitToHrAvailableFromMessage" xml:space="preserve"><value>Submit to HR is available from {0} after achievement scores are entered.</value></data>
+  <data name="KpiTabLabel" xml:space="preserve"><value>KPI (Key Performance Indicators)</value></data>
+  <data name="CompetenciesTabLabel" xml:space="preserve"><value>Competencies</value></data>
+  <data name="AddEditKpiHeader" xml:space="preserve"><value>Add/Edit KPI</value></data>
+  <data name="PerspectiveLabel" xml:space="preserve"><value>Perspective</value></data>
+  <data name="SelectPlaceholderOption" xml:space="preserve"><value>-- Select --</value></data>
+  <data name="PerspectiveFinancial" xml:space="preserve"><value>Financial</value></data>
+  <data name="PerspectiveCustomer" xml:space="preserve"><value>Customer</value></data>
+  <data name="PerspectiveInternal" xml:space="preserve"><value>Internal Processes</value></data>
+  <data name="PerspectiveLearning" xml:space="preserve"><value>Learning &amp; Growth</value></data>
+  <data name="KpiNameLabel" xml:space="preserve"><value>KPI Name</value></data>
+  <data name="PurposeDefinitionLabel" xml:space="preserve"><value>Purpose/Definition</value></data>
+  <data name="FormulaMetricGuideLabel" xml:space="preserve"><value>Formula/Metric Guide</value></data>
+  <data name="EnterWeightPlaceholder" xml:space="preserve"><value>Enter weight %</value></data>
+  <data name="ToBeEnteredAtYearEnd" xml:space="preserve"><value>To be entered at year end</value></data>
+  <data name="LockedUntilDate" xml:space="preserve"><value>Locked until {0:dd/MM/yyyy}</value></data>
+  <data name="WtAchLabel" xml:space="preserve"><value>WT * Ach/100</value></data>
+  <data name="AddKpiButton" xml:space="preserve"><value>Add KPI</value></data>
+  <data name="UpdateKpiButton" xml:space="preserve"><value>Update KPI</value></data>
+  <data name="NoColumnHeader" xml:space="preserve"><value>No.</value></data>
+  <data name="KpiColumnHeader" xml:space="preserve"><value>KPI</value></data>
+  <data name="FormulaMetricColumnHeader" xml:space="preserve"><value>Formula/Metric</value></data>
+  <data name="WtAchColumnHeader" xml:space="preserve"><value>WT*Ach/100</value></data>
+  <data name="ActionColumnHeader" xml:space="preserve"><value>Action</value></data>
+  <data name="ConfirmDeleteKpi" xml:space="preserve"><value>Delete this KPI?</value></data>
+  <data name="TotalsLabel" xml:space="preserve"><value>Totals</value></data>
+  <data name="TotalKpiWeightLabel" xml:space="preserve"><value>Total KPI Weight</value></data>
+  <data name="TargetMetMessage" xml:space="preserve"><value>Target met!</value></data>
+  <data name="NeedMoreWeightMessage" xml:space="preserve"><value>Need {0}% more</value></data>
+  <data name="ExceedsWeightMessage" xml:space="preserve"><value>Exceeds by {0}%</value></data>
+  <data name="KpiScoreLabel" xml:space="preserve"><value>KPI Score</value></data>
+  <data name="KpiCountSuffix" xml:space="preserve"><value>{0} KPIs</value></data>
+  <data name="AddEditCompHeader" xml:space="preserve"><value>Add/Edit Competency</value></data>
+  <data name="CompetencyTypeLabel" xml:space="preserve"><value>Competency Type</value></data>
+  <data name="CompTypeBehavioral" xml:space="preserve"><value>Behavioral</value></data>
+  <data name="CompTypeTechnical" xml:space="preserve"><value>Technical</value></data>
+  <data name="CompetencyNameLabel" xml:space="preserve"><value>Competency Name</value></data>
+  <data name="DescriptionDefinitionLabel" xml:space="preserve"><value>Description/Definition</value></data>
+  <data name="WeightRangeLabel" xml:space="preserve"><value>Suggested Weight Range</value></data>
+  <data name="WeightRangeGuidanceText" xml:space="preserve"><value>Guidance only — any weight may be entered.</value></data>
+  <data name="WeightTimesAchievementLabel" xml:space="preserve"><value>Weight × Achievement</value></data>
+  <data name="AddCompButton" xml:space="preserve"><value>Add Competency</value></data>
+  <data name="UpdateCompButton" xml:space="preserve"><value>Update Competency</value></data>
+  <data name="CompetencyIdColumnHeader" xml:space="preserve"><value>Competency ID</value></data>
+  <data name="WeightAchColumnHeader" xml:space="preserve"><value>Weight*Ach/100</value></data>
+  <data name="ConfirmDeleteComp" xml:space="preserve"><value>Delete this Competency?</value></data>
+  <data name="TotalCompWeightLabel" xml:space="preserve"><value>Total Competency Weight</value></data>
+  <data name="CompScoreLabel" xml:space="preserve"><value>Competency Score</value></data>
+  <data name="CompCountSuffix" xml:space="preserve"><value>{0} Competencies</value></data>
+  <data name="SelfAssessmentHeader" xml:space="preserve"><value>Employee Year-End Self-Assessment</value></data>
+  <data name="DevelopmentPlanHeader" xml:space="preserve"><value>Development Plan for Coming Year</value></data>
+  <data name="PromotionFeedbackHeader" xml:space="preserve"><value>Promotion Feedback</value></data>
+  <data name="PromotionQuestionText" xml:space="preserve"><value>Based on the role criteria for the next level, do you recommend promotion?</value></data>
+  <data name="PromotionYesOption" xml:space="preserve"><value>Yes, meets next-level expectations consistently</value></data>
+  <data name="PromotionBorderlineOption" xml:space="preserve"><value>Borderline, some next-level behaviors, not consistent yet</value></data>
+  <data name="PromotionNoOption" xml:space="preserve"><value>No, does not yet meet next-level expectations</value></data>
+  <data name="ManagerCommentsLabel" xml:space="preserve"><value>Manager Comments</value></data>
+  <data name="ManagerOnlyNoteText" xml:space="preserve"><value>Note: Only the manager/appraiser can view this section.</value></data>
+  <data name="PerformanceSummaryHeader" xml:space="preserve"><value>Performance Summary</value></data>
+  <data name="KpiWeightedScoreCaption" xml:space="preserve"><value>KPI Weighted Score</value></data>
+  <data name="OverallPerformanceScoreLabel" xml:space="preserve"><value>Overall Performance Score</value></data>
+  <data name="CombinedScoreCaption" xml:space="preserve"><value>Combined Score</value></data>
+  <data name="OverallRatingCaption" xml:space="preserve"><value>Overall Rating</value></data>
+  <data name="EmployeeAcknowledgementHeader" xml:space="preserve"><value>Employee Acknowledgement</value></data>
+  <data name="AckInstructionText" xml:space="preserve"><value>Please review and acknowledge your performance objectives for this evaluation period.</value></data>
+  <data name="EmployeeSignatureLabel" xml:space="preserve"><value>Employee Signature</value></data>
+  <data name="AcknowledgeButton" xml:space="preserve"><value>Acknowledge</value></data>
+  <data name="EmployeeCommentsOptionalLabel" xml:space="preserve"><value>Employee Comments (Optional)</value></data>
+  <data name="PendingAckStatusText" xml:space="preserve"><value>Pending Employee Acknowledgement</value></data>
+  <data name="EmployeeAckedStatusText" xml:space="preserve"><value>Employee Acknowledged</value></data>
+  <data name="EmployeeCommentsLabel" xml:space="preserve"><value>Employee Comments</value></data>
+  <data name="SignaturesApprovalsHeader" xml:space="preserve"><value>Signatures &amp; Approvals</value></data>
+  <data name="EmployeeNameLabel" xml:space="preserve"><value>Employee Name</value></data>
+  <data name="ManagerNameLabel" xml:space="preserve"><value>Manager Name</value></data>
+  <data name="ManagerSignatureLabel" xml:space="preserve"><value>Manager Signature</value></data>
+  <data name="HrReviewFirstHeader" xml:space="preserve"><value>HR Review — First Reviewer</value></data>
+  <data name="Hr1NameLabel" xml:space="preserve"><value>HR Reviewer 1 Name *</value></data>
+  <data name="ReviewDateLabel" xml:space="preserve"><value>Review Date</value></data>
+  <data name="ReviewerSignatureLabel" xml:space="preserve"><value>Reviewer Signature</value></data>
+  <data name="HrCommentsRemarksLabel" xml:space="preserve"><value>HR Comments / Remarks</value></data>
+  <data name="HrReviewSecondHeader" xml:space="preserve"><value>HR Review — Second Reviewer (Final)</value></data>
+  <data name="SegregationOfDutiesWarning" xml:space="preserve"><value>You cannot perform the second HR review because you were the first HR reviewer. Another HR representative must complete the final review for segregation of duties compliance.</value></data>
+  <data name="Hr2NameLabel" xml:space="preserve"><value>HR Reviewer 2 Name (Final) *</value></data>
+  <data name="HrActionLabel" xml:space="preserve"><value>HR Action *</value></data>
+  <data name="ApproveSendToHr2Option" xml:space="preserve"><value>Approve (Send to HR 2)</value></data>
+  <data name="RevertToManagerOption" xml:space="preserve"><value>Revert to Manager</value></data>
+  <data name="FinalApprovalOption" xml:space="preserve"><value>Final Approval</value></data>
+  <data name="SubmitHrActionButton" xml:space="preserve"><value>Submit HR Action</value></data>
+  <data name="SuggestedWeightRangePrefix" xml:space="preserve"><value>Suggested</value></data>
+</root>

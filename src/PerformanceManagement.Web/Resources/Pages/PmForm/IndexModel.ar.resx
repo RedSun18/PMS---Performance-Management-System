@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="EmployeeNotFound" xml:space="preserve"><value>الموظف {0} غير موجود.</value></data>
+  <data name="NotRatedLabel" xml:space="preserve"><value>غير مصنّف</value></data>
+  <data name="PleaseSelectKpi" xml:space="preserve"><value>يرجى اختيار مؤشر أداء.</value></data>
+  <data name="PleaseSelectPerspective" xml:space="preserve"><value>يرجى اختيار المنظور.</value></data>
+  <data name="PleaseEnterTarget" xml:space="preserve"><value>يرجى إدخال الهدف.</value></data>
+  <data name="PleaseEnterKpiWeight" xml:space="preserve"><value>يرجى إدخال وزن مؤشر الأداء.</value></data>
+  <data name="PleaseSelectCompetency" xml:space="preserve"><value>يرجى اختيار كفاءة.</value></data>
+  <data name="PleaseSelectCompetencyType" xml:space="preserve"><value>يرجى اختيار نوع الكفاءة.</value></data>
+  <data name="PleaseEnterCompWeight" xml:space="preserve"><value>يرجى إدخال وزن الكفاءة.</value></data>
+  <data name="DraftSavedMessage" xml:space="preserve"><value>تم حفظ المسودة بنجاح. يمكنك متابعة التعديل أو النقر على "إرسال إلى الموظف" عند الجاهزية.</value></data>
+  <data name="FormSentToEmployeeMessage" xml:space="preserve"><value>تم إرسال النموذج إلى الموظف بنجاح. تم تسجيل رسالة التنبيه بالبريد الإلكتروني.</value></data>
+  <data name="FormSubmittedToHrMessage" xml:space="preserve"><value>تم إرسال النموذج إلى الموارد البشرية بنجاح.</value></data>
+  <data name="AcknowledgementRecordedMessage" xml:space="preserve"><value>شكرًا لك! تم تسجيل إقرارك وتم إخطار مديرك.</value></data>
+  <data name="PleaseSelectHrAction" xml:space="preserve"><value>يرجى اختيار إجراء للموارد البشرية.</value></data>
+  <data name="FirstHrReviewCompletedMessage" xml:space="preserve"><value>تم إكمال المراجعة الأولى للموارد البشرية. تم نقل النموذج إلى المراجع الثاني.</value></data>
+  <data name="FinalHrApprovalCompletedMessage" xml:space="preserve"><value>تم إكمال الاعتماد النهائي للموارد البشرية بنجاح. النموذج مقفل الآن.</value></data>
+  <data name="FormRevertedToManagerMessage" xml:space="preserve"><value>تمت إعادة النموذج إلى حالة المدير بنجاح.</value></data>
+  <data name="EvaluationRecordsDeletedMessage" xml:space="preserve"><value>تم حذف سجلات التقييم بنجاح.</value></data>
+  <data name="NoEmployeeSelectedError" xml:space="preserve"><value>لم يتم اختيار موظف.</value></data>
+  <data name="NoAccessToEmployeeFormError" xml:space="preserve"><value>ليس لديك صلاحية الوصول إلى نموذج أداء الموظف {0}.</value></data>
+  <data name="OnlyManagerCanPerformError" xml:space="preserve"><value>يمكن فقط للمدير المباشر لهذا الموظف تنفيذ هذا الإجراء.</value></data>
+  <data name="OnlyHrCanPerformError" xml:space="preserve"><value>يمكن فقط لمسؤول الموارد البشرية تنفيذ هذا الإجراء.</value></data>
+  <data name="OnlyOwnFormError" xml:space="preserve"><value>يمكنك فقط اتخاذ إجراء على نموذج الأداء الخاص بك.</value></data>
+  <data name="FormNotEditableInStatusError" xml:space="preserve"><value>لا يمكن تعديل هذا النموذج في حالته الحالية ({0}).</value></data>
+</root>

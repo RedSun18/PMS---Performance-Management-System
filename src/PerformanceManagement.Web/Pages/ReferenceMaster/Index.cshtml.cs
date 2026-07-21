@@ -4,6 +4,7 @@ using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.ReferenceMaster;
 
@@ -19,9 +20,11 @@ public class IndexModel : AppPageModel
     private readonly IClock _clock;
     private readonly AuditService _audit;
     private readonly NotificationService _notifications;
-    public IndexModel(PmDbContext db, IClock clock, AuditService audit, NotificationService notifications)
+    private readonly IStringLocalizer<IndexModel> _localizer;
+    public IndexModel(PmDbContext db, IClock clock, AuditService audit, NotificationService notifications,
+        IStringLocalizer<IndexModel> localizer)
     {
-        _db = db; _clock = clock; _audit = audit; _notifications = notifications;
+        _db = db; _clock = clock; _audit = audit; _notifications = notifications; _localizer = localizer;
     }
 
     [BindProperty(SupportsGet = true)] public string Tab { get; set; } = "kpi";
@@ -116,7 +119,7 @@ public class IndexModel : AppPageModel
         var id = input.KpiId.Trim();
         if (id.Length == 0 || string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.Perspective))
         {
-            ErrorMessage = "KPI code, name and perspective are required.";
+            ErrorMessage = _localizer["KpiRequiredFieldsError"];
             return RedirectToPage(new { Tab = "kpi" });
         }
 
@@ -144,7 +147,7 @@ public class IndexModel : AppPageModel
         e.ModifiedTime = _clock.Now.ToString("HH:mm");
 
         await _db.SaveChangesAsync();
-        Message = isNew ? "KPI Successfully Saved!" : "KPI Successfully Updated!";
+        Message = isNew ? _localizer["KpiSavedMessage"] : _localizer["KpiUpdatedMessage"];
         return RedirectToPage(new { Tab = "kpi" });
     }
 
@@ -155,7 +158,7 @@ public class IndexModel : AppPageModel
         var id = input.CompId.Trim();
         if (id.Length == 0 || string.IsNullOrWhiteSpace(input.Name) || string.IsNullOrWhiteSpace(input.CompType))
         {
-            ErrorMessage = "Competency code, name and type are required.";
+            ErrorMessage = _localizer["CompRequiredFieldsError"];
             return RedirectToPage(new { Tab = "comp" });
         }
 
@@ -180,7 +183,7 @@ public class IndexModel : AppPageModel
         e.ModifiedTime = _clock.Now.ToString("HH:mm");
 
         await _db.SaveChangesAsync();
-        Message = isNew ? "Competency Successfully Saved!" : "Competency Successfully Updated!";
+        Message = isNew ? _localizer["CompSavedMessage"] : _localizer["CompUpdatedMessage"];
         return RedirectToPage(new { Tab = "comp" });
     }
 
@@ -191,7 +194,7 @@ public class IndexModel : AppPageModel
         code = (code ?? "").Trim().ToUpperInvariant();
         if (code.Length == 0 || string.IsNullOrWhiteSpace(nameEn))
         {
-            ErrorMessage = "Department code and name are required.";
+            ErrorMessage = _localizer["DeptRequiredFieldsError"];
             return RedirectToPage(new { Tab = "dept" });
         }
 
@@ -200,7 +203,7 @@ public class IndexModel : AppPageModel
         {
             if (dept is not null)
             {
-                ErrorMessage = $"Department code '{code}' is already in use.";
+                ErrorMessage = _localizer["DeptCodeInUseError", code];
                 return RedirectToPage(new { Tab = "dept" });
             }
             dept = new Department { Code = code };
@@ -208,7 +211,7 @@ public class IndexModel : AppPageModel
         }
         else if (dept is null)
         {
-            ErrorMessage = $"Department '{code}' not found.";
+            ErrorMessage = _localizer["DeptNotFoundError", code];
             return RedirectToPage(new { Tab = "dept" });
         }
 
@@ -221,7 +224,7 @@ public class IndexModel : AppPageModel
             deptCode: code, entityType: "Department", entityId: code, details: dept.NameEn);
         await NotifyHrAdminsAsync(isNew ? "Department Created" : "Department Updated",
             $"{code} — {dept.NameEn}", "DepartmentUpdated");
-        Message = isNew ? $"Department '{code}' created." : $"Department '{code}' updated.";
+        Message = isNew ? _localizer["DeptCreatedMessage", code] : _localizer["DeptUpdatedMessage", code];
         return RedirectToPage(new { Tab = "dept" });
     }
 
@@ -232,7 +235,7 @@ public class IndexModel : AppPageModel
         var dept = await _db.Departments.FindAsync(code);
         if (dept is null)
         {
-            ErrorMessage = "Department not found.";
+            ErrorMessage = _localizer["DeptToggleNotFoundError"];
             return RedirectToPage(new { Tab = "dept" });
         }
 
@@ -242,7 +245,7 @@ public class IndexModel : AppPageModel
             deptCode: code, entityType: "Department", entityId: code, details: dept.NameEn);
         await NotifyHrAdminsAsync(dept.IsActive ? "Department Enabled" : "Department Disabled",
             $"{code} — {dept.NameEn}", "DepartmentUpdated");
-        Message = $"Department '{code}' {(dept.IsActive ? "enabled" : "disabled")}.";
+        Message = dept.IsActive ? _localizer["DeptEnabledMessage", code] : _localizer["DeptDisabledMessage", code];
         return RedirectToPage(new { Tab = "dept" });
     }
 
@@ -260,10 +263,10 @@ public class IndexModel : AppPageModel
         if (RequireHrAdmin() is { } denied) return denied;
 
         var e = await _db.JobFamilies.FindAsync(code);
-        if (e is null) { ErrorMessage = $"Job family {code} not found."; return RedirectToPage(new { Tab = "ref" }); }
+        if (e is null) { ErrorMessage = _localizer["JobFamilyNotFoundError", code]; return RedirectToPage(new { Tab = "ref" }); }
         if (kpiWeight + compWeight != 100)
         {
-            ErrorMessage = "KPI weight + Competency weight must total 100.";
+            ErrorMessage = _localizer["JobFamilyWeightError"];
             return RedirectToPage(new { Tab = "ref" });
         }
         e.NameEn = nameEn.Trim();
@@ -271,7 +274,7 @@ public class IndexModel : AppPageModel
         e.KpiWeight = kpiWeight;
         e.CompWeight = compWeight;
         await _db.SaveChangesAsync();
-        Message = $"Job family {code} updated.";
+        Message = _localizer["JobFamilyUpdatedMessage", code];
         return RedirectToPage(new { Tab = "ref" });
     }
 }

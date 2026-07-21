@@ -1,14 +1,16 @@
 @page
 @model PerformanceManagement.Web.Pages.Jobs.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Scheduled Jobs";
+    ViewData["Title"] = SharedLocalizer["NavScheduledJobs"].Value;
 }
-<div class="page-header">Scheduled Jobs</div>
+<div class="page-header">@SharedLocalizer["NavScheduledJobs"]</div>
 
 <div class="table-scroll">
 <table class="grid">
     <thead>
-        <tr><th>Job</th><th>Status</th><th>Next Run</th><th>Previous Run</th><th>Duration</th><th>Result</th><th></th></tr>
+        <tr><th>@Localizer["ColJob"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["ColNextRun"]</th><th>@Localizer["ColPreviousRun"]</th><th>@Localizer["ColDuration"]</th><th>@Localizer["ColResult"]</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var j in Model.Jobs)
@@ -21,42 +23,42 @@
             <td>
                 @if (j.IsPaused)
                 {
-                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> Disabled</span>
+                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> @SharedLocalizer["Disabled"]</span>
                 }
                 else if (j.LastRun?.Status == "RUNNING")
                 {
-                    <span class="status-chip"><span class="status-dot" style="background:var(--amber);"></span> Running</span>
+                    <span class="status-chip"><span class="status-dot" style="background:var(--amber);"></span> @Localizer["StatusRunning"]</span>
                 }
                 else if (j.LastRun?.Status == "FAILED")
                 {
-                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> Failed last run</span>
+                    <span class="status-chip"><span class="status-dot" style="background:var(--red);"></span> @Localizer["StatusFailedLastRun"]</span>
                 }
                 else
                 {
-                    <span class="status-chip"><span class="status-dot"></span> Enabled</span>
+                    <span class="status-chip"><span class="status-dot"></span> @Localizer["StatusEnabledLabel"]</span>
                 }
             </td>
             <td>@(j.NextFireUtc is { } next ? next.LocalDateTime.ToString("dd/MM/yyyy HH:mm") : "—")</td>
-            <td>@(j.LastRun is null ? "Never run" : j.LastRun.StartedAt.ToString("dd/MM/yyyy HH:mm"))</td>
+            <td>@(j.LastRun is null ? Localizer["NeverRunLabel"] : j.LastRun.StartedAt.ToString("dd/MM/yyyy HH:mm"))</td>
             <td>@(j.LastRun?.CompletedAt is { } done ? $"{(done - j.LastRun.StartedAt).TotalSeconds:F1}s" : "—")</td>
             <td style="max-width:280px;">@(j.LastRun?.ErrorMessage ?? j.LastRun?.ResultSummary ?? "—")</td>
             <td style="white-space:nowrap;">
                 <form method="post" asp-page-handler="RunNow" asp-route-name="@j.Name" class="inline-form">
-                    <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">Run Now</button>
+                    <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["RunNow"]</button>
                 </form>
                 @if (j.IsPaused)
                 {
                     <form method="post" asp-page-handler="Resume" asp-route-name="@j.Name" class="inline-form">
-                        <button type="submit" class="btn btn-success" style="padding:4px 10px;font-size:12px;">Enable</button>
+                        <button type="submit" class="btn btn-success" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["EnableAction"]</button>
                     </form>
                 }
                 else
                 {
                     <form method="post" asp-page-handler="Pause" asp-route-name="@j.Name" class="inline-form">
-                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">Disable</button>
+                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["Disable"]</button>
                     </form>
                 }
-                <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" asp-page="Index" asp-route-ViewLog="@j.Name">View Log</a>
+                <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" asp-page="Index" asp-route-ViewLog="@j.Name">@SharedLocalizer["ViewLog"]</a>
             </td>
         </tr>
     }
@@ -67,17 +69,17 @@
 @if (!string.IsNullOrWhiteSpace(Model.ViewLog))
 {
     <div class="card" style="margin-top:20px;">
-        <div class="card-header">Recent Runs — @Model.ViewLog</div>
+        <div class="card-header">@Localizer["RecentRunsHeader", Model.ViewLog]</div>
         <div class="card-body">
             @if (Model.LogRuns.Count == 0)
             {
-                <p class="muted" style="margin:0;">No runs recorded yet.</p>
+                <p class="muted" style="margin:0;">@Localizer["NoRunsRecordedMessage"]</p>
             }
             else
             {
                 <div class="table-scroll">
                 <table class="grid">
-                    <thead><tr><th>Started</th><th>Completed</th><th>Status</th><th>Result / Error</th></tr></thead>
+                    <thead><tr><th>@Localizer["ColStarted"]</th><th>@Localizer["ColCompleted"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["ColResultError"]</th></tr></thead>
                     <tbody>
                     @foreach (var r in Model.LogRuns)
                     {

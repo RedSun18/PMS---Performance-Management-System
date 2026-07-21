@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitleNew" xml:space="preserve"><value>New User</value></data>
+  <data name="CreateUserHeader" xml:space="preserve"><value>Create User</value></data>
+  <data name="EditUserHeader" xml:space="preserve"><value>Edit User — {0}</value></data>
+  <data name="UserDetailsHeader" xml:space="preserve"><value>User Details</value></data>
+  <data name="UserTypeLabel" xml:space="preserve"><value>User Type</value></data>
+  <data name="UserTypeAdministrator" xml:space="preserve"><value>Administrator</value></data>
+  <data name="UserTypeViewer" xml:space="preserve"><value>Viewer (read-only)</value></data>
+  <data name="UserTypeEmployee" xml:space="preserve"><value>Employee</value></data>
+  <data name="SelectEmployeePlaceholder" xml:space="preserve"><value>-- Select Employee --</value></data>
+  <data name="NameFromEmployeeMasterLabel" xml:space="preserve"><value>Name (from Employee Master)</value></data>
+  <data name="FullNameLabel" xml:space="preserve"><value>Full Name</value></data>
+  <data name="EmailAddressLabel" xml:space="preserve"><value>Email Address</value></data>
+  <data name="UseDefaultPasswordLabel" xml:space="preserve"><value>Use default password ({0})</value></data>
+  <data name="ForceChangePasswordLabel" xml:space="preserve"><value>Force password change at first login</value></data>
+  <data name="CreateUserButton" xml:space="preserve"><value>Create User</value></data>
+  <data name="SaveChangesButton" xml:space="preserve"><value>Save Changes</value></data>
+  <data name="ResetPasswordHeader" xml:space="preserve"><value>Reset Password</value></data>
+  <data name="ResetPasswordNote" xml:space="preserve"><value>No existing password is required to reset it.</value></data>
+  <data name="ResetPasswordButton" xml:space="preserve"><value>Reset Password</value></data>
+</root>

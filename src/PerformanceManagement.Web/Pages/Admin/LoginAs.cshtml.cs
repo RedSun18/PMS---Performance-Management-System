@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Admin;
 
@@ -26,7 +27,11 @@ public class LoginAsModel : AppPageModel
     private readonly PmDbContext _db;
     private readonly IConfiguration _config;
     private readonly IClock _clock;
-    public LoginAsModel(PmDbContext db, IConfiguration config, IClock clock) { _db = db; _config = config; _clock = clock; }
+    private readonly IStringLocalizer<LoginAsModel> _localizer;
+    public LoginAsModel(PmDbContext db, IConfiguration config, IClock clock, IStringLocalizer<LoginAsModel> localizer)
+    {
+        _db = db; _config = config; _clock = clock; _localizer = localizer;
+    }
 
     public bool Verified { get; set; }
     public string? Error { get; set; }
@@ -38,9 +43,9 @@ public class LoginAsModel : AppPageModel
     public async Task<IActionResult> OnGetAsync()
     {
         if (IsImpersonating)
-            return AccessDenied("You cannot start a new impersonation session while already impersonating another user. Return to your administrator session first.");
+            return AccessDenied(_localizer["AlreadyImpersonatingMessage"]);
         if (!IsHrAdmin)
-            return AccessDenied("Only an administrator can use Login As.");
+            return AccessDenied(_localizer["NotAdminMessage"]);
 
         Verified = IsVerified();
         if (Verified) await LoadUsersAndHistoryAsync();
@@ -49,11 +54,11 @@ public class LoginAsModel : AppPageModel
 
     public async Task<IActionResult> OnPostVerifyAsync(string verificationPassword)
     {
-        if (IsImpersonating || !IsHrAdmin) return AccessDenied("Not permitted.");
+        if (IsImpersonating || !IsHrAdmin) return AccessDenied(_localizer["NotPermittedMessage"]);
 
         if (verificationPassword != VerificationPassword)
         {
-            Error = "Incorrect verification password.";
+            Error = _localizer["IncorrectVerificationPasswordMessage"];
             Verified = false;
             return Page();
         }
@@ -66,24 +71,24 @@ public class LoginAsModel : AppPageModel
 
     public async Task<IActionResult> OnPostImpersonateAsync(int userId)
     {
-        if (IsImpersonating || !IsHrAdmin) return AccessDenied("Not permitted.");
+        if (IsImpersonating || !IsHrAdmin) return AccessDenied(_localizer["NotPermittedMessage"]);
         if (!IsVerified())
         {
-            Error = "Verification has expired. Please re-enter the verification password.";
+            Error = _localizer["VerificationExpiredMessage"];
             return Page();
         }
 
         var target = await _db.AppUsers.Include(u => u.RolesList).FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
         if (target is null)
         {
-            Error = "Selected user was not found or is disabled.";
+            Error = _localizer["UserNotFoundMessage"];
             Verified = true;
             await LoadUsersAndHistoryAsync();
             return Page();
         }
         if (target.UserName.Equals(CurrentUserName, StringComparison.OrdinalIgnoreCase))
         {
-            Error = "You are already signed in as this account.";
+            Error = _localizer["AlreadySignedInMessage"];
             Verified = true;
             await LoadUsersAndHistoryAsync();
             return Page();

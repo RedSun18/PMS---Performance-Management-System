@@ -1,41 +1,43 @@
 @page
 @model PerformanceManagement.Web.Pages.Users.EditModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Model.IsNew ? "New User" : $"Edit User — {Model.Form.UserName}";
+    ViewData["Title"] = Model.IsNew ? Localizer["PageTitleNew"].Value : Localizer["EditUserHeader", Model.Form.UserName].Value;
 }
-<div class="page-header">@(Model.IsNew ? "Create User" : $"Edit User — {Model.Form.UserName}")</div>
+<div class="page-header">@(Model.IsNew ? Localizer["CreateUserHeader"] : Localizer["EditUserHeader", Model.Form.UserName])</div>
 
 @if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
 
 <div class="card">
-    <div class="card-header">User Details</div>
+    <div class="card-header">@Localizer["UserDetailsHeader"]</div>
     <div class="card-body">
         <form method="post" asp-page-handler="Save" asp-route-id="@Model.Id">
             <div class="grid-3" style="margin-bottom:14px;">
                 <div>
-                    <label for="userType">User Type</label>
+                    <label for="userType">@Localizer["UserTypeLabel"]</label>
                     <select name="Form.UserType" id="userType" onchange="toggleUserType()">
-                        <option value="@PerformanceManagement.Core.Domain.UserType.Employee" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Employee)">Employee</option>
-                        <option value="@PerformanceManagement.Core.Domain.UserType.Administrator" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Administrator)">Administrator</option>
-                        <option value="@PerformanceManagement.Core.Domain.UserType.Viewer" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Viewer)">Viewer (read-only)</option>
+                        <option value="@PerformanceManagement.Core.Domain.UserType.Employee" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Employee)">@Localizer["UserTypeEmployee"]</option>
+                        <option value="@PerformanceManagement.Core.Domain.UserType.Administrator" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Administrator)">@Localizer["UserTypeAdministrator"]</option>
+                        <option value="@PerformanceManagement.Core.Domain.UserType.Viewer" selected="@(Model.Form.UserType == PerformanceManagement.Core.Domain.UserType.Viewer)">@Localizer["UserTypeViewer"]</option>
                     </select>
                 </div>
                 <div>
-                    <label for="userNameInput">Username</label>
+                    <label for="userNameInput">@SharedLocalizer["Username"]</label>
                     <input type="text" id="userNameInput" name="Form.UserName" value="@Model.Form.UserName" maxlength="50" />
                 </div>
                 <div>
                     <label style="text-transform:none;">
-                        <input type="checkbox" name="Form.IsActive" value="true" style="width:auto;" checked="@Model.Form.IsActive" /> Active
+                        <input type="checkbox" name="Form.IsActive" value="true" style="width:auto;" checked="@Model.Form.IsActive" /><input type="hidden" name="Form.IsActive" value="false" /> @SharedLocalizer["Active"]
                     </label>
                 </div>
             </div>
 
             <div id="employeeSection" class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label for="empSelect">Employee</label>
-                    <select name="Form.EmpCode" id="empSelect" onchange="fillFromEmployee()" data-selected="@Model.Form.EmpCode">
-                        <option value="">-- Select Employee --</option>
+                    <label for="empSelect">@SharedLocalizer["Employee"]</label>
+                    <select name="Form.EmpCode" id="empSelect" data-searchable onchange="fillFromEmployee()" data-selected="@Model.Form.EmpCode">
+                        <option value="">@Localizer["SelectEmployeePlaceholder"]</option>
                         @foreach (var (code, label, email) in Model.EmployeeOptions)
                         {
                             <option value="@code" data-email="@email" selected="@(code == Model.Form.EmpCode)">@label</option>
@@ -43,14 +45,14 @@
                     </select>
                 </div>
                 <div>
-                    <label for="empNameDisplay">Name (from Employee Master)</label>
+                    <label for="empNameDisplay">@Localizer["NameFromEmployeeMasterLabel"]</label>
                     <input type="text" id="empNameDisplay" readonly value="@Model.Form.FullName" />
                 </div>
             </div>
 
             <div id="manualNameSection" class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label for="fullNameInput">Full Name</label>
+                    <label for="fullNameInput">@Localizer["FullNameLabel"]</label>
                     <input type="text" name="Form.FullName" id="fullNameInput" value="@Model.Form.FullName" maxlength="100" />
                 </div>
                 <div></div>
@@ -58,7 +60,7 @@
 
             <div class="grid-2" style="margin-bottom:14px;">
                 <div>
-                    <label for="emailInput">Email Address</label>
+                    <label for="emailInput">@Localizer["EmailAddressLabel"]</label>
                     <input type="text" name="Form.Email" id="emailInput" value="@Model.Form.Email" />
                 </div>
             </div>
@@ -69,18 +71,18 @@
                     <div class="card-body">
                         <div class="grid-3">
                             <div>
-                                <label for="passwordInput">Password</label>
+                                <label for="passwordInput">@SharedLocalizer["Password"]</label>
                                 <input type="text" id="passwordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
                                 <p class="muted" style="margin:4px 0 0;font-size:12px;">@Model.PasswordRuleHint</p>
                             </div>
                             <div>
                                 <label style="text-transform:none;">
-                                    <input type="checkbox" name="Form.UseDefaultPassword" value="true" style="width:auto;" /> Use default password (@Model.DefaultPasswordHint)
+                                    <input type="checkbox" name="Form.UseDefaultPassword" value="true" style="width:auto;" /> @Localizer["UseDefaultPasswordLabel", Model.DefaultPasswordHint]
                                 </label>
                             </div>
                             <div>
                                 <label style="text-transform:none;">
-                                    <input type="checkbox" name="Form.ForceChangePassword" value="true" style="width:auto;" checked="true" /> Force password change at first login
+                                    <input type="checkbox" name="Form.ForceChangePassword" value="true" style="width:auto;" checked="true" /> @Localizer["ForceChangePasswordLabel"]
                                 </label>
                             </div>
                         </div>
@@ -89,8 +91,8 @@
             }
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">@(Model.IsNew ? "Create User" : "Save Changes")</button>
-                <a class="btn btn-secondary" asp-page="Index">Cancel</a>
+                <button type="submit" class="btn btn-primary">@(Model.IsNew ? Localizer["CreateUserButton"] : Localizer["SaveChangesButton"])</button>
+                <a class="btn btn-secondary" asp-page="Index">@SharedLocalizer["Cancel"]</a>
             </div>
         </form>
     </div>
@@ -99,29 +101,29 @@
 @if (!Model.IsNew)
 {
     <div class="card">
-        <div class="card-header">Reset Password</div>
+        <div class="card-header">@Localizer["ResetPasswordHeader"]</div>
         <div class="card-body">
-            <p class="muted" style="margin-top:0;">No existing password is required to reset it.</p>
+            <p class="muted" style="margin-top:0;">@Localizer["ResetPasswordNote"]</p>
             <form method="post" asp-page-handler="ResetPassword" asp-route-id="@Model.Id">
                 <div class="grid-3">
                     <div>
-                        <label for="resetPasswordInput">New Password</label>
+                        <label for="resetPasswordInput">@SharedLocalizer["NewPassword"]</label>
                         <input type="text" id="resetPasswordInput" name="Form.Password" placeholder="@Model.DefaultPasswordHint" />
                         <p class="muted" style="margin:4px 0 0;font-size:12px;">@Model.PasswordRuleHint</p>
                     </div>
                     <div>
                         <label style="text-transform:none;">
-                            <input type="checkbox" name="Form.UseDefaultPassword" value="true" style="width:auto;" /> Use default password (@Model.DefaultPasswordHint)
+                            <input type="checkbox" name="Form.UseDefaultPassword" value="true" style="width:auto;" /> @Localizer["UseDefaultPasswordLabel", Model.DefaultPasswordHint]
                         </label>
                     </div>
                     <div>
                         <label style="text-transform:none;">
-                            <input type="checkbox" name="Form.ForceChangePassword" value="true" style="width:auto;" checked="true" /> Force password change at first login
+                            <input type="checkbox" name="Form.ForceChangePassword" value="true" style="width:auto;" checked="true" /> @Localizer["ForceChangePasswordLabel"]
                         </label>
                     </div>
                 </div>
                 <div class="form-actions" style="margin-top:14px;">
-                    <button type="submit" class="btn btn-danger">Reset Password</button>
+                    <button type="submit" class="btn btn-danger">@Localizer["ResetPasswordButton"]</button>
                 </div>
             </form>
         </div>

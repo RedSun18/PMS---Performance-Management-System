@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Report titles -->
+  <data name="EmployeePerformanceReport" xml:space="preserve"><value>Employee Performance Report</value></data>
+  <data name="DepartmentSummaryReport" xml:space="preserve"><value>Department Summary Report</value></data>
+  <data name="ManagerSummaryReport" xml:space="preserve"><value>Manager Summary Report</value></data>
+  <data name="OverallOrganizationSummary" xml:space="preserve"><value>Overall Organization Summary</value></data>
+  <data name="Generated" xml:space="preserve"><value>Generated</value></data>
+  <!-- Section headings -->
+  <data name="EmployeeInformation" xml:space="preserve"><value>Employee Information</value></data>
+  <data name="DepartmentInformation" xml:space="preserve"><value>Department Information</value></data>
+  <data name="ManagerInformation" xml:space="preserve"><value>Manager Information</value></data>
+  <data name="OrganizationOverview" xml:space="preserve"><value>Organization Overview</value></data>
+  <data name="OverallScoreHeading" xml:space="preserve"><value>Overall Score</value></data>
+  <data name="KpiBreakdown" xml:space="preserve"><value>KPI Breakdown</value></data>
+  <data name="CompetencyBreakdown" xml:space="preserve"><value>Competency Breakdown</value></data>
+  <data name="SelfAssessment" xml:space="preserve"><value>Self-Assessment</value></data>
+  <data name="DevelopmentPlan" xml:space="preserve"><value>Development Plan</value></data>
+  <data name="EmployeeAcknowledgementComments" xml:space="preserve"><value>Employee Acknowledgement Comments</value></data>
+  <data name="ApprovalHistory" xml:space="preserve"><value>Approval History</value></data>
+  <data name="WorkflowHistory" xml:space="preserve"><value>Workflow History</value></data>
+  <data name="Employees" xml:space="preserve"><value>Employees</value></data>
+  <data name="TeamMembers" xml:space="preserve"><value>Team Members</value></data>
+  <data name="DepartmentBreakdown" xml:space="preserve"><value>Department Breakdown</value></data>
+  <!-- Field labels -->
+  <data name="Employee" xml:space="preserve"><value>Employee</value></data>
+  <data name="Department" xml:space="preserve"><value>Department</value></data>
+  <data name="Designation" xml:space="preserve"><value>Designation</value></data>
+  <data name="Grade" xml:space="preserve"><value>Grade</value></data>
+  <data name="DirectManager" xml:space="preserve"><value>Direct Manager</value></data>
+  <data name="ReviewYear" xml:space="preserve"><value>Review Year</value></data>
+  <data name="ReferenceNumber" xml:space="preserve"><value>Reference Number</value></data>
+  <data name="FinalStatus" xml:space="preserve"><value>Final Status</value></data>
+  <data name="KpiScore" xml:space="preserve"><value>KPI Score</value></data>
+  <data name="CompetencyScore" xml:space="preserve"><value>Competency Score</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>Overall Score</value></data>
+  <data name="Rating" xml:space="preserve"><value>Rating</value></data>
+  <data name="Manager" xml:space="preserve"><value>Manager</value></data>
+  <data name="EmployeeCount" xml:space="preserve"><value>Employee Count</value></data>
+  <data name="FinalizedReviews" xml:space="preserve"><value>Finalized Reviews</value></data>
+  <data name="AverageOverallScore" xml:space="preserve"><value>Average Overall Score</value></data>
+  <data name="TeamSize" xml:space="preserve"><value>Team Size</value></data>
+  <data name="TotalEmployees" xml:space="preserve"><value>Total Employees</value></data>
+  <data name="FormsGenerated" xml:space="preserve"><value>Forms Generated</value></data>
+  <data name="HrReviewer1" xml:space="preserve"><value>HR Reviewer 1</value></data>
+  <data name="HrReview1Date" xml:space="preserve"><value>HR Review 1 Date</value></data>
+  <data name="HrReviewer1Remarks" xml:space="preserve"><value>HR Reviewer 1 Remarks</value></data>
+  <data name="HrReviewer2Final" xml:space="preserve"><value>HR Reviewer 2 (Final)</value></data>
+  <data name="HrReview2Date" xml:space="preserve"><value>HR Review 2 Date</value></data>
+  <data name="HrReviewer2Remarks" xml:space="preserve"><value>HR Reviewer 2 Remarks</value></data>
+  <!-- Data table headers -->
+  <data name="Perspective" xml:space="preserve"><value>Perspective</value></data>
+  <data name="Kpi" xml:space="preserve"><value>KPI</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="WeightPercent" xml:space="preserve"><value>Weight %</value></data>
+  <data name="AchievementPercent" xml:space="preserve"><value>Achievement %</value></data>
+  <data name="Weighted" xml:space="preserve"><value>Weighted</value></data>
+  <data name="Comments" xml:space="preserve"><value>Comments</value></data>
+  <data name="Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Competency" xml:space="preserve"><value>Competency</value></data>
+  <data name="Technical" xml:space="preserve"><value>Technical</value></data>
+  <data name="Behavioral" xml:space="preserve"><value>Behavioral</value></data>
+  <data name="From" xml:space="preserve"><value>From</value></data>
+  <data name="To" xml:space="preserve"><value>To</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>Changed By</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>Changed At</value></data>
+  <data name="Note" xml:space="preserve"><value>Note</value></data>
+  <data name="EmployeeCode" xml:space="preserve"><value>Employee Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Finalized" xml:space="preserve"><value>Finalized</value></data>
+  <data name="CompletionPercent" xml:space="preserve"><value>Completion %</value></data>
+  <data name="AverageScore" xml:space="preserve"><value>Average Score</value></data>
+  <data name="NoEmployeesFound" xml:space="preserve"><value>No employees found.</value></data>
+  <data name="CommentsAndDevelopment" xml:space="preserve"><value>Comments &amp; Development</value></data>
+</root>

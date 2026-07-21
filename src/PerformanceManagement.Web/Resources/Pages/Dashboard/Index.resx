@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MyReviewCardHeader" xml:space="preserve"><value>My {0} Performance Review</value></data>
+  <data name="CurrentStageLabel" xml:space="preserve"><value>Current Stage:</value></data>
+  <data name="CompletionBreakdownHeader" xml:space="preserve"><value>Completion Breakdown</value></data>
+  <data name="OverallProgressLabel" xml:space="preserve"><value>Overall Progress</value></data>
+  <data name="KpiCompletionLabel" xml:space="preserve"><value>KPI Completion</value></data>
+  <data name="CompCompletionLabel" xml:space="preserve"><value>Competency Completion</value></data>
+  <data name="ItemsRecordedLabel" xml:space="preserve"><value>Items Recorded</value></data>
+  <data name="RecentNotificationsHeader" xml:space="preserve"><value>Recent Notifications</value></data>
+  <data name="OpenMyPmFormButton" xml:space="preserve"><value>Open My PM Form</value></data>
+  <data name="TeamMembersLabel" xml:space="preserve"><value>Team Members</value></data>
+  <data name="WaitingForReviewLabel" xml:space="preserve"><value>Waiting for Your Review</value></data>
+  <data name="ReturnedByHrLabel" xml:space="preserve"><value>Returned by HR</value></data>
+  <data name="CompletedLabel" xml:space="preserve"><value>Completed</value></data>
+  <data name="GoToPmFormButton" xml:space="preserve"><value>Go to PM Form</value></data>
+  <data name="ViewTeamSummaryButton" xml:space="preserve"><value>View Team Summary</value></data>
+  <data name="EmployeesLabel" xml:space="preserve"><value>Employees</value></data>
+  <data name="FormsGeneratedLabel" xml:space="preserve"><value>Forms Generated ({0})</value></data>
+  <data name="OverallCompletionLabel" xml:space="preserve"><value>Overall Completion</value></data>
+  <data name="FormStatusBreakdownHeader" xml:space="preserve"><value>Form Status Breakdown</value></data>
+  <data name="DeptCompletionHeader" xml:space="preserve"><value>Department Completion, Progress &amp; Performance</value></data>
+  <data name="NoDeptDataMessage" xml:space="preserve"><value>No department data available. Employees must be assigned to a department in Employee Master, matched to a Department Master record in Reference Master.</value></data>
+  <data name="OpenPmFormSummaryButton" xml:space="preserve"><value>Open PM Form Summary</value></data>
+  <data name="RecentActivityHeader" xml:space="preserve"><value>Recent Activity</value></data>
+  <data name="NoRecentActivityMessage" xml:space="preserve"><value>No recent activity.</value></data>
+</root>

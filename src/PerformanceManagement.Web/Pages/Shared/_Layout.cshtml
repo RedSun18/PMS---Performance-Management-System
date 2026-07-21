@@ -56,32 +56,32 @@
         </style>
     }
 </head>
-<body>
-    <a class="skip-link" href="#main-content">Skip to main content</a>
+<body data-no-results-text="@SharedLocalizer["NoResultsFound"]">
+    <a class="skip-link" href="#main-content">@SharedLocalizer["SkipToMainContent"]</a>
     <div class="layout-container @(hasSidebar ? "" : "no-sidebar")">
         <!-- Sidebar -->
         @if (hasSidebar)
         {
             <aside class="sidebar" id="sidebar">
-                <nav class="sidebar-nav" aria-label="Main navigation">
-                    <a asp-page="/Dashboard/Index" class="sidebar-link">🏠 Dashboard</a>
-                    <a asp-page="/PmForm/Index" class="sidebar-link">📋 PM Form</a>
+                <nav class="sidebar-nav" aria-label="@SharedLocalizer["NavMainNavigation"]">
+                    <a asp-page="/Dashboard/Index" class="sidebar-link">🏠 @SharedLocalizer["Dashboard"]</a>
+                    <a asp-page="/PmForm/Index" class="sidebar-link">📋 @SharedLocalizer["NavPmForm"]</a>
                     @if ((bool?)ViewData["IsHrAdmin"] == true || (bool?)ViewData["IsViewer"] == true)
                     {
-                        <a asp-page="/PmFormSummary/Index" class="sidebar-link">📊 PM Form Summary</a>
-                        <a asp-page="/Employees/Index" class="sidebar-link">👥 Employee Master</a>
-                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="kpi" class="sidebar-link">🎯 KPI Master</a>
-                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="comp" class="sidebar-link">✓ Competency Master</a>
-                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="ref" class="sidebar-link">📚 Reference Master</a>
+                        <a asp-page="/PmFormSummary/Index" class="sidebar-link">📊 @SharedLocalizer["NavPmFormSummary"]</a>
+                        <a asp-page="/Employees/Index" class="sidebar-link">👥 @SharedLocalizer["NavEmployeeMaster"]</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="kpi" class="sidebar-link">🎯 @SharedLocalizer["NavKpiMaster"]</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="comp" class="sidebar-link">✓ @SharedLocalizer["NavCompetencyMaster"]</a>
+                        <a asp-page="/ReferenceMaster/Index" asp-route-tab="ref" class="sidebar-link">📚 @SharedLocalizer["NavReferenceMaster"]</a>
                     }
                     @if ((bool?)ViewData["IsHrAdmin"] == true)
                     {
                         <hr class="sidebar-divider" />
-                        <a asp-page="/Reports/Index" class="sidebar-link">🧾 Reports</a>
-                        <a asp-page="/Users/Index" class="sidebar-link">👤 User Management</a>
-                        <a asp-page="/Admin/LoginAs" class="sidebar-link">🔐 Login As</a>
-                        <a asp-page="/Jobs/Index" class="sidebar-link">⏱️ Scheduled Jobs</a>
-                        <a asp-page="/Settings/Index" class="sidebar-link">⚙️ System Settings</a>
+                        <a asp-page="/Reports/Index" class="sidebar-link">🧾 @SharedLocalizer["NavReports"]</a>
+                        <a asp-page="/Users/Index" class="sidebar-link">👤 @SharedLocalizer["NavUserManagement"]</a>
+                        <a asp-page="/Admin/LoginAs" class="sidebar-link">🔐 @SharedLocalizer["NavLoginAs"]</a>
+                        <a asp-page="/Jobs/Index" class="sidebar-link">⏱️ @SharedLocalizer["NavScheduledJobs"]</a>
+                        <a asp-page="/Settings/Index" class="sidebar-link">⚙️ @SharedLocalizer["NavSystemSettings"]</a>
                     }
                 </nav>
             </aside>
@@ -92,7 +92,7 @@
             <header class="topnav">
                 @if (hasSidebar)
                 {
-                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="@SharedLocalizer["ToggleSidebar"]">
                         <span></span>
                         <span></span>
                         <span></span>
@@ -106,30 +106,33 @@
                     @appName
                 </a>
                 <div class="topnav-user">
-                    <div class="lang-switch-inline">
-                        <a href="/Culture/SetLanguage?culture=en&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "" : "active")">EN</a>
-                        <a href="/Culture/SetLanguage?culture=ar&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "active" : "")">عربي</a>
-                    </div>
+                    @if (general.LanguageSelectionEnabled)
+                    {
+                        <div class="lang-switch-inline">
+                            <a href="/Culture/SetLanguage?culture=en&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "" : "active")">EN</a>
+                            <a href="/Culture/SetLanguage?culture=ar&returnUrl=@Uri.EscapeDataString(currentPath)" class="@(isRtl ? "active" : "")">عربي</a>
+                        </div>
+                    }
                     @if (hasSidebar)
                     {
                         <div class="notif-bell-wrap">
-                            <button type="button" class="notif-bell" id="notifBellBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="notif-bell" id="notifBellBtn" aria-label="@SharedLocalizer["NavNotifications"]" aria-haspopup="true" aria-expanded="false">
                                 🔔
                                 @if (unreadCount > 0)
                                 {
                                     <span class="notif-badge">@(unreadCount > 99 ? "99+" : unreadCount.ToString())</span>
                                 }
                             </button>
-                            <div class="notif-dropdown" id="notifDropdown" role="region" aria-label="Notifications">
+                            <div class="notif-dropdown" id="notifDropdown" role="region" aria-label="@SharedLocalizer["NavNotifications"]">
                                 <div class="notif-dropdown-header">
-                                    <strong>Notifications</strong>
+                                    <strong>@SharedLocalizer["NavNotifications"]</strong>
                                     <form method="post" asp-page="/Notifications/Index" asp-page-handler="MarkAllRead" class="inline-form">
-                                        <button type="submit" class="btn btn-link" style="font-size:12px;padding:2px 6px;">Mark all read</button>
+                                        <button type="submit" class="btn btn-link" style="font-size:12px;padding:2px 6px;">@SharedLocalizer["MarkAllRead"]</button>
                                     </form>
                                 </div>
                                 @if (recentNotifications.Count == 0)
                                 {
-                                    <p class="muted" style="padding:14px;margin:0;">No notifications yet.</p>
+                                    <p class="muted" style="padding:14px;margin:0;">@SharedLocalizer["NoNotificationsYet"]</p>
                                 }
                                 else
                                 {
@@ -145,7 +148,7 @@
                                         </a>
                                     }
                                 }
-                                <a href="/Notifications/Index" class="notif-dropdown-footer">View all</a>
+                                <a href="/Notifications/Index" class="notif-dropdown-footer">@SharedLocalizer["ViewAll"]</a>
                             </div>
                         </div>
                         <span>@User.FindFirst("DisplayName")?.Value (@User.Identity?.Name)</span>
@@ -158,11 +161,11 @@
             @if ((bool?)ViewData["IsImpersonating"] == true)
             {
                 <div class="impersonation-banner">
-                    <span>You are currently impersonating: <strong>@User.FindFirst("DisplayName")?.Value</strong>
-                        (@(string.IsNullOrEmpty(User.FindFirst("EmpCode")?.Value) ? User.Identity!.Name : $"Employee {User.FindFirst("EmpCode")!.Value}"))
-                        — signed in as @ViewData["OriginalAdminDisplayName"]</span>
+                    <span>@SharedLocalizer["ImpersonatingLabel"] <strong>@User.FindFirst("DisplayName")?.Value</strong>
+                        (@(string.IsNullOrEmpty(User.FindFirst("EmpCode")?.Value) ? User.Identity!.Name : $"{SharedLocalizer["Employee"]} {User.FindFirst("EmpCode")!.Value}"))
+                        — @SharedLocalizer["SignedInAsLabel"] @ViewData["OriginalAdminDisplayName"]</span>
                     <form method="post" asp-page="/Admin/LoginAs" asp-page-handler="Return" class="inline-form">
-                        <button type="submit" class="btn btn-utility">Return to Administrator</button>
+                        <button type="submit" class="btn btn-utility">@SharedLocalizer["ReturnToAdministrator"]</button>
                     </form>
                 </div>
             }
@@ -178,6 +181,7 @@
 
     <div class="toast-stack" id="toastStack" role="status" aria-live="polite"></div>
 
+    <script src="~/js/searchable-select.js" asp-append-version="true"></script>
     <script>
         function showToast(text, type) {
             var stack = document.getElementById('toastStack');
@@ -193,7 +197,7 @@
             var close = document.createElement('button');
             close.type = 'button';
             close.className = 'toast-close';
-            close.setAttribute('aria-label', 'Dismiss');
+            close.setAttribute('aria-label', @Html.Raw(System.Text.Json.JsonSerializer.Serialize(SharedLocalizer["Dismiss"].Value)));
             close.textContent = '✕';
             var remove = function() {
                 toast.classList.add('leaving');

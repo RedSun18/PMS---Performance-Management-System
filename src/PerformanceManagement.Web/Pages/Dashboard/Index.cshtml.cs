@@ -2,6 +2,7 @@ using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
 using PerformanceManagement.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Dashboard;
 
@@ -17,10 +18,12 @@ public class IndexModel : AppPageModel
     private readonly PermissionService _permissions;
     private readonly AchievementGate _gate;
     private readonly SettingsService _settings;
+    private readonly IStringLocalizer<IndexModel> _localizer;
 
-    public IndexModel(PmDbContext db, IClock clock, PermissionService permissions, AchievementGate gate, SettingsService settings)
+    public IndexModel(PmDbContext db, IClock clock, PermissionService permissions, AchievementGate gate,
+        SettingsService settings, IStringLocalizer<IndexModel> localizer)
     {
-        _db = db; _clock = clock; _permissions = permissions; _gate = gate; _settings = settings;
+        _db = db; _clock = clock; _permissions = permissions; _gate = gate; _settings = settings; _localizer = localizer;
     }
 
     public int EvalYear => _clock.Today.Year;
@@ -96,7 +99,7 @@ public class IndexModel : AppPageModel
 
         MyStatusLabel = PmFormStatus.DisplayName(MyForm?.Status ?? PmFormStatus.Draft);
         (MyProgressPercent, MyKpiCompletionPercent, MyCompCompletionPercent) = ComputeProgress(MyForm);
-        MyDeadlineHint = ComputeDeadlineHint(MyForm);
+        MyDeadlineHint = await ComputeDeadlineHintAsync(MyForm);
 
         var myRefNos = await _db.PmForms.AsNoTracking()
             .Where(f => f.EmpCode == CurrentEmpCode)
@@ -138,21 +141,24 @@ public class IndexModel : AppPageModel
         return (total == 0 ? 0 : passed * 100 / total, kpiPercent, compPercent);
     }
 
-    private string? ComputeDeadlineHint(PerformanceManagement.Core.Domain.PmForm? form)
+    private async Task<string?> ComputeDeadlineHintAsync(PerformanceManagement.Core.Domain.PmForm? form)
     {
         if (form is null || form.Status == PmFormStatus.Draft)
-            return "Your manager has not yet set your performance objectives for this year.";
+            return _localizer["NoObjectivesSetYet"];
 
         if (form.Status == PmFormStatus.PendingEmployeeAck)
         {
             var due = (form.StatusChangeDate ?? _clock.Today).AddDays(7);
             return due < _clock.Today
-                ? "Acknowledgement is overdue — please review and acknowledge your objectives."
-                : $"Please acknowledge your objectives by {due:dd MMM yyyy}.";
+                ? _localizer["AcknowledgementOverdue"]
+                : _localizer["AcknowledgeByDate", due.ToDateTime(TimeOnly.MinValue)];
         }
 
-        if (form.Status == PmFormStatus.EmployeeAcknowledged && !_gate.IsOpen(EvalYear))
-            return $"Achievement scoring opens 01 December {EvalYear}.";
+        if (form.Status == PmFormStatus.EmployeeAcknowledged && !await _gate.IsAchievementOpenAsync(EvalYear))
+        {
+            var opensOn = await _gate.AchievementOpenDateAsync(EvalYear);
+            return _localizer["AchievementScoringOpens", opensOn.ToDateTime(TimeOnly.MinValue)];
+        }
 
         return null;
     }

@@ -1,68 +1,85 @@
 @page
 @model PerformanceManagement.Web.Pages.ReferenceMaster.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Reference Master";
+    ViewData["Title"] = SharedLocalizer["NavReferenceMaster"].Value;
+
+    // Perspective / competency-type / status labels are re-derived here from their short
+    // codes (F/C/I/L, B/T, A/I) rather than read from the stored *Desc columns, so the
+    // displayed label always follows the current UI culture — the stored description is a
+    // legacy-style cache column written in English at save time (see Index.cshtml.cs) and is
+    // not itself re-translated.
+    string PerspectiveLabel(string code) => code.Trim() switch
+    {
+        "F" => Localizer["PerspectiveFinancial"].Value,
+        "C" => Localizer["PerspectiveCustomer"].Value,
+        "I" => Localizer["PerspectiveInternal"].Value,
+        "L" => Localizer["PerspectiveLearning"].Value,
+        _ => code
+    };
+    string CompTypeLabel(string code) => code.Trim() == "T" ? Localizer["TechnicalOption"].Value : Localizer["BehavioralOption"].Value;
 }
-<div class="page-header">Reference Master — KPI &amp; Competency Masters, KPI Reference Codes</div>
+<div class="page-header">@Localizer["PageHeader"]</div>
 
 <div class="tabs">
-    <a href="?tab=kpi" class="@(Model.Tab == "kpi" ? "active" : "")">KPI Master</a>
-    <a href="?tab=comp" class="@(Model.Tab == "comp" ? "active" : "")">Competency Master</a>
-    <a href="?tab=dept" class="@(Model.Tab == "dept" ? "active" : "")">Departments</a>
-    <a href="?tab=ref" class="@(Model.Tab == "ref" ? "active" : "")">Job Families &amp; Rating Scales</a>
+    <a href="?tab=kpi" class="@(Model.Tab == "kpi" ? "active" : "")">@SharedLocalizer["NavKpiMaster"]</a>
+    <a href="?tab=comp" class="@(Model.Tab == "comp" ? "active" : "")">@SharedLocalizer["NavCompetencyMaster"]</a>
+    <a href="?tab=dept" class="@(Model.Tab == "dept" ? "active" : "")">@Localizer["TabDepartments"]</a>
+    <a href="?tab=ref" class="@(Model.Tab == "ref" ? "active" : "")">@Localizer["TabJobFamiliesRatingScales"]</a>
 </div>
 
 @if (Model.Tab == "kpi")
 {
     var k = Model.KpiEdit;
     <div class="card">
-        <div class="card-header">@(k is null ? $"Add KPI ({Model.NextKpiId})" : $"Edit KPI {k.KpiId}")</div>
+        <div class="card-header">@(k is null ? Localizer["AddKpiHeader", Model.NextKpiId] : Localizer["EditKpiHeader", k.KpiId])</div>
         <div class="card-body">
             <form method="post" asp-page-handler="SaveKpi">
                 <input type="hidden" name="input.KpiId" value="@(k?.KpiId ?? Model.NextKpiId)" />
                 <div class="grid-4" style="margin-bottom:12px;">
-                    <div><label for="kpiCodeRO">KPI Code</label><input type="text" id="kpiCodeRO" value="@(k?.KpiId ?? Model.NextKpiId)" readonly /></div>
+                    <div><label for="kpiCodeRO">@Localizer["KpiCodeLabel"]</label><input type="text" id="kpiCodeRO" value="@(k?.KpiId ?? Model.NextKpiId)" readonly /></div>
                     <div>
-                        <label for="kpiFormPerspective">Perspective</label>
+                        <label for="kpiFormPerspective">@Localizer["PerspectiveLabel"]</label>
                         <select name="input.Perspective" id="kpiFormPerspective">
-                            <option value="F" selected="@(k?.Perspective.Trim() == "F")">Financial</option>
-                            <option value="C" selected="@(k?.Perspective.Trim() == "C")">Customer</option>
-                            <option value="I" selected="@(k?.Perspective.Trim() == "I")">Internal Processes</option>
-                            <option value="L" selected="@(k?.Perspective.Trim() == "L")">Learning &amp; Growth</option>
+                            <option value="F" selected="@(k?.Perspective.Trim() == "F")">@Localizer["PerspectiveFinancial"]</option>
+                            <option value="C" selected="@(k?.Perspective.Trim() == "C")">@Localizer["PerspectiveCustomer"]</option>
+                            <option value="I" selected="@(k?.Perspective.Trim() == "I")">@Localizer["PerspectiveInternal"]</option>
+                            <option value="L" selected="@(k?.Perspective.Trim() == "L")">@Localizer["PerspectiveLearning"]</option>
                         </select>
                     </div>
                     <div>
-                        <label for="kpiDeptCsv">Departments (comma list or * for all)</label>
+                        <label for="kpiDeptCsv">@Localizer["DeptCsvLabel"]</label>
                         <input type="text" id="kpiDeptCsv" name="input.DeptCsv" value="@(k?.DeptCsv ?? "*")" />
                     </div>
                     <div>
-                        <label for="kpiStatus">Status</label>
+                        <label for="kpiStatus">@SharedLocalizer["Status"]</label>
                         <select name="input.Status" id="kpiStatus">
-                            <option value="A" selected="@(k?.Status != "I")">Active</option>
-                            <option value="I" selected="@(k?.Status == "I")">Inactive</option>
+                            <option value="A" selected="@(k?.Status != "I")">@SharedLocalizer["Active"]</option>
+                            <option value="I" selected="@(k?.Status == "I")">@SharedLocalizer["Inactive"]</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="kpiNameEn">KPI Name (English)</label><input type="text" id="kpiNameEn" name="input.Name" value="@k?.Name" maxlength="100" /></div>
-                    <div><label for="kpiNameAr">KPI Name (Arabic)</label><input type="text" id="kpiNameAr" name="input.NameAr" value="@k?.NameAr" maxlength="100" dir="rtl" /></div>
+                    <div><label for="kpiNameEn">@Localizer["KpiNameEnLabel"]</label><input type="text" id="kpiNameEn" name="input.Name" value="@k?.Name" maxlength="100" /></div>
+                    <div><label for="kpiNameAr">@Localizer["KpiNameArLabel"]</label><input type="text" id="kpiNameAr" name="input.NameAr" value="@k?.NameAr" maxlength="100" dir="rtl" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="kpiDescEn">Purpose / Definition (EN)</label><textarea id="kpiDescEn" name="input.Description" rows="2">@k?.Description</textarea></div>
-                    <div><label for="kpiDescAr">Purpose / Definition (AR)</label><textarea id="kpiDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@k?.DescriptionAr</textarea></div>
+                    <div><label for="kpiDescEn">@Localizer["PurposeDefinitionEnLabel"]</label><textarea id="kpiDescEn" name="input.Description" rows="2">@k?.Description</textarea></div>
+                    <div><label for="kpiDescAr">@Localizer["PurposeDefinitionArLabel"]</label><textarea id="kpiDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@k?.DescriptionAr</textarea></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="kpiFormulaEn">Formula / Metric (EN)</label><textarea id="kpiFormulaEn" name="input.Formula" rows="2">@k?.Formula</textarea></div>
-                    <div><label for="kpiFormulaAr">Formula / Metric (AR)</label><textarea id="kpiFormulaAr" name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
+                    <div><label for="kpiFormulaEn">@Localizer["FormulaMetricEnLabel"]</label><textarea id="kpiFormulaEn" name="input.Formula" rows="2">@k?.Formula</textarea></div>
+                    <div><label for="kpiFormulaAr">@Localizer["FormulaMetricArLabel"]</label><textarea id="kpiFormulaAr" name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
                 </div>
                 <div class="grid-4" style="margin-bottom:14px;">
-                    <div><label for="kpiMinWeight">Min Weight %</label><input type="number" id="kpiMinWeight" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
-                    <div><label for="kpiMaxWeight">Max Weight %</label><input type="number" id="kpiMaxWeight" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
-                    <div style="grid-column:span 2;"><label for="kpiRemarks">Remarks</label><input type="text" id="kpiRemarks" name="input.Remarks" value="@k?.Remarks" /></div>
+                    <div><label for="kpiMinWeight">@Localizer["MinWeightPercentLabel"]</label><input type="number" id="kpiMinWeight" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label for="kpiMaxWeight">@Localizer["MaxWeightPercentLabel"]</label><input type="number" id="kpiMaxWeight" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label for="kpiRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="kpiRemarks" name="input.Remarks" value="@k?.Remarks" /></div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">@(k is null ? "Save KPI" : "Update KPI")</button>
-                    <a class="btn btn-secondary" href="?tab=kpi">Clear</a>
+                    <button type="submit" class="btn btn-primary">@(k is null ? Localizer["SaveKpiButton"] : Localizer["UpdateKpiButton"])</button>
+                    <a class="btn btn-secondary" href="?tab=kpi">@SharedLocalizer["Clear"]</a>
                 </div>
             </form>
         </div>
@@ -72,105 +89,105 @@
         <input type="hidden" name="tab" value="kpi" />
         <div class="filters">
             <div>
-                <label for="kpiFilterQuery">Search (code or name)</label>
-                <input type="text" name="kpiQuery" id="kpiFilterQuery" value="@Model.KpiQuery" placeholder="e.g. KPI005 or Reinsurance" />
+                <label for="kpiFilterQuery">@Localizer["SearchCodeOrNameLabel"]</label>
+                <input type="text" name="kpiQuery" id="kpiFilterQuery" value="@Model.KpiQuery" placeholder="@Localizer["KpiSearchPlaceholder"]" />
             </div>
             <div>
-                <label for="kpiFilterPerspective">Perspective</label>
+                <label for="kpiFilterPerspective">@Localizer["PerspectiveLabel"]</label>
                 <select name="perspective" id="kpiFilterPerspective" onchange="this.form.submit()">
-                    <option value="">All</option>
-                    <option value="F" selected="@(Model.Perspective == "F")">Financial</option>
-                    <option value="C" selected="@(Model.Perspective == "C")">Customer</option>
-                    <option value="I" selected="@(Model.Perspective == "I")">Internal Processes</option>
-                    <option value="L" selected="@(Model.Perspective == "L")">Learning &amp; Growth</option>
+                    <option value="">@SharedLocalizer["All"]</option>
+                    <option value="F" selected="@(Model.Perspective == "F")">@Localizer["PerspectiveFinancial"]</option>
+                    <option value="C" selected="@(Model.Perspective == "C")">@Localizer["PerspectiveCustomer"]</option>
+                    <option value="I" selected="@(Model.Perspective == "I")">@Localizer["PerspectiveInternal"]</option>
+                    <option value="L" selected="@(Model.Perspective == "L")">@Localizer["PerspectiveLearning"]</option>
                 </select>
             </div>
             <div>
-                <label for="kpiFilterDept">Department</label>
-                <select name="deptFilter" id="kpiFilterDept" onchange="this.form.submit()">
-                    <option value="">All</option>
+                <label for="kpiFilterDept">@SharedLocalizer["Department"]</label>
+                <select name="deptFilter" id="kpiFilterDept" data-searchable onchange="this.form.submit()">
+                    <option value="">@SharedLocalizer["All"]</option>
                     @foreach (var d in Model.Departments)
                     {
                         <option value="@d.Code" selected="@(d.Code == Model.DeptFilter)">@d.NameEn</option>
                     }
                 </select>
             </div>
-            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">@SharedLocalizer["Search"]</button></div>
             <div></div>
         </div>
     </form>
 
     <div class="table-scroll">
     <table class="grid">
-        <thead><tr><th>Code</th><th>Name</th><th>Perspective</th><th>Departments</th><th>Weight Range</th><th>Status</th><th>Modified</th><th></th></tr></thead>
+        <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@Localizer["PerspectiveLabel"]</th><th>@Localizer["ColDepartments"]</th><th>@Localizer["ColWeightRange"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["ColModified"]</th><th></th></tr></thead>
         <tbody>
         @if (Model.Kpis.Count == 0)
         {
-            <tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">No KPIs match your search.</td></tr>
+            <tr><td colspan="8" class="muted" style="text-align:center;padding:24px;">@Localizer["NoKpisFoundMessage"]</td></tr>
         }
         @foreach (var row in Model.Kpis)
         {
             <tr>
                 <td>@row.KpiId</td>
                 <td><strong>@row.Name</strong>@(string.IsNullOrEmpty(row.NameAr) ? "" : $" / {row.NameAr}")</td>
-                <td>@row.PerspectiveDesc</td>
+                <td>@PerspectiveLabel(row.Perspective)</td>
                 <td>@row.DeptCsv</td>
                 <td>@row.MinWeight–@row.MaxWeight%</td>
-                <td>@(row.Status == "A" ? "Active" : "Inactive")</td>
+                <td>@(row.Status == "A" ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</td>
                 <td>@row.ModifiedDate?.ToString("dd/MM/yyyy") @row.ModifiedBy</td>
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=kpi&editId=@row.KpiId">Edit</a></td>
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=kpi&editId=@row.KpiId">@SharedLocalizer["Edit"]</a></td>
             </tr>
         }
         </tbody>
     </table>
     </div>
-    <p class="muted">@Model.Kpis.Count KPIs.</p>
+    <p class="muted">@Localizer["KpiCountSummary", Model.Kpis.Count]</p>
 }
 else if (Model.Tab == "comp")
 {
     var c = Model.CompEdit;
     <div class="card">
-        <div class="card-header">@(c is null ? $"Add Competency ({Model.NextCompId})" : $"Edit Competency {c.CompId}")</div>
+        <div class="card-header">@(c is null ? Localizer["AddCompetencyHeader", Model.NextCompId] : Localizer["EditCompetencyHeader", c.CompId])</div>
         <div class="card-body">
             <form method="post" asp-page-handler="SaveComp">
                 <input type="hidden" name="input.CompId" value="@(c?.CompId ?? Model.NextCompId)" />
                 <div class="grid-4" style="margin-bottom:12px;">
-                    <div><label for="compCodeRO">Competency Code</label><input type="text" id="compCodeRO" value="@(c?.CompId ?? Model.NextCompId)" readonly /></div>
+                    <div><label for="compCodeRO">@Localizer["CompetencyCodeLabel"]</label><input type="text" id="compCodeRO" value="@(c?.CompId ?? Model.NextCompId)" readonly /></div>
                     <div>
-                        <label for="compFormType">Type</label>
+                        <label for="compFormType">@SharedLocalizer["Type"]</label>
                         <select name="input.CompType" id="compFormType">
-                            <option value="B" selected="@(c?.CompType.Trim() == "B")">Behavioral</option>
-                            <option value="T" selected="@(c?.CompType.Trim() == "T")">Technical</option>
+                            <option value="B" selected="@(c?.CompType.Trim() == "B")">@Localizer["BehavioralOption"]</option>
+                            <option value="T" selected="@(c?.CompType.Trim() == "T")">@Localizer["TechnicalOption"]</option>
                         </select>
                     </div>
                     <div>
-                        <label for="compDeptCsv">Departments (comma list or * for all)</label>
+                        <label for="compDeptCsv">@Localizer["DeptCsvLabel"]</label>
                         <input type="text" id="compDeptCsv" name="input.DeptCsv" value="@(c?.DeptCsv ?? "*")" />
                     </div>
                     <div>
-                        <label for="compStatus">Status</label>
+                        <label for="compStatus">@SharedLocalizer["Status"]</label>
                         <select name="input.Status" id="compStatus">
-                            <option value="A" selected="@(c?.Status != "I")">Active</option>
-                            <option value="I" selected="@(c?.Status == "I")">Inactive</option>
+                            <option value="A" selected="@(c?.Status != "I")">@SharedLocalizer["Active"]</option>
+                            <option value="I" selected="@(c?.Status == "I")">@SharedLocalizer["Inactive"]</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="compNameEn">Name (English)</label><input type="text" id="compNameEn" name="input.Name" value="@c?.Name" maxlength="100" /></div>
-                    <div><label for="compNameAr">Name (Arabic)</label><input type="text" id="compNameAr" name="input.NameAr" value="@c?.NameAr" maxlength="100" dir="rtl" /></div>
+                    <div><label for="compNameEn">@Localizer["NameEnLabel"]</label><input type="text" id="compNameEn" name="input.Name" value="@c?.Name" maxlength="100" /></div>
+                    <div><label for="compNameAr">@Localizer["NameArLabel"]</label><input type="text" id="compNameAr" name="input.NameAr" value="@c?.NameAr" maxlength="100" dir="rtl" /></div>
                 </div>
                 <div class="grid-2" style="margin-bottom:12px;">
-                    <div><label for="compDescEn">Description (EN)</label><textarea id="compDescEn" name="input.Description" rows="2">@c?.Description</textarea></div>
-                    <div><label for="compDescAr">Description (AR)</label><textarea id="compDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
+                    <div><label for="compDescEn">@Localizer["DescriptionEnLabel"]</label><textarea id="compDescEn" name="input.Description" rows="2">@c?.Description</textarea></div>
+                    <div><label for="compDescAr">@Localizer["DescriptionArLabel"]</label><textarea id="compDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
                 </div>
                 <div class="grid-4" style="margin-bottom:14px;">
-                    <div><label for="compMinWeight">Min Weight %</label><input type="number" id="compMinWeight" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
-                    <div><label for="compMaxWeight">Max Weight %</label><input type="number" id="compMaxWeight" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
-                    <div style="grid-column:span 2;"><label for="compRemarks">Remarks</label><input type="text" id="compRemarks" name="input.Remarks" value="@c?.Remarks" /></div>
+                    <div><label for="compMinWeight">@Localizer["MinWeightPercentLabel"]</label><input type="number" id="compMinWeight" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
+                    <div><label for="compMaxWeight">@Localizer["MaxWeightPercentLabel"]</label><input type="number" id="compMaxWeight" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
+                    <div style="grid-column:span 2;"><label for="compRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="compRemarks" name="input.Remarks" value="@c?.Remarks" /></div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">@(c is null ? "Save Competency" : "Update Competency")</button>
-                    <a class="btn btn-secondary" href="?tab=comp">Clear</a>
+                    <button type="submit" class="btn btn-primary">@(c is null ? Localizer["SaveCompetencyButton"] : Localizer["UpdateCompetencyButton"])</button>
+                    <a class="btn btn-secondary" href="?tab=comp">@SharedLocalizer["Clear"]</a>
                 </div>
             </form>
         </div>
@@ -180,76 +197,76 @@ else if (Model.Tab == "comp")
         <input type="hidden" name="tab" value="comp" />
         <div class="filters">
             <div>
-                <label for="compFilterQuery">Search (code or name)</label>
-                <input type="text" name="compQuery" id="compFilterQuery" value="@Model.CompQuery" placeholder="e.g. COM001 or Leadership" />
+                <label for="compFilterQuery">@Localizer["SearchCodeOrNameLabel"]</label>
+                <input type="text" name="compQuery" id="compFilterQuery" value="@Model.CompQuery" placeholder="@Localizer["CompSearchPlaceholder"]" />
             </div>
             <div>
-                <label for="compFilterType">Type</label>
+                <label for="compFilterType">@SharedLocalizer["Type"]</label>
                 <select name="compType" id="compFilterType" onchange="this.form.submit()">
-                    <option value="">All</option>
-                    <option value="B" selected="@(Model.CompType == "B")">Behavioral</option>
-                    <option value="T" selected="@(Model.CompType == "T")">Technical</option>
+                    <option value="">@SharedLocalizer["All"]</option>
+                    <option value="B" selected="@(Model.CompType == "B")">@Localizer["BehavioralOption"]</option>
+                    <option value="T" selected="@(Model.CompType == "T")">@Localizer["TechnicalOption"]</option>
                 </select>
             </div>
-            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">@SharedLocalizer["Search"]</button></div>
             <div></div><div></div>
         </div>
     </form>
 
     <div class="table-scroll">
     <table class="grid">
-        <thead><tr><th>Code</th><th>Name</th><th>Type</th><th>Description</th><th>Weight Range</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@SharedLocalizer["Type"]</th><th>@SharedLocalizer["Description"]</th><th>@Localizer["ColWeightRange"]</th><th>@SharedLocalizer["Status"]</th><th></th></tr></thead>
         <tbody>
         @if (Model.Comps.Count == 0)
         {
-            <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">No competencies match your search.</td></tr>
+            <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">@Localizer["NoCompetenciesFoundMessage"]</td></tr>
         }
         @foreach (var row in Model.Comps)
         {
             <tr>
                 <td>@row.CompId</td>
                 <td><strong>@row.Name</strong>@(string.IsNullOrEmpty(row.NameAr) ? "" : $" / {row.NameAr}")</td>
-                <td>@(row.CompType.Trim() == "T" ? "Technical" : "Behavioral")</td>
+                <td>@CompTypeLabel(row.CompType)</td>
                 <td>@row.Description</td>
                 <td>@row.MinWeight–@row.MaxWeight%</td>
-                <td>@(row.Status == "A" ? "Active" : "Inactive")</td>
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=comp&editId=@row.CompId">Edit</a></td>
+                <td>@(row.Status == "A" ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</td>
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=comp&editId=@row.CompId">@SharedLocalizer["Edit"]</a></td>
             </tr>
         }
         </tbody>
     </table>
     </div>
-    <p class="muted">@Model.Comps.Count competencies.</p>
+    <p class="muted">@Localizer["CompetencyCountSummary", Model.Comps.Count]</p>
 }
 else if (Model.Tab == "dept")
 {
     var d = Model.DeptEdit;
     <div class="card">
-        <div class="card-header">@(d is null ? "Add Department" : $"Edit Department {d.Code}")</div>
+        <div class="card-header">@(d is null ? Localizer["AddDepartmentHeader"] : Localizer["EditDepartmentHeader", d.Code])</div>
         <div class="card-body">
             <form method="post" asp-page-handler="SaveDepartment">
                 <input type="hidden" name="isNew" value="@(d is null ? "true" : "false")" />
                 <div class="grid-3" style="margin-bottom:12px;">
                     <div>
-                        <label for="deptCode">Department Code</label>
+                        <label for="deptCode">@Localizer["DepartmentCodeLabel"]</label>
                         <input type="text" id="deptCode" name="code" value="@d?.Code" maxlength="10" readonly="@(d is not null)" />
                     </div>
                     <div>
-                        <label for="deptName">Department Name</label>
+                        <label for="deptName">@Localizer["DepartmentNameLabel"]</label>
                         <input type="text" id="deptName" name="nameEn" value="@d?.NameEn" maxlength="100" />
                     </div>
                     <div>
                         <label style="text-transform:none;">
-                            <input type="checkbox" name="isActive" value="true" style="width:auto;" checked="@(d?.IsActive ?? true)" /> Active
+                            <input type="checkbox" name="isActive" value="true" style="width:auto;" checked="@(d?.IsActive ?? true)" /> @SharedLocalizer["Active"]
                         </label>
                     </div>
                 </div>
                 <div style="margin-bottom:14px;">
-                    <label for="deptDescription">Description</label><textarea id="deptDescription" name="description" rows="2">@d?.Description</textarea>
+                    <label for="deptDescription">@SharedLocalizer["Description"]</label><textarea id="deptDescription" name="description" rows="2">@d?.Description</textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">@(d is null ? "Create Department" : "Save Changes")</button>
-                    <a class="btn btn-secondary" href="?tab=dept">Clear</a>
+                    <button type="submit" class="btn btn-primary">@(d is null ? Localizer["CreateDepartmentButton"] : Localizer["SaveChangesButton"])</button>
+                    <a class="btn btn-secondary" href="?tab=dept">@SharedLocalizer["Clear"]</a>
                 </div>
             </form>
         </div>
@@ -259,21 +276,21 @@ else if (Model.Tab == "dept")
         <input type="hidden" name="tab" value="dept" />
         <div class="filters">
             <div>
-                <label for="deptFilterQuery">Search (code, name or description)</label>
-                <input type="text" name="deptQuery" id="deptFilterQuery" value="@Model.DeptQuery" placeholder="e.g. FIN or Finance" />
+                <label for="deptFilterQuery">@Localizer["SearchCodeNameDescLabel"]</label>
+                <input type="text" name="deptQuery" id="deptFilterQuery" value="@Model.DeptQuery" placeholder="@Localizer["DeptSearchPlaceholder"]" />
             </div>
-            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">Search</button></div>
+            <div style="align-self:end;"><button type="submit" class="btn btn-secondary">@SharedLocalizer["Search"]</button></div>
             <div></div><div></div><div></div>
         </div>
     </form>
 
     <div class="table-scroll">
     <table class="grid">
-        <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@SharedLocalizer["Description"]</th><th>@SharedLocalizer["Status"]</th><th></th></tr></thead>
         <tbody>
         @if (Model.DeptRows.Count == 0)
         {
-            <tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">No departments match your search.</td></tr>
+            <tr><td colspan="5" class="muted" style="text-align:center;padding:24px;">@Localizer["NoDepartmentsFoundMessage"]</td></tr>
         }
         @foreach (var row in Model.DeptRows)
         {
@@ -284,16 +301,16 @@ else if (Model.Tab == "dept")
                 <td>
                     <span class="status-chip">
                         <span class="status-dot" style="background:@(row.IsActive ? "var(--green)" : "var(--text-muted)");"></span>
-                        @(row.IsActive ? "Active" : "Disabled")
+                        @(row.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Disabled"])
                     </span>
                 </td>
                 <td style="display:flex;gap:6px;">
-                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=dept&deptEditCode=@row.Code">Edit</a>
+                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=dept&deptEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
                     <form method="post" asp-page-handler="ToggleDepartment" class="inline-form">
                         <input type="hidden" name="code" value="@row.Code" />
                         <button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
-                                onclick="return confirm('@(row.IsActive ? $"Disable {row.NameEn}? It will remain assigned to existing employees but can no longer be selected for new employees." : $"Re-enable {row.NameEn}?")');">
-                            @(row.IsActive ? "Disable" : "Enable")
+                                onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(row.IsActive ? string.Format(Localizer["DisableConfirm"].Value, row.NameEn) : string.Format(Localizer["EnableConfirm"].Value, row.NameEn))));">
+                            @(row.IsActive ? SharedLocalizer["Disable"] : SharedLocalizer["Enable"])
                         </button>
                     </form>
                 </td>
@@ -302,27 +319,27 @@ else if (Model.Tab == "dept")
         </tbody>
     </table>
     </div>
-    <p class="muted">@Model.DeptRows.Count departments. Departments are never deleted — disable them instead to preserve history for existing employees.</p>
+    <p class="muted">@Localizer["DepartmentsFooterNote", Model.DeptRows.Count]</p>
 }
 else
 {
     <div class="card">
-        <div class="card-header">Job Families (grade → KPI/Competency weight split)</div>
+        <div class="card-header">@Localizer["JobFamiliesHeader"]</div>
         <div class="card-body">
             <div class="table-scroll">
             <table class="grid">
-                <thead><tr><th>Code</th><th>Name</th><th>Grades</th><th>KPI Weight %</th><th>Competency Weight %</th><th></th></tr></thead>
+                <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@Localizer["ColGrades"]</th><th>@Localizer["ColKpiWeightPercent"]</th><th>@Localizer["ColCompWeightPercent"]</th><th></th></tr></thead>
                 <tbody>
                 @foreach (var j in Model.JobFamilies)
                 {
                     <tr>
                         <form method="post" asp-page-handler="SaveJobFamily">
                             <td>@j.Code<input type="hidden" name="code" value="@j.Code" /></td>
-                            <td><input type="text" name="nameEn" aria-label="Name for job family @j.Code" value="@j.NameEn" /></td>
-                            <td><input type="text" name="gradesCsv" aria-label="Grades for job family @j.Code" value="@j.GradesCsv" style="max-width:120px;" /></td>
-                            <td><input type="number" name="kpiWeight" aria-label="KPI weight percent for job family @j.Code" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
-                            <td><input type="number" name="compWeight" aria-label="Competency weight percent for job family @j.Code" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
-                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">Save</button></td>
+                            <td><input type="text" name="nameEn" aria-label="@Localizer["NameForJobFamilyAriaLabel", j.Code]" value="@j.NameEn" /></td>
+                            <td><input type="text" name="gradesCsv" aria-label="@Localizer["GradesForJobFamilyAriaLabel", j.Code]" value="@j.GradesCsv" style="max-width:120px;" /></td>
+                            <td><input type="number" name="kpiWeight" aria-label="@Localizer["KpiWeightForJobFamilyAriaLabel", j.Code]" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><input type="number" name="compWeight" aria-label="@Localizer["CompWeightForJobFamilyAriaLabel", j.Code]" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
+                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">@SharedLocalizer["Save"]</button></td>
                         </form>
                     </tr>
                 }
@@ -333,11 +350,11 @@ else
     </div>
 
     <div class="card">
-        <div class="card-header">Rating Scales (performance score → rating)</div>
+        <div class="card-header">@Localizer["RatingScalesHeader"]</div>
         <div class="card-body">
             <div class="table-scroll">
             <table class="grid">
-                <thead><tr><th>Code</th><th>Rating (EN)</th><th>Rating (AR)</th><th>Score Range</th><th>Remarks</th></tr></thead>
+                <thead><tr><th>@Localizer["ColCode"]</th><th>@Localizer["ColRatingEn"]</th><th>@Localizer["ColRatingAr"]</th><th>@Localizer["ColScoreRange"]</th><th>@SharedLocalizer["Remarks"]</th></tr></thead>
                 <tbody>
                 @foreach (var r in Model.RatingScales)
                 {
@@ -352,7 +369,7 @@ else
                 </tbody>
             </table>
             </div>
-            <p class="muted">Rating bands are reference data imported from the legacy system; edit via the importer or database if HR policy changes.</p>
+            <p class="muted">@Localizer["RatingScalesFooterNote"]</p>
         </div>
     </div>
 }

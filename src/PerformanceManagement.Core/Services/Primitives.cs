@@ -31,20 +31,38 @@ public static class RefNoGenerator
 }
 
 /// <summary>
-/// Achievement (%) entry, final scoring and Submit-to-HR are unavailable until
-/// 1 December of the evaluation year. Enforced server-side, not only in the UI.
+/// Achievement (%) entry and Submit-to-HR each open on their own admin-configured date
+/// (System Settings → Performance Review Dates), independently — previously both were the
+/// same hardcoded 1 December cutoff. Either falls back to 1 December of the evaluation year
+/// when its setting is unset, preserving the original behavior for installs that never touch
+/// the new fields. Enforced server-side, not only in the UI.
 /// </summary>
 public class AchievementGate
 {
     private readonly IClock _clock;
-    public AchievementGate(IClock clock) => _clock = clock;
+    private readonly SettingsService _settings;
+    public AchievementGate(IClock clock, SettingsService settings) { _clock = clock; _settings = settings; }
 
-    public bool IsOpen(int evalYear) => _clock.Today >= new DateOnly(evalYear, 12, 1);
+    public async Task<DateOnly> AchievementOpenDateAsync(int evalYear)
+    {
+        var s = await _settings.GetPerformanceReviewSettingsAsync();
+        return s.EndYearAchievementStartDate ?? new DateOnly(evalYear, 12, 1);
+    }
+
+    public async Task<DateOnly> SubmitToHrOpenDateAsync(int evalYear)
+    {
+        var s = await _settings.GetPerformanceReviewSettingsAsync();
+        return s.SubmitToHrStartDate ?? new DateOnly(evalYear, 12, 1);
+    }
+
+    public async Task<bool> IsAchievementOpenAsync(int evalYear) => _clock.Today >= await AchievementOpenDateAsync(evalYear);
+
+    public async Task<bool> IsSubmitToHrOpenAsync(int evalYear) => _clock.Today >= await SubmitToHrOpenDateAsync(evalYear);
 
     /// <summary>Legacy NormalizeAchievementScore: values arriving while the gate is closed are discarded.</summary>
-    public int NormalizeAchievement(int evalYear, int? value)
+    public async Task<int> NormalizeAchievementAsync(int evalYear, int? value)
     {
-        if (!IsOpen(evalYear)) return 0;
+        if (!await IsAchievementOpenAsync(evalYear)) return 0;
         if (value is null) return 0;
         return Math.Clamp(value.Value, 0, 100);
     }

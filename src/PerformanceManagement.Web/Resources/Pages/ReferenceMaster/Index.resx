@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageHeader" xml:space="preserve"><value>Reference Master — KPI &amp; Competency Masters, KPI Reference Codes</value></data>
+  <data name="TabDepartments" xml:space="preserve"><value>Departments</value></data>
+  <data name="TabJobFamiliesRatingScales" xml:space="preserve"><value>Job Families &amp; Rating Scales</value></data>
+
+  <data name="AddKpiHeader" xml:space="preserve"><value>Add KPI ({0})</value></data>
+  <data name="EditKpiHeader" xml:space="preserve"><value>Edit KPI {0}</value></data>
+  <data name="KpiCodeLabel" xml:space="preserve"><value>KPI Code</value></data>
+  <data name="PerspectiveLabel" xml:space="preserve"><value>Perspective</value></data>
+  <data name="DeptCsvLabel" xml:space="preserve"><value>Departments (comma list or * for all)</value></data>
+  <data name="PerspectiveFinancial" xml:space="preserve"><value>Financial</value></data>
+  <data name="PerspectiveCustomer" xml:space="preserve"><value>Customer</value></data>
+  <data name="PerspectiveInternal" xml:space="preserve"><value>Internal Processes</value></data>
+  <data name="PerspectiveLearning" xml:space="preserve"><value>Learning &amp; Growth</value></data>
+  <data name="KpiNameEnLabel" xml:space="preserve"><value>KPI Name (English)</value></data>
+  <data name="KpiNameArLabel" xml:space="preserve"><value>KPI Name (Arabic)</value></data>
+  <data name="PurposeDefinitionEnLabel" xml:space="preserve"><value>Purpose / Definition (EN)</value></data>
+  <data name="PurposeDefinitionArLabel" xml:space="preserve"><value>Purpose / Definition (AR)</value></data>
+  <data name="FormulaMetricEnLabel" xml:space="preserve"><value>Formula / Metric (EN)</value></data>
+  <data name="FormulaMetricArLabel" xml:space="preserve"><value>Formula / Metric (AR)</value></data>
+  <data name="MinWeightPercentLabel" xml:space="preserve"><value>Min Weight %</value></data>
+  <data name="MaxWeightPercentLabel" xml:space="preserve"><value>Max Weight %</value></data>
+  <data name="SaveKpiButton" xml:space="preserve"><value>Save KPI</value></data>
+  <data name="UpdateKpiButton" xml:space="preserve"><value>Update KPI</value></data>
+  <data name="SearchCodeOrNameLabel" xml:space="preserve"><value>Search (code or name)</value></data>
+  <data name="KpiSearchPlaceholder" xml:space="preserve"><value>e.g. KPI005 or Reinsurance</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Code</value></data>
+  <data name="ColDepartments" xml:space="preserve"><value>Departments</value></data>
+  <data name="ColWeightRange" xml:space="preserve"><value>Weight Range</value></data>
+  <data name="ColModified" xml:space="preserve"><value>Modified</value></data>
+  <data name="NoKpisFoundMessage" xml:space="preserve"><value>No KPIs match your search.</value></data>
+  <data name="KpiCountSummary" xml:space="preserve"><value>{0} KPIs.</value></data>
+
+  <data name="AddCompetencyHeader" xml:space="preserve"><value>Add Competency ({0})</value></data>
+  <data name="EditCompetencyHeader" xml:space="preserve"><value>Edit Competency {0}</value></data>
+  <data name="CompetencyCodeLabel" xml:space="preserve"><value>Competency Code</value></data>
+  <data name="BehavioralOption" xml:space="preserve"><value>Behavioral</value></data>
+  <data name="TechnicalOption" xml:space="preserve"><value>Technical</value></data>
+  <data name="NameEnLabel" xml:space="preserve"><value>Name (English)</value></data>
+  <data name="NameArLabel" xml:space="preserve"><value>Name (Arabic)</value></data>
+  <data name="DescriptionEnLabel" xml:space="preserve"><value>Description (EN)</value></data>
+  <data name="DescriptionArLabel" xml:space="preserve"><value>Description (AR)</value></data>
+  <data name="SaveCompetencyButton" xml:space="preserve"><value>Save Competency</value></data>
+  <data name="UpdateCompetencyButton" xml:space="preserve"><value>Update Competency</value></data>
+  <data name="CompSearchPlaceholder" xml:space="preserve"><value>e.g. COM001 or Leadership</value></data>
+  <data name="NoCompetenciesFoundMessage" xml:space="preserve"><value>No competencies match your search.</value></data>
+  <data name="CompetencyCountSummary" xml:space="preserve"><value>{0} competencies.</value></data>
+
+  <data name="AddDepartmentHeader" xml:space="preserve"><value>Add Department</value></data>
+  <data name="EditDepartmentHeader" xml:space="preserve"><value>Edit Department {0}</value></data>
+  <data name="DepartmentCodeLabel" xml:space="preserve"><value>Department Code</value></data>
+  <data name="DepartmentNameLabel" xml:space="preserve"><value>Department Name</value></data>
+  <data name="CreateDepartmentButton" xml:space="preserve"><value>Create Department</value></data>
+  <data name="SaveChangesButton" xml:space="preserve"><value>Save Changes</value></data>
+  <data name="SearchCodeNameDescLabel" xml:space="preserve"><value>Search (code, name or description)</value></data>
+  <data name="DeptSearchPlaceholder" xml:space="preserve"><value>e.g. FIN or Finance</value></data>
+  <data name="NoDepartmentsFoundMessage" xml:space="preserve"><value>No departments match your search.</value></data>
+  <data name="DisableConfirm" xml:space="preserve"><value>Disable {0}? It will remain assigned to existing employees but can no longer be selected for new employees.</value></data>
+  <data name="EnableConfirm" xml:space="preserve"><value>Re-enable {0}?</value></data>
+  <data name="DepartmentsFooterNote" xml:space="preserve"><value>{0} departments. Departments are never deleted — disable them instead to preserve history for existing employees.</value></data>
+
+  <data name="JobFamiliesHeader" xml:space="preserve"><value>Job Families (grade → KPI/Competency weight split)</value></data>
+  <data name="ColGrades" xml:space="preserve"><value>Grades</value></data>
+  <data name="ColKpiWeightPercent" xml:space="preserve"><value>KPI Weight %</value></data>
+  <data name="ColCompWeightPercent" xml:space="preserve"><value>Competency Weight %</value></data>
+  <data name="NameForJobFamilyAriaLabel" xml:space="preserve"><value>Name for job family {0}</value></data>
+  <data name="GradesForJobFamilyAriaLabel" xml:space="preserve"><value>Grades for job family {0}</value></data>
+  <data name="KpiWeightForJobFamilyAriaLabel" xml:space="preserve"><value>KPI weight percent for job family {0}</value></data>
+  <data name="CompWeightForJobFamilyAriaLabel" xml:space="preserve"><value>Competency weight percent for job family {0}</value></data>
+  <data name="RatingScalesHeader" xml:space="preserve"><value>Rating Scales (performance score → rating)</value></data>
+  <data name="ColRatingEn" xml:space="preserve"><value>Rating (EN)</value></data>
+  <data name="ColRatingAr" xml:space="preserve"><value>Rating (AR)</value></data>
+  <data name="ColScoreRange" xml:space="preserve"><value>Score Range</value></data>
+  <data name="RatingScalesFooterNote" xml:space="preserve"><value>Rating bands are reference data imported from the legacy system; edit via the importer or database if HR policy changes.</value></data>
+</root>

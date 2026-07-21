@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Quartz;
 
 namespace PerformanceManagement.Web.Pages.Jobs;
@@ -20,7 +21,11 @@ public class IndexModel : AppPageModel
 {
     private readonly ISchedulerFactory _schedulerFactory;
     private readonly PmDbContext _db;
-    public IndexModel(ISchedulerFactory schedulerFactory, PmDbContext db) { _schedulerFactory = schedulerFactory; _db = db; }
+    private readonly IStringLocalizer<IndexModel> _localizer;
+    public IndexModel(ISchedulerFactory schedulerFactory, PmDbContext db, IStringLocalizer<IndexModel> localizer)
+    {
+        _schedulerFactory = schedulerFactory; _db = db; _localizer = localizer;
+    }
 
     public List<JobRow> Jobs { get; set; } = new();
     public List<ScheduledJobRun> LogRuns { get; set; } = new();
@@ -60,7 +65,7 @@ public class IndexModel : AppPageModel
     {
         var scheduler = await _schedulerFactory.GetScheduler();
         await scheduler.TriggerJob(new JobKey(name, JobRegistry.Group));
-        Message = $"'{name}' has been triggered. Refresh in a few seconds to see the result.";
+        Message = _localizer["JobTriggeredMessage", name];
         return RedirectToPage(new { ViewLog = name });
     }
 
@@ -68,7 +73,7 @@ public class IndexModel : AppPageModel
     {
         var scheduler = await _schedulerFactory.GetScheduler();
         await scheduler.PauseTrigger(new TriggerKey($"{name}-trigger", JobRegistry.Group));
-        Message = $"'{name}' disabled — it will not fire on its schedule until re-enabled.";
+        Message = _localizer["JobDisabledMessage", name];
         return RedirectToPage();
     }
 
@@ -76,7 +81,7 @@ public class IndexModel : AppPageModel
     {
         var scheduler = await _schedulerFactory.GetScheduler();
         await scheduler.ResumeTrigger(new TriggerKey($"{name}-trigger", JobRegistry.Group));
-        Message = $"'{name}' enabled.";
+        Message = _localizer["JobEnabledMessage", name];
         return RedirectToPage();
     }
 }

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageHeader" xml:space="preserve"><value>البيانات المرجعية — مؤشرات الأداء الرئيسية والكفاءات، ورموز مؤشرات الأداء المرجعية</value></data>
+  <data name="TabDepartments" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="TabJobFamiliesRatingScales" xml:space="preserve"><value>الفئات الوظيفية ومقاييس التقييم</value></data>
+
+  <data name="AddKpiHeader" xml:space="preserve"><value>إضافة مؤشر أداء ({0})</value></data>
+  <data name="EditKpiHeader" xml:space="preserve"><value>تعديل مؤشر الأداء {0}</value></data>
+  <data name="KpiCodeLabel" xml:space="preserve"><value>رمز مؤشر الأداء</value></data>
+  <data name="PerspectiveLabel" xml:space="preserve"><value>المنظور</value></data>
+  <data name="DeptCsvLabel" xml:space="preserve"><value>الأقسام (قائمة مفصولة بفواصل أو * للكل)</value></data>
+  <data name="PerspectiveFinancial" xml:space="preserve"><value>مالي</value></data>
+  <data name="PerspectiveCustomer" xml:space="preserve"><value>العملاء</value></data>
+  <data name="PerspectiveInternal" xml:space="preserve"><value>العمليات الداخلية</value></data>
+  <data name="PerspectiveLearning" xml:space="preserve"><value>التعلّم والنمو</value></data>
+  <data name="KpiNameEnLabel" xml:space="preserve"><value>اسم مؤشر الأداء (إنجليزي)</value></data>
+  <data name="KpiNameArLabel" xml:space="preserve"><value>اسم مؤشر الأداء (عربي)</value></data>
+  <data name="PurposeDefinitionEnLabel" xml:space="preserve"><value>الغرض / التعريف (إنجليزي)</value></data>
+  <data name="PurposeDefinitionArLabel" xml:space="preserve"><value>الغرض / التعريف (عربي)</value></data>
+  <data name="FormulaMetricEnLabel" xml:space="preserve"><value>الصيغة / المقياس (إنجليزي)</value></data>
+  <data name="FormulaMetricArLabel" xml:space="preserve"><value>الصيغة / المقياس (عربي)</value></data>
+  <data name="MinWeightPercentLabel" xml:space="preserve"><value>الحد الأدنى للوزن %</value></data>
+  <data name="MaxWeightPercentLabel" xml:space="preserve"><value>الحد الأقصى للوزن %</value></data>
+  <data name="SaveKpiButton" xml:space="preserve"><value>حفظ مؤشر الأداء</value></data>
+  <data name="UpdateKpiButton" xml:space="preserve"><value>تحديث مؤشر الأداء</value></data>
+  <data name="SearchCodeOrNameLabel" xml:space="preserve"><value>البحث (بالرمز أو الاسم)</value></data>
+  <data name="KpiSearchPlaceholder" xml:space="preserve"><value>مثال: KPI005 أو Reinsurance</value></data>
+  <data name="ColCode" xml:space="preserve"><value>الرمز</value></data>
+  <data name="ColDepartments" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="ColWeightRange" xml:space="preserve"><value>نطاق الوزن</value></data>
+  <data name="ColModified" xml:space="preserve"><value>آخر تعديل</value></data>
+  <data name="NoKpisFoundMessage" xml:space="preserve"><value>لا توجد مؤشرات أداء مطابقة لبحثك.</value></data>
+  <data name="KpiCountSummary" xml:space="preserve"><value>{0} مؤشر أداء.</value></data>
+
+  <data name="AddCompetencyHeader" xml:space="preserve"><value>إضافة كفاءة ({0})</value></data>
+  <data name="EditCompetencyHeader" xml:space="preserve"><value>تعديل الكفاءة {0}</value></data>
+  <data name="CompetencyCodeLabel" xml:space="preserve"><value>رمز الكفاءة</value></data>
+  <data name="BehavioralOption" xml:space="preserve"><value>سلوكية</value></data>
+  <data name="TechnicalOption" xml:space="preserve"><value>فنية</value></data>
+  <data name="NameEnLabel" xml:space="preserve"><value>الاسم (إنجليزي)</value></data>
+  <data name="NameArLabel" xml:space="preserve"><value>الاسم (عربي)</value></data>
+  <data name="DescriptionEnLabel" xml:space="preserve"><value>الوصف (إنجليزي)</value></data>
+  <data name="DescriptionArLabel" xml:space="preserve"><value>الوصف (عربي)</value></data>
+  <data name="SaveCompetencyButton" xml:space="preserve"><value>حفظ الكفاءة</value></data>
+  <data name="UpdateCompetencyButton" xml:space="preserve"><value>تحديث الكفاءة</value></data>
+  <data name="CompSearchPlaceholder" xml:space="preserve"><value>مثال: COM001 أو Leadership</value></data>
+  <data name="NoCompetenciesFoundMessage" xml:space="preserve"><value>لا توجد كفاءات مطابقة لبحثك.</value></data>
+  <data name="CompetencyCountSummary" xml:space="preserve"><value>{0} كفاءة.</value></data>
+
+  <data name="AddDepartmentHeader" xml:space="preserve"><value>إضافة قسم</value></data>
+  <data name="EditDepartmentHeader" xml:space="preserve"><value>تعديل القسم {0}</value></data>
+  <data name="DepartmentCodeLabel" xml:space="preserve"><value>رمز القسم</value></data>
+  <data name="DepartmentNameLabel" xml:space="preserve"><value>اسم القسم</value></data>
+  <data name="CreateDepartmentButton" xml:space="preserve"><value>إنشاء القسم</value></data>
+  <data name="SaveChangesButton" xml:space="preserve"><value>حفظ التغييرات</value></data>
+  <data name="SearchCodeNameDescLabel" xml:space="preserve"><value>البحث (بالرمز أو الاسم أو الوصف)</value></data>
+  <data name="DeptSearchPlaceholder" xml:space="preserve"><value>مثال: FIN أو Finance</value></data>
+  <data name="NoDepartmentsFoundMessage" xml:space="preserve"><value>لا توجد أقسام مطابقة لبحثك.</value></data>
+  <data name="DisableConfirm" xml:space="preserve"><value>تعطيل {0}؟ سيبقى مرتبطًا بالموظفين الحاليين، لكن لن يمكن اختياره للموظفين الجدد.</value></data>
+  <data name="EnableConfirm" xml:space="preserve"><value>إعادة تفعيل {0}؟</value></data>
+  <data name="DepartmentsFooterNote" xml:space="preserve"><value>{0} قسم. لا يتم حذف الأقسام نهائيًا — بل يتم تعطيلها للحفاظ على السجل التاريخي للموظفين الحاليين.</value></data>
+
+  <data name="JobFamiliesHeader" xml:space="preserve"><value>الفئات الوظيفية (الدرجة ← توزيع وزن مؤشرات الأداء / الكفاءات)</value></data>
+  <data name="ColGrades" xml:space="preserve"><value>الدرجات</value></data>
+  <data name="ColKpiWeightPercent" xml:space="preserve"><value>وزن مؤشرات الأداء %</value></data>
+  <data name="ColCompWeightPercent" xml:space="preserve"><value>وزن الكفاءات %</value></data>
+  <data name="NameForJobFamilyAriaLabel" xml:space="preserve"><value>الاسم للفئة الوظيفية {0}</value></data>
+  <data name="GradesForJobFamilyAriaLabel" xml:space="preserve"><value>الدرجات للفئة الوظيفية {0}</value></data>
+  <data name="KpiWeightForJobFamilyAriaLabel" xml:space="preserve"><value>نسبة وزن مؤشرات الأداء للفئة الوظيفية {0}</value></data>
+  <data name="CompWeightForJobFamilyAriaLabel" xml:space="preserve"><value>نسبة وزن الكفاءات للفئة الوظيفية {0}</value></data>
+  <data name="RatingScalesHeader" xml:space="preserve"><value>مقاييس التقييم (درجة الأداء ← التقييم)</value></data>
+  <data name="ColRatingEn" xml:space="preserve"><value>التقييم (إنجليزي)</value></data>
+  <data name="ColRatingAr" xml:space="preserve"><value>التقييم (عربي)</value></data>
+  <data name="ColScoreRange" xml:space="preserve"><value>نطاق الدرجات</value></data>
+  <data name="RatingScalesFooterNote" xml:space="preserve"><value>نطاقات التقييم بيانات مرجعية مستوردة من النظام القديم؛ يتم تعديلها عبر أداة الاستيراد أو قاعدة البيانات في حال تغيّرت سياسة الموارد البشرية.</value></data>
+</root>

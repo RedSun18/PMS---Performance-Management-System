@@ -1,20 +1,29 @@
 @page
 @model PerformanceManagement.Web.Pages.Users.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = SharedLocalizer["NavUserManagement"].Value;
+
+    string UserTypeLabel(string userType) => userType switch
+    {
+        PerformanceManagement.Core.Domain.UserType.Administrator => Localizer["UserTypeAdministrator"].Value,
+        PerformanceManagement.Core.Domain.UserType.Viewer => Localizer["UserTypeViewer"].Value,
+        _ => Localizer["UserTypeEmployee"].Value
+    };
 }
-<div class="page-header">User Management</div>
+<div class="page-header">@SharedLocalizer["NavUserManagement"]</div>
 
 <div class="card">
-    <div class="card-header">Search</div>
+    <div class="card-header">@SharedLocalizer["Search"]</div>
     <div class="card-body">
         <form method="get">
             <div class="filters">
-                <div><label for="userSearchQ">Search (username, name, email)</label><input type="text" id="userSearchQ" name="q" value="@Model.Q" /></div>
+                <div><label for="userSearchQ">@Localizer["SearchUsernameNameEmailLabel"]</label><input type="text" id="userSearchQ" name="q" value="@Model.Q" /></div>
                 <div></div><div></div><div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                    <a class="btn btn-success" asp-page="Edit">＋ New User</a>
+                    <button type="submit" class="btn btn-primary">@SharedLocalizer["Search"]</button>
+                    <a class="btn btn-success" asp-page="Edit">＋ @Localizer["NewUserButton"]</a>
                 </div>
             </div>
         </form>
@@ -24,7 +33,7 @@
 <div class="table-scroll">
 <table class="grid">
     <thead>
-        <tr><th>Username</th><th>Full Name</th><th>Email</th><th>User Type</th><th>Linked Employee</th><th>Status</th><th></th></tr>
+        <tr><th>@SharedLocalizer["Username"]</th><th>@Localizer["ColFullName"]</th><th>@SharedLocalizer["Email"]</th><th>@Localizer["ColUserType"]</th><th>@Localizer["ColLinkedEmployee"]</th><th>@SharedLocalizer["Status"]</th><th></th></tr>
     </thead>
     <tbody>
     @foreach (var r in Model.Rows)
@@ -33,16 +42,16 @@
             <td>@r.UserName</td>
             <td>@r.DisplayName</td>
             <td>@r.Email</td>
-            <td>@PerformanceManagement.Web.Pages.Users.UserTypes.Label(r.UserType)</td>
+            <td>@UserTypeLabel(r.UserType)</td>
             <td>@r.EmpCode</td>
             <td>
-                @(r.IsActive ? "Active" : "Disabled")
-                @if (r.MustChangePassword) { <span class="muted">· must change password</span> }
+                @(r.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Disabled"])
+                @if (r.MustChangePassword) { <span class="muted">@Localizer["MustChangePasswordNote"]</span> }
             </td>
-            <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-id="@r.Id">Edit</a></td>
+            <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-id="@r.Id">@SharedLocalizer["Edit"]</a></td>
         </tr>
     }
     </tbody>
 </table>
 </div>
-<p class="muted">@Model.Rows.Count users.</p>
+<p class="muted">@Localizer["UserCountSummary", Model.Rows.Count]</p>

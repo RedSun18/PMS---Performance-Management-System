@@ -458,3 +458,29 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
   .emp-info-grid { grid-template-columns: 1fr; }
   .filters, .filters-6 { grid-template-columns: 1fr; }
 }
+
+/* ── Searchable select (Phase 12 Part 4) ──────────────────────────────
+   Progressive enhancement over a plain <select data-searchable> — see
+   wwwroot/js/searchable-select.js. The original select stays in the DOM
+   (same id/name/value) and is only visually hidden; a text input + listbox
+   overlay sits in its place for typing-to-filter, keyboard nav and mouse
+   selection. Logical (inset-inline-*) properties so it flips for RTL for free. */
+.ssel { position: relative; }
+.ssel-native {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.ssel-listbox {
+  position: absolute; z-index: 60; top: calc(100% + 4px); inset-inline-start: 0; inset-inline-end: 0;
+  max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); padding: 4px; margin: 0; list-style: none;
+}
+.ssel-listbox[hidden] { display: none; }
+.ssel-option {
+  padding: 9px 11px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text);
+  cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ssel-option.ssel-highlighted { background: var(--surface-alt); }
+.ssel-option[aria-selected="true"] { font-weight: 700; color: var(--navy-mid); }
+.ssel-option.ssel-empty { color: var(--text-muted); cursor: default; font-style: italic; }
+.ssel-option.ssel-empty.ssel-highlighted { background: transparent; }

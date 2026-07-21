@@ -52,13 +52,13 @@ public sealed class TestHost : IDisposable
         Db = NewContext();
         Db.Database.EnsureCreated();
 
-        Gate = new AchievementGate(Clock);
         Permissions = new PermissionService(Db, Clock);
         Ratings = new RatingService(Db);
         JobFamilies = new JobFamilyService(Db, Clock);
         // Empty configuration ⇒ SettingsService.GetSmtpCredentialsAsync() returns null ⇒
         // EmailService logs (Status=LOGGED) instead of attempting a real SMTP send.
         Settings = new SettingsService(Db, new ConfigurationBuilder().Build(), new FakeDataProtectionProvider());
+        Gate = new AchievementGate(Clock, Settings);
         Links = new FormLinkService(new FakeDataProtectionProvider(), Settings, Clock);
         Email = new EmailService(Db, Clock, Settings, NullLogger<EmailService>.Instance);
         Notifications = new NotificationService(Db, Clock);

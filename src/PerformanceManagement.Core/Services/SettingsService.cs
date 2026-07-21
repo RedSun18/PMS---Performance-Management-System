@@ -25,10 +25,11 @@ public record SmtpCredentials(
     bool EnableEmailNotifications, string? DevelopmentRedirectEmail);
 
 public record GeneralSettings(string? CompanyName, string? ApplicationName, string? CompanyLogoPath,
-    string? CompanyAddress, string? ContactEmail, string? ApplicationBaseUrl);
+    string? CompanyAddress, string? ContactEmail, string? ApplicationBaseUrl, bool LanguageSelectionEnabled);
 
 public record PerformanceReviewSettings(int? CurrentReviewYear,
-    DateOnly? MidYearStart, DateOnly? MidYearEnd, DateOnly? EndYearStart, DateOnly? EndYearEnd);
+    DateOnly? MidYearStart, DateOnly? MidYearEnd, DateOnly? EndYearStart, DateOnly? EndYearEnd,
+    DateOnly? MidYearAchievementStartDate, DateOnly? EndYearAchievementStartDate, DateOnly? SubmitToHrStartDate);
 
 /// <summary>Authentication settings as shown on the Settings page — the verification password is
 /// never exposed, only whether a non-default one is set.</summary>
@@ -119,7 +120,7 @@ public class SettingsService
     {
         var row = await GetOrCreateAsync();
         return new GeneralSettings(row.CompanyName, row.ApplicationName, row.CompanyLogoPath,
-            row.CompanyAddress, row.ContactEmail, row.ApplicationBaseUrl);
+            row.CompanyAddress, row.ContactEmail, row.ApplicationBaseUrl, row.LanguageSelectionEnabled);
     }
 
     public async Task SaveGeneralSettingsAsync(GeneralSettings input, string updatedBy)
@@ -130,8 +131,17 @@ public class SettingsService
         row.CompanyAddress = Trimmed(input.CompanyAddress);
         row.ContactEmail = Trimmed(input.ContactEmail);
         row.ApplicationBaseUrl = string.IsNullOrWhiteSpace(input.ApplicationBaseUrl) ? null : input.ApplicationBaseUrl.Trim().TrimEnd('/');
+        row.LanguageSelectionEnabled = input.LanguageSelectionEnabled;
         Touch(row, updatedBy);
         await _db.SaveChangesAsync();
+    }
+
+    /// <summary>Cheap standalone check for the culture provider (Program.cs) — avoids building a
+    /// full GeneralSettings/EF-tracked row just to read one flag on every request.</summary>
+    public async Task<bool> IsLanguageSelectionEnabledAsync()
+    {
+        var row = await GetOrCreateAsync();
+        return row.LanguageSelectionEnabled;
     }
 
     /// <summary>The application's display name for branding (email headers, layout title) — falls back to the product default.</summary>
@@ -161,7 +171,8 @@ public class SettingsService
     public async Task<PerformanceReviewSettings> GetPerformanceReviewSettingsAsync()
     {
         var row = await GetOrCreateAsync();
-        return new PerformanceReviewSettings(row.CurrentReviewYear, row.MidYearStart, row.MidYearEnd, row.EndYearStart, row.EndYearEnd);
+        return new PerformanceReviewSettings(row.CurrentReviewYear, row.MidYearStart, row.MidYearEnd, row.EndYearStart, row.EndYearEnd,
+            row.MidYearAchievementStartDate, row.EndYearAchievementStartDate, row.SubmitToHrStartDate);
     }
 
     public async Task SavePerformanceReviewSettingsAsync(PerformanceReviewSettings input, string updatedBy)
@@ -172,6 +183,9 @@ public class SettingsService
         row.MidYearEnd = input.MidYearEnd;
         row.EndYearStart = input.EndYearStart;
         row.EndYearEnd = input.EndYearEnd;
+        row.MidYearAchievementStartDate = input.MidYearAchievementStartDate;
+        row.EndYearAchievementStartDate = input.EndYearAchievementStartDate;
+        row.SubmitToHrStartDate = input.SubmitToHrStartDate;
         Touch(row, updatedBy);
         await _db.SaveChangesAsync();
     }

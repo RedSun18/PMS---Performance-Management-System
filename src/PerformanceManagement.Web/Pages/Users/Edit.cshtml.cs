@@ -5,6 +5,7 @@ using PerformanceManagement.Web.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.Users;
 
@@ -15,9 +16,11 @@ public class EditModel : AppPageModel
     private readonly SettingsService _settings;
     private readonly AuditService _audit;
     private readonly NotificationService _notifications;
-    public EditModel(PmDbContext db, SettingsService settings, AuditService audit, NotificationService notifications)
+    private readonly IStringLocalizer<EditModel> _localizer;
+    public EditModel(PmDbContext db, SettingsService settings, AuditService audit, NotificationService notifications,
+        IStringLocalizer<EditModel> localizer)
     {
-        _db = db; _settings = settings; _audit = audit; _notifications = notifications;
+        _db = db; _settings = settings; _audit = audit; _notifications = notifications; _localizer = localizer;
     }
 
     [BindProperty(SupportsGet = true)] public int? Id { get; set; }
@@ -73,32 +76,32 @@ public class EditModel : AppPageModel
         var rules = await LoadPasswordHintsAsync();
 
         var username = (Form.UserName ?? "").Trim();
-        if (username.Length == 0) { Error = "Username is required."; return Page(); }
+        if (username.Length == 0) { Error = _localizer["UsernameRequiredError"]; return Page(); }
 
         var dupe = await _db.AppUsers.AsNoTracking()
             .FirstOrDefaultAsync(u => u.UserName.ToLower() == username.ToLower() && u.Id != (Id ?? 0));
-        if (dupe is not null) { Error = $"Username '{username}' is already in use."; return Page(); }
+        if (dupe is not null) { Error = _localizer["UsernameInUseError", username]; return Page(); }
 
         Employee? employee = null;
         if (Form.UserType == PerformanceManagement.Core.Domain.UserType.Employee)
         {
-            if (string.IsNullOrWhiteSpace(Form.EmpCode)) { Error = "Please select an employee."; return Page(); }
+            if (string.IsNullOrWhiteSpace(Form.EmpCode)) { Error = _localizer["SelectEmployeeError"]; return Page(); }
             employee = await _db.Employees.FindAsync(Form.EmpCode);
-            if (employee is null) { Error = "Selected employee was not found."; return Page(); }
+            if (employee is null) { Error = _localizer["EmployeeNotFoundError"]; return Page(); }
 
             var linkedToAnother = await _db.AppUsers.AsNoTracking()
                 .AnyAsync(u => u.EmpCode == Form.EmpCode && u.Id != (Id ?? 0));
-            if (linkedToAnother) { Error = $"Employee {Form.EmpCode} already has a user account."; return Page(); }
+            if (linkedToAnother) { Error = _localizer["EmployeeAlreadyLinkedError", Form.EmpCode]; return Page(); }
         }
         else if (string.IsNullOrWhiteSpace(Form.FullName))
         {
-            Error = "Full name is required.";
+            Error = _localizer["FullNameRequiredError"];
             return Page();
         }
 
         if (!string.IsNullOrWhiteSpace(Form.Email) && !InputValidation.IsValidEmail(Form.Email.Trim()))
         {
-            Error = $"'{Form.Email}' is not a valid email address.";
+            Error = _localizer["InvalidEmailError", Form.Email];
             return Page();
         }
 
@@ -108,7 +111,7 @@ public class EditModel : AppPageModel
         {
             if (string.IsNullOrWhiteSpace(Form.Password) && !Form.UseDefaultPassword)
             {
-                Error = "Enter a password or check 'Use default password'.";
+                Error = _localizer["EnterPasswordOrDefaultError"];
                 return Page();
             }
             if (!Form.UseDefaultPassword)
@@ -153,7 +156,7 @@ public class EditModel : AppPageModel
         if (isNew)
             await _notifications.CreateAsync(user.UserName, "Account Created",
                 "Your account has been created. Sign in with the password provided by your administrator.", "UserCreated");
-        Message = isNew ? $"User '{username}' created." : $"User '{username}' updated.";
+        Message = isNew ? _localizer["UserCreatedMessage", username] : _localizer["UserUpdatedMessage", username];
         return RedirectToPage("Index");
     }
 
@@ -170,7 +173,7 @@ public class EditModel : AppPageModel
         {
             await LoadEmployeeOptionsAsync();
             Form.UserType = UserTypes.Derive(await _db.AppUsers.Include(u => u.RolesList).FirstAsync(u => u.Id == id));
-            Error = "Enter a password or check 'Use default password'.";
+            Error = _localizer["EnterPasswordOrDefaultError"];
             return Page();
         }
         if (!Form.UseDefaultPassword)
@@ -197,7 +200,9 @@ public class EditModel : AppPageModel
         await _notifications.CreateAsync(user.UserName, "Password Reset",
             "Your password was reset by an administrator." + (Form.ForceChangePassword ? " You must change it at next login." : ""), "PasswordReset");
 
-        Message = $"Password reset for '{user.UserName}'." + (Form.ForceChangePassword ? " They must change it at next login." : "");
+        Message = Form.ForceChangePassword
+            ? _localizer["PasswordResetMessageMustChange", user.UserName]
+            : _localizer["PasswordResetMessage", user.UserName];
         return RedirectToPage("Edit", new { id });
     }
 
@@ -213,8 +218,8 @@ public class EditModel : AppPageModel
         var rules = await _settings.GetSecurityRulesAsync();
         DefaultPasswordHint = rules.DefaultUserPassword;
         PasswordRuleHint = rules.PasswordComplexityRequired
-            ? $"At least {rules.MinimumPasswordLength} characters, including a letter and a number."
-            : $"At least {rules.MinimumPasswordLength} characters.";
+            ? _localizer["PasswordRuleHintComplexity", rules.MinimumPasswordLength]
+            : _localizer["PasswordRuleHintSimple", rules.MinimumPasswordLength];
         return rules;
     }
 }

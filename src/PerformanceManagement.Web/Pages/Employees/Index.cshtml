@@ -1,23 +1,25 @@
 @page
 @model PerformanceManagement.Web.Pages.Employees.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Employee Master";
+    ViewData["Title"] = SharedLocalizer["NavEmployeeMaster"].Value;
 }
-<div class="page-header">Employee Master</div>
+<div class="page-header">@SharedLocalizer["NavEmployeeMaster"]</div>
 
 <div class="card">
-    <div class="card-header">Search</div>
+    <div class="card-header">@Localizer["SearchHeader"]</div>
     <div class="card-body">
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="empSearchQ">Search (code, name, username or email)</label>
-                    <input type="text" id="empSearchQ" name="q" value="@Model.Q" placeholder="e.g. 1504, Alfahad, 0854, name@company.com" />
+                    <label for="empSearchQ">@Localizer["SearchFieldLabel"]</label>
+                    <input type="text" id="empSearchQ" name="q" value="@Model.Q" placeholder="@Localizer["SearchPlaceholder"]" />
                 </div>
                 <div>
-                    <label for="empSearchDept">Department</label>
-                    <select name="dept" id="empSearchDept" onchange="this.form.submit()">
-                        <option value="">All Departments</option>
+                    <label for="empSearchDept">@SharedLocalizer["Department"]</label>
+                    <select name="dept" id="empSearchDept" data-searchable onchange="this.form.submit()">
+                        <option value="">@SharedLocalizer["AllDepartments"]</option>
                         @foreach (var d in Model.Departments)
                         {
                             <option value="@d.Code" selected="@(d.Code == Model.Dept)">@d.NameEn</option>
@@ -25,19 +27,19 @@
                     </select>
                 </div>
                 <div>
-                    <label for="empSearchStatus">Active Status</label>
+                    <label for="empSearchStatus">@Localizer["ActiveStatusLabel"]</label>
                     <select name="activeStatus" id="empSearchStatus" onchange="this.form.submit()">
-                        <option value="active" selected="@(Model.ActiveStatus == "active")">Active only</option>
-                        <option value="inactive" selected="@(Model.ActiveStatus == "inactive")">Terminated only</option>
-                        <option value="all" selected="@(Model.ActiveStatus == "all")">All</option>
+                        <option value="active" selected="@(Model.ActiveStatus == "active")">@Localizer["ActiveOnlyOption"]</option>
+                        <option value="inactive" selected="@(Model.ActiveStatus == "inactive")">@Localizer["TerminatedOnlyOption"]</option>
+                        <option value="all" selected="@(Model.ActiveStatus == "all")">@SharedLocalizer["All"]</option>
                     </select>
                 </div>
                 <div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <button type="submit" class="btn btn-primary">@SharedLocalizer["Search"]</button>
                     @if (Model.IsHrAdmin)
                     {
-                        <a class="btn btn-success" asp-page="Edit">＋ New Employee</a>
+                        <a class="btn btn-success" asp-page="Edit">@Localizer["NewEmployeeButton"]</a>
                     }
                 </div>
             </div>
@@ -49,15 +51,15 @@
 <table class="grid">
     <thead>
         <tr>
-            <th>Code</th><th>Name</th><th>Username</th><th>Department</th><th>Section</th><th>Designation</th>
-            <th>Grade</th><th>Join Date</th><th>Direct Manager</th><th>Status</th><th>Source</th>
+            <th>@Localizer["CodeHeader"]</th><th>@SharedLocalizer["Name"]</th><th>@SharedLocalizer["Username"]</th><th>@SharedLocalizer["Department"]</th><th>@SharedLocalizer["Section"]</th><th>@SharedLocalizer["Designation"]</th>
+            <th>@SharedLocalizer["Grade"]</th><th>@Localizer["JoinDateHeader"]</th><th>@SharedLocalizer["DirectManager"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["SourceHeader"]</th>
             @if (Model.IsHrAdmin) { <th></th> }
         </tr>
     </thead>
     <tbody>
     @if (Model.Rows.Count == 0)
     {
-        <tr><td colspan="12" class="muted" style="text-align:center;padding:24px;">No employees match your search.</td></tr>
+        <tr><td colspan="12" class="muted" style="text-align:center;padding:24px;">@Localizer["NoEmployeesMatch"]</td></tr>
     }
     @foreach (var r in Model.Rows)
     {
@@ -71,16 +73,15 @@
             <td>@r.E.Grade</td>
             <td>@r.E.JoinDate?.ToString("dd/MM/yyyy")</td>
             <td>@r.ManagerLabel</td>
-            <td>@(r.E.IsActive ? "Active" : $"Terminated {r.E.TermDate:dd/MM/yyyy}")</td>
+            <td>@(r.E.IsActive ? SharedLocalizer["Active"].Value : Localizer["TerminatedOn", r.E.TermDate!.Value].Value)</td>
             <td class="muted">@r.E.Source</td>
             @if (Model.IsHrAdmin)
             {
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">Edit</a></td>
+                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">@SharedLocalizer["Edit"]</a></td>
             }
         </tr>
     }
     </tbody>
 </table>
 </div>
-<p class="muted">@Model.Rows.Count employees. Rows sourced from HDR_SNAPSHOT were synthesized from the
-legacy pm_form_records export because no empmaster export exists (docs/data-migration-plan.md §2).</p>
+<p class="muted">@Localizer["FooterNote", Model.Rows.Count]</p>

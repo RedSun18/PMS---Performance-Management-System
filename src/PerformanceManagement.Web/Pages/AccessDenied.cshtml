@@ -1,22 +1,22 @@
 @page
 @model PerformanceManagement.Web.Pages.AccessDeniedModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
-    ViewData["Title"] = "Access Denied";
+    ViewData["Title"] = Localizer["PageTitle"].Value;
 }
-<div class="page-header danger">Access Denied</div>
+<div class="page-header danger">@Localizer["PageTitle"]</div>
 <div class="card">
     <div class="card-body">
         <div class="alert alert-error">
-            You do not have permission to view or act on this record.
+            @Localizer["NoPermissionMessage"]
             @if (!string.IsNullOrWhiteSpace(Model.Detail))
             {
                 <br /><span>@Model.Detail</span>
             }
         </div>
         <p class="muted">
-            Employees may only access their own PM form. Managers may only access forms
-            belonging to their direct reports. HR administrators may access any form.
+            @Localizer["AccessRulesExplanation"]
         </p>
-        <a class="btn btn-primary" asp-page="/PmForm/Index">Back to my PM Form</a>
+        <a class="btn btn-primary" asp-page="/PmForm/Index">@Localizer["BackToMyPmFormButton"]</a>
     </div>
 </div>

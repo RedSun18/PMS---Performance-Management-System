@@ -1,5 +1,6 @@
 using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages;
 
@@ -15,10 +16,11 @@ public class OpenFormModel : AppPageModel
 {
     private readonly FormLinkService _links;
     private readonly PermissionService _permissions;
+    private readonly IStringLocalizer<OpenFormModel> _localizer;
 
-    public OpenFormModel(FormLinkService links, PermissionService permissions)
+    public OpenFormModel(FormLinkService links, PermissionService permissions, IStringLocalizer<OpenFormModel> localizer)
     {
-        _links = links; _permissions = permissions;
+        _links = links; _permissions = permissions; _localizer = localizer;
     }
 
     public async Task<IActionResult> OnGetAsync(string? token)
@@ -26,7 +28,7 @@ public class OpenFormModel : AppPageModel
         var payload = _links.TryDecode(token);
         if (payload is null)
         {
-            TempData["Detail"] = "This link is invalid or has expired. Please open the form from your Dashboard instead.";
+            TempData["Detail"] = _localizer["LinkExpiredMessage"].Value;
             return RedirectToPage("/AccessDenied");
         }
 
@@ -40,7 +42,7 @@ public class OpenFormModel : AppPageModel
             var perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, payload.EmpCode);
             if (!perms.CanView)
             {
-                TempData["Detail"] = "This link was issued for a different user and you do not otherwise have access to this employee's form.";
+                TempData["Detail"] = _localizer["LinkWrongRecipientMessage"].Value;
                 return RedirectToPage("/AccessDenied");
             }
         }

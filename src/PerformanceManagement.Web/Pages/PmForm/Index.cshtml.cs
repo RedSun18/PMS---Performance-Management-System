@@ -3,6 +3,7 @@ using PerformanceManagement.Core.Domain;
 using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 namespace PerformanceManagement.Web.Pages.PmForm;
 
@@ -15,12 +16,15 @@ public class IndexModel : AppPageModel
     private readonly JobFamilyService _jobFamilies;
     private readonly RatingService _ratings;
     private readonly AchievementGate _gate;
+    private readonly IStringLocalizer<IndexModel> _localizer;
 
     public IndexModel(PmDbContext db, IClock clock, PermissionService permissions,
-        WorkflowService workflow, JobFamilyService jobFamilies, RatingService ratings, AchievementGate gate)
+        WorkflowService workflow, JobFamilyService jobFamilies, RatingService ratings, AchievementGate gate,
+        IStringLocalizer<IndexModel> localizer)
     {
         _db = db; _clock = clock; _permissions = permissions;
         _workflow = workflow; _jobFamilies = jobFamilies; _ratings = ratings; _gate = gate;
+        _localizer = localizer;
     }
 
     // ---- selection state ------------------------------------------------
@@ -57,6 +61,9 @@ public class IndexModel : AppPageModel
     public FormPermissions? Perms { get; set; }
     public WorkingSet Work { get; set; } = new();
     public bool AchievementOpen { get; set; }
+    public DateOnly AchievementOpenDate { get; set; }
+    public bool SubmitToHrOpen { get; set; }
+    public DateOnly SubmitToHrOpenDate { get; set; }
     public bool ShowKpiTab { get; set; } = true;
 
     public List<KpiMaster> KpiOptions { get; set; } = new();
@@ -67,7 +74,7 @@ public class IndexModel : AppPageModel
     public string RatingName { get; set; } = "";
     private List<RatingScale> _scales = new();
     /// <summary>Row-level rating for an achievement %, from the cached rating scales.</summary>
-    public string RatingFor(int score) => RatingService.Resolve(_scales, score)?.NameEn ?? "Not Rated";
+    public string RatingFor(int score) => RatingService.Resolve(_scales, score)?.NameEn ?? _localizer["NotRatedLabel"];
     public decimal KpiScore { get; set; }
     public decimal CompScore { get; set; }
     public decimal OverallScore { get; set; }
@@ -104,7 +111,7 @@ public class IndexModel : AppPageModel
         SelectedEmployee = await _db.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.EmpCode == Empcd);
         if (SelectedEmployee is null)
         {
-            ErrorMessage = $"Employee {Empcd} not found.";
+            ErrorMessage = _localizer["EmployeeNotFound", Empcd ?? ""];
             Empcd = null;
             return Page();
         }
@@ -128,10 +135,10 @@ public class IndexModel : AppPageModel
         if (!await EnsureEditableStatusAsync()) return redirect;
 
         var master = await _db.KpiMasters.AsNoTracking().FirstOrDefaultAsync(k => k.KpiId == kpiCode);
-        if (master is null) { ErrorMessage = "Please select a KPI."; return redirect; }
-        if (string.IsNullOrWhiteSpace(perspective)) { ErrorMessage = "Please select a Perspective."; return redirect; }
-        if (string.IsNullOrWhiteSpace(target)) { ErrorMessage = "Please enter a Target."; return redirect; }
-        if (weight <= 0) { ErrorMessage = "Please enter KPI Weight."; return redirect; }
+        if (master is null) { ErrorMessage = _localizer["PleaseSelectKpi"]; return redirect; }
+        if (string.IsNullOrWhiteSpace(perspective)) { ErrorMessage = _localizer["PleaseSelectPerspective"]; return redirect; }
+        if (string.IsNullOrWhiteSpace(target)) { ErrorMessage = _localizer["PleaseEnterTarget"]; return redirect; }
+        if (weight <= 0) { ErrorMessage = _localizer["PleaseEnterKpiWeight"]; return redirect; }
 
         var work = await GetWorkAsync();
         var form = ToValidationForm(work);
@@ -151,7 +158,7 @@ public class IndexModel : AppPageModel
         item.Formula = master.Formula;
         item.Target = target;
         item.Weight = weight;
-        item.Achievement = _gate.NormalizeAchievement(EvalYear, achievement);
+        item.Achievement = await _gate.NormalizeAchievementAsync(EvalYear, achievement);
         item.Comments = comments;
 
         work.Save(HttpContext.Session);
@@ -183,9 +190,9 @@ public class IndexModel : AppPageModel
         if (!await EnsureEditableStatusAsync()) return redirect;
 
         var master = await _db.CompetencyMasters.AsNoTracking().FirstOrDefaultAsync(c => c.CompId == compCode);
-        if (master is null) { ErrorMessage = "Please select a Competency."; return redirect; }
-        if (string.IsNullOrWhiteSpace(compType)) { ErrorMessage = "Please select Competency Type."; return redirect; }
-        if (weight <= 0) { ErrorMessage = "Please enter Competency Weight."; return redirect; }
+        if (master is null) { ErrorMessage = _localizer["PleaseSelectCompetency"]; return redirect; }
+        if (string.IsNullOrWhiteSpace(compType)) { ErrorMessage = _localizer["PleaseSelectCompetencyType"]; return redirect; }
+        if (weight <= 0) { ErrorMessage = _localizer["PleaseEnterCompWeight"]; return redirect; }
 
         var work = await GetWorkAsync();
         var form = ToValidationForm(work);
@@ -203,7 +210,7 @@ public class IndexModel : AppPageModel
         item.Name = master.Name;
         item.Definition = master.Description;
         item.Weight = weight;
-        item.Achievement = _gate.NormalizeAchievement(EvalYear, achievement);
+        item.Achievement = await _gate.NormalizeAchievementAsync(EvalYear, achievement);
         item.Comments = comments;
 
         work.Save(HttpContext.Session);
@@ -232,7 +239,7 @@ public class IndexModel : AppPageModel
 
         var content = await PrepareContentAsync(fields);
         var result = await _workflow.SaveDraftAsync(CurrentUserName, Perms!, content);
-        return Finish(result, "Draft saved successfully. You can continue editing or click 'Send to Employee' when ready.");
+        return Finish(result, _localizer["DraftSavedMessage"]);
     }
 
     public async Task<IActionResult> OnPostSendToEmployeeAsync(FormFields fields)
@@ -242,7 +249,7 @@ public class IndexModel : AppPageModel
 
         var content = await PrepareContentAsync(fields);
         var result = await _workflow.SendToEmployeeAsync(CurrentUserName, Perms!, content);
-        return Finish(result, "Form sent to employee successfully. Notification email has been logged.");
+        return Finish(result, _localizer["FormSentToEmployeeMessage"]);
     }
 
     public async Task<IActionResult> OnPostSubmitToHrAsync(FormFields fields)
@@ -253,7 +260,7 @@ public class IndexModel : AppPageModel
         var content = await PrepareContentAsync(fields);
         var jf = await _jobFamilies.ResolveAsync(Empcd!, SelectedEmployeeGrade());
         var result = await _workflow.SubmitToHrAsync(CurrentUserName, Perms!, content, jf.Configured);
-        return Finish(result, "Form submitted to HR successfully.");
+        return Finish(result, _localizer["FormSubmittedToHrMessage"]);
     }
 
     public async Task<IActionResult> OnPostAcknowledgeAsync(string? ackComments)
@@ -264,7 +271,7 @@ public class IndexModel : AppPageModel
         if (denied is not null) return denied;
 
         var result = await _workflow.AcknowledgeAsync(CurrentUserName, CurrentEmpCode, Empcd ?? "", EvalYear, ackComments);
-        return Finish(result, "Thank you! Your acknowledgement has been recorded and your manager has been notified.");
+        return Finish(result, _localizer["AcknowledgementRecordedMessage"]);
     }
 
     public async Task<IActionResult> OnPostHrActionAsync(string hrAction,
@@ -281,13 +288,13 @@ public class IndexModel : AppPageModel
                 CurrentUserName, Perms!, CurrentEmpCode, Empcd ?? "", EvalYear, hr2Name ?? "", CurrentEmpCode, hr2Remarks),
             PmFormStatus.EmployeeAcknowledged => await _workflow.HrRevertAsync(
                 CurrentUserName, Perms!, Empcd ?? "", EvalYear, hr1Remarks ?? hr2Remarks),
-            _ => WorkflowResult.Fail("Please select an HR Action.")
+            _ => WorkflowResult.Fail(_localizer["PleaseSelectHrAction"])
         };
         var success = hrAction switch
         {
-            PmFormStatus.HrReview1Approved => "First HR review completed. Form moved to Second HR Reviewer.",
-            PmFormStatus.Approved => "Final HR approval completed successfully. Form is now locked.",
-            _ => "Form reverted to Manager status successfully."
+            PmFormStatus.HrReview1Approved => _localizer["FirstHrReviewCompletedMessage"].Value,
+            PmFormStatus.Approved => _localizer["FinalHrApprovalCompletedMessage"].Value,
+            _ => _localizer["FormRevertedToManagerMessage"].Value
         };
         return Finish(result, success);
     }
@@ -299,7 +306,7 @@ public class IndexModel : AppPageModel
 
         var result = await _workflow.CancelDeleteAsync(CurrentUserName, Perms!, Empcd ?? "", EvalYear);
         if (result.Success) WorkingSet.Clear(HttpContext.Session, Empcd ?? "", EvalYear);
-        return Finish(result, "Evaluation records deleted successfully.");
+        return Finish(result, _localizer["EvaluationRecordsDeletedMessage"]);
     }
 
     // ======================================================================
@@ -331,14 +338,14 @@ public class IndexModel : AppPageModel
         bool requireManage = false, bool requireHr = false, bool requireSelf = false)
     {
         var target = (Empcd ?? "").Trim();
-        if (target.Length == 0) return AccessDenied("No employee selected.");
+        if (target.Length == 0) return AccessDenied(_localizer["NoEmployeeSelectedError"]);
 
         Perms = await _permissions.GetFormPermissionsAsync(CurrentUserName, CurrentEmpCode, target);
 
-        if (!Perms.CanView) return AccessDenied($"You do not have access to employee {target}'s PM form.");
-        if (requireManage && !Perms.CanActAsManager) return AccessDenied("Only the direct manager of this employee can perform this action.");
-        if (requireHr && !Perms.CanActAsHr) return AccessDenied("Only an HR administrator can perform this action.");
-        if (requireSelf && !Perms.IsSelf) return AccessDenied("You may only act on your own PM form.");
+        if (!Perms.CanView) return AccessDenied(_localizer["NoAccessToEmployeeFormError", target]);
+        if (requireManage && !Perms.CanActAsManager) return AccessDenied(_localizer["OnlyManagerCanPerformError"]);
+        if (requireHr && !Perms.CanActAsHr) return AccessDenied(_localizer["OnlyHrCanPerformError"]);
+        if (requireSelf && !Perms.IsSelf) return AccessDenied(_localizer["OnlyOwnFormError"]);
 
         return null;
     }
@@ -356,7 +363,7 @@ public class IndexModel : AppPageModel
         var status = form?.Status ?? PmFormStatus.Draft;
         if (!PmFormStatus.AllowsEdit(status) || (form?.IsLocked == true && status != PmFormStatus.EmployeeAcknowledged))
         {
-            ErrorMessage = $"This form cannot be edited in its current status ({PmFormStatus.DisplayName(status)}).";
+            ErrorMessage = _localizer["FormNotEditableInStatusError", PmFormStatus.DisplayName(status)];
             return false;
         }
         return true;
@@ -532,7 +539,10 @@ public class IndexModel : AppPageModel
 
         Form = await _workflow.FindFormAsync(e.EmpCode, EvalYear);
         Status = Form?.Status ?? PmFormStatus.Draft;
-        AchievementOpen = _gate.IsOpen(EvalYear);
+        AchievementOpen = await _gate.IsAchievementOpenAsync(EvalYear);
+        AchievementOpenDate = await _gate.AchievementOpenDateAsync(EvalYear);
+        SubmitToHrOpen = await _gate.IsSubmitToHrOpenAsync(EvalYear);
+        SubmitToHrOpenDate = await _gate.SubmitToHrOpenDateAsync(EvalYear);
 
         var jf = await _jobFamilies.ResolveAsync(e.EmpCode, e.Grade);
         JobFamilyConfigured = jf.Configured;
@@ -579,6 +589,11 @@ public class IndexModel : AppPageModel
         ProgressPercent = CalculateProgress();
     }
 
+    // NOTE: KpiValidationMessages/CompValidationMessages below use fixed "OK|"/"ERR|" tagged
+    // dynamic content deliberately left out of this localization pass — the localization task
+    // for this page explicitly scoped these out (attributed to FormValidationService, though in
+    // this codebase they are actually built here; left as-is pending a follow-up pass so all
+    // validation-message localization lands together in one place).
     private void BuildValidationMessages()
     {
         var kpiCount = Work.Kpis.Count;

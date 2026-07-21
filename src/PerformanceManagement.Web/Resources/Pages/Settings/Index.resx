@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" /></xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence><xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" /></xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="TabGeneral" xml:space="preserve"><value>General</value></data>
+  <data name="TabReview" xml:space="preserve"><value>Performance Review</value></data>
+  <data name="TabEmail" xml:space="preserve"><value>Email</value></data>
+  <data name="TabAuth" xml:space="preserve"><value>Authentication</value></data>
+  <data name="TabSecurity" xml:space="preserve"><value>Security</value></data>
+  <data name="TabDashboard" xml:space="preserve"><value>Dashboard</value></data>
+  <data name="TabBranding" xml:space="preserve"><value>Branding</value></data>
+
+  <data name="CompanyNameLabel" xml:space="preserve"><value>Company Name</value></data>
+  <data name="ApplicationNameLabel" xml:space="preserve"><value>Application Name</value></data>
+  <data name="ApplicationNamePlaceholder" xml:space="preserve"><value>Performance Management System</value></data>
+  <data name="CompanyAddressLabel" xml:space="preserve"><value>Company Address</value></data>
+  <data name="ContactEmailLabel" xml:space="preserve"><value>Contact Email</value></data>
+  <data name="AppBaseUrlLabel" xml:space="preserve"><value>Application Base URL</value></data>
+  <data name="AppBaseUrlHint" xml:space="preserve"><value>Used to build the action links inside outgoing email — e.g. "https://localhost:5273" for local testing.</value></data>
+  <data name="LogoManagedHint" xml:space="preserve"><value>Company logo is managed from the {0} tab.</value></data>
+  <data name="LanguageSelectionLabel" xml:space="preserve"><value>Language Selection</value></data>
+  <data name="LanguageSelectionHint" xml:space="preserve"><value>When enabled, users can switch the application between English and Arabic. When disabled, the language switcher is hidden everywhere and the application always runs in English, regardless of any previously saved language cookie or preference.</value></data>
+  <data name="SaveGeneralButton" xml:space="preserve"><value>Save General Settings</value></data>
+
+  <data name="CurrentReviewYearLabel" xml:space="preserve"><value>Current Review Year</value></data>
+  <data name="CurrentReviewYearHint" xml:space="preserve"><value>Informational default shown across the app — the dates below are what actually control achievement scoring and Submit to HR availability.</value></data>
+  <data name="MidYearStartLabel" xml:space="preserve"><value>Mid-Year Start</value></data>
+  <data name="MidYearEndLabel" xml:space="preserve"><value>Mid-Year End</value></data>
+  <data name="EndYearStartLabel" xml:space="preserve"><value>End-Year Start</value></data>
+  <data name="EndYearEndLabel" xml:space="preserve"><value>End-Year End</value></data>
+  <data name="ReviewDatesHeader" xml:space="preserve"><value>Performance Review Dates</value></data>
+  <data name="ReviewDatesIntro" xml:space="preserve"><value>Controls when achievement (%) fields become editable and when "Submit to HR" becomes available, per form. Leave a date blank to fall back to 1 December of the form's evaluation year (the original hardcoded behavior).</value></data>
+  <data name="MidYearAchievementStartDateLabel" xml:space="preserve"><value>Mid-Year Achievement Start Date</value></data>
+  <data name="MidYearAchievementHint" xml:space="preserve"><value>Optional — only used if a mid-year achievement cycle applies.</value></data>
+  <data name="EndYearAchievementStartDateLabel" xml:space="preserve"><value>End-Year Achievement Start Date</value></data>
+  <data name="SubmitToHrStartDateLabel" xml:space="preserve"><value>Submit To HR Start Date</value></data>
+  <data name="SaveReviewButton" xml:space="preserve"><value>Save Performance Review Settings</value></data>
+
+  <data name="EmailSettingsHeader" xml:space="preserve"><value>Email Settings (SMTP)</value></data>
+  <data name="SmtpHostLabel" xml:space="preserve"><value>SMTP Host</value></data>
+  <data name="SmtpPortLabel" xml:space="preserve"><value>SMTP Port</value></data>
+  <data name="PasswordKeepCurrentPlaceholder" xml:space="preserve"><value>•••••••• (leave blank to keep current password)</value></data>
+  <data name="NotSetPlaceholder" xml:space="preserve"><value>Not set</value></data>
+  <data name="SenderNameLabel" xml:space="preserve"><value>Sender Name</value></data>
+  <data name="SenderEmailLabel" xml:space="preserve"><value>Sender Email</value></data>
+  <data name="EnableSslLabel" xml:space="preserve"><value>Enable SSL / STARTTLS</value></data>
+  <data name="EnableEmailNotificationsLabel" xml:space="preserve"><value>Enable Email Notifications</value></data>
+  <data name="DevRedirectLabel" xml:space="preserve"><value>Development Redirect</value></data>
+  <data name="DevRedirectHint" xml:space="preserve"><value>Safety guardrail: while set, every workflow email is redirected here instead of the real employee address.</value></data>
+  <data name="LastUpdatedByLabel" xml:space="preserve"><value>Last updated {0} UTC by {1}</value></data>
+  <data name="SaveEmailButton" xml:space="preserve"><value>Save Email Settings</value></data>
+  <data name="SendTestEmailButton" xml:space="preserve"><value>Send Test Email</value></data>
+
+  <data name="DefaultPasswordLabel" xml:space="preserve"><value>Default Password</value></data>
+  <data name="MinPasswordLengthLabel" xml:space="preserve"><value>Minimum Password Length</value></data>
+  <data name="PasswordComplexityLabel" xml:space="preserve"><value>Require Password Complexity (letter + number)</value></data>
+  <data name="MaxLoginAttemptsLabel" xml:space="preserve"><value>Maximum Login Attempts</value></data>
+  <data name="SessionTimeoutLabel" xml:space="preserve"><value>Session Timeout (minutes)</value></data>
+  <data name="SessionTimeoutHint" xml:space="preserve"><value>Takes effect after the application restarts.</value></data>
+  <data name="LoginAsVerificationPasswordLabel" xml:space="preserve"><value>Login As Verification Password</value></data>
+  <data name="KeepCurrentPlaceholder" xml:space="preserve"><value>•••••••• (leave blank to keep current)</value></data>
+  <data name="UsingDevDefaultPlaceholder" xml:space="preserve"><value>Using development default</value></data>
+  <data name="SaveAuthButton" xml:space="preserve"><value>Save Authentication Settings</value></data>
+
+  <data name="EnableAuditLoggingLabel" xml:space="preserve"><value>Enable Audit Logging</value></data>
+  <data name="AccountLockoutLabel" xml:space="preserve"><value>Account Lockout (minutes)</value></data>
+  <data name="PasswordExpiryLabel" xml:space="preserve"><value>Password Expiry (days)</value></data>
+  <data name="PasswordExpiryHint" xml:space="preserve"><value>0 = passwords never expire.</value></data>
+  <data name="RememberMeDurationLabel" xml:space="preserve"><value>Remember Me Duration (days)</value></data>
+  <data name="SaveSecurityButton" xml:space="preserve"><value>Save Security Settings</value></data>
+
+  <data name="WelcomeMessageLabel" xml:space="preserve"><value>Welcome Message</value></data>
+  <data name="WelcomeMessagePlaceholder" xml:space="preserve"><value>e.g. Welcome to the Performance Management System</value></data>
+  <data name="AnnouncementBannerLabel" xml:space="preserve"><value>Announcement Banner</value></data>
+  <data name="AnnouncementBannerPlaceholder" xml:space="preserve"><value>Shown to everyone at the top of the Dashboard, e.g. maintenance notices</value></data>
+  <data name="SaveDashboardButton" xml:space="preserve"><value>Save Dashboard Settings</value></data>
+
+  <data name="CompanyLogoLabel" xml:space="preserve"><value>Company Logo</value></data>
+  <data name="CurrentLogoAlt" xml:space="preserve"><value>Current company logo</value></data>
+  <data name="LogoHint" xml:space="preserve"><value>PNG, JPG, GIF or SVG, up to 2 MB.</value></data>
+  <data name="PrimaryColorLabel" xml:space="preserve"><value>Primary Colour</value></data>
+  <data name="SecondaryColorLabel" xml:space="preserve"><value>Secondary Colour</value></data>
+  <data name="FooterTextLabel" xml:space="preserve"><value>Footer Text</value></data>
+  <data name="FooterTextPlaceholder" xml:space="preserve"><value>e.g. © 2026 Your Company. All rights reserved.</value></data>
+  <data name="SaveBrandingButton" xml:space="preserve"><value>Save Branding Settings</value></data>
+</root>

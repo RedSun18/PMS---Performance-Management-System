@@ -1,23 +1,24 @@
 @page
 @model PerformanceManagement.Web.Pages.Reports.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = "Reports";
+    ViewData["Title"] = SharedLocalizer["NavReports"].Value;
 }
-<div class="page-header">Reports</div>
+<div class="page-header">@SharedLocalizer["NavReports"]</div>
 
 @if (Model.ReportError is not null) { <div class="alert alert-error">@Model.ReportError</div> }
 
 <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">Employee Performance Report</div>
+    <div class="card-header">@Localizer["EmployeePerformanceReportHeader"]</div>
     <div class="card-body">
-        <p class="muted" style="margin-top:0;">Full record for one employee: scores, KPI/competency breakdown, comments,
-            development plan, workflow history and approval history.</p>
+        <p class="muted" style="margin-top:0;">@Localizer["EmployeeReportDescription"]</p>
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="repEmpcd">Employee</label>
-                    <select name="empcd" id="repEmpcd" required>
-                        <option value="">-- Select Employee --</option>
+                    <label for="repEmpcd">@SharedLocalizer["Employee"]</label>
+                    <select name="empcd" id="repEmpcd" data-searchable required>
+                        <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Employee"].Value]</option>
                         @foreach (var (code, label) in Model.EmployeeOptions)
                         {
                             <option value="@code">@label</option>
@@ -25,7 +26,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="repEmpYear">Review Year</label>
+                    <label for="repEmpYear">@SharedLocalizer["ReviewYear"]</label>
                     <select name="year" id="repEmpYear">
                         @foreach (var y in Model.YearOptions)
                         {
@@ -35,8 +36,8 @@
                 </div>
                 <div></div><div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" name="handler" value="EmployeePdf" class="btn btn-primary">📄 Export PDF</button>
-                    <button type="submit" name="handler" value="EmployeeExcel" class="btn btn-secondary">📊 Export Excel</button>
+                    <button type="submit" name="handler" value="EmployeePdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
+                    <button type="submit" name="handler" value="EmployeeExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
                 </div>
             </div>
         </form>
@@ -44,15 +45,15 @@
 </div>
 
 <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">Department Summary</div>
+    <div class="card-header">@Localizer["DepartmentSummaryHeader"]</div>
     <div class="card-body">
-        <p class="muted" style="margin-top:0;">All employees in one department for a review year, with scores, ratings and completion.</p>
+        <p class="muted" style="margin-top:0;">@Localizer["DepartmentSummaryDescription"]</p>
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="repDept">Department</label>
-                    <select name="dept" id="repDept" required>
-                        <option value="">-- Select Department --</option>
+                    <label for="repDept">@SharedLocalizer["Department"]</label>
+                    <select name="dept" id="repDept" data-searchable required>
+                        <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Department"].Value]</option>
                         @foreach (var d in Model.Departments)
                         {
                             <option value="@d.Code">@d.NameEn</option>
@@ -60,7 +61,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="repDeptYear">Review Year</label>
+                    <label for="repDeptYear">@SharedLocalizer["ReviewYear"]</label>
                     <select name="year" id="repDeptYear">
                         @foreach (var y in Model.YearOptions)
                         {
@@ -70,8 +71,8 @@
                 </div>
                 <div></div><div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" name="handler" value="DepartmentPdf" class="btn btn-primary">📄 Export PDF</button>
-                    <button type="submit" name="handler" value="DepartmentExcel" class="btn btn-secondary">📊 Export Excel</button>
+                    <button type="submit" name="handler" value="DepartmentPdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
+                    <button type="submit" name="handler" value="DepartmentExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
                 </div>
             </div>
         </form>
@@ -79,15 +80,15 @@
 </div>
 
 <div class="card" style="margin-bottom:20px;">
-    <div class="card-header">Manager Summary</div>
+    <div class="card-header">@Localizer["ManagerSummaryHeader"]</div>
     <div class="card-body">
-        <p class="muted" style="margin-top:0;">A manager's direct reports for a review year, with scores, ratings and completion.</p>
+        <p class="muted" style="margin-top:0;">@Localizer["ManagerSummaryDescription"]</p>
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="repManager">Manager</label>
-                    <select name="manager" id="repManager" required>
-                        <option value="">-- Select Manager --</option>
+                    <label for="repManager">@SharedLocalizer["Manager"]</label>
+                    <select name="manager" id="repManager" data-searchable required>
+                        <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Manager"].Value]</option>
                         @foreach (var (code, label) in Model.ManagerOptions)
                         {
                             <option value="@code">@label</option>
@@ -95,7 +96,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="repMgrYear">Review Year</label>
+                    <label for="repMgrYear">@SharedLocalizer["ReviewYear"]</label>
                     <select name="year" id="repMgrYear">
                         @foreach (var y in Model.YearOptions)
                         {
@@ -105,8 +106,8 @@
                 </div>
                 <div></div><div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" name="handler" value="ManagerPdf" class="btn btn-primary">📄 Export PDF</button>
-                    <button type="submit" name="handler" value="ManagerExcel" class="btn btn-secondary">📊 Export Excel</button>
+                    <button type="submit" name="handler" value="ManagerPdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
+                    <button type="submit" name="handler" value="ManagerExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
                 </div>
             </div>
         </form>
@@ -114,13 +115,13 @@
 </div>
 
 <div class="card">
-    <div class="card-header">Overall Organization Summary</div>
+    <div class="card-header">@Localizer["OverallOrgSummaryHeader"]</div>
     <div class="card-body">
-        <p class="muted" style="margin-top:0;">Org-wide totals and a department-by-department breakdown for a review year.</p>
+        <p class="muted" style="margin-top:0;">@Localizer["OverallOrgSummaryDescription"]</p>
         <form method="get">
             <div class="filters">
                 <div>
-                    <label for="repOrgYear">Review Year</label>
+                    <label for="repOrgYear">@SharedLocalizer["ReviewYear"]</label>
                     <select name="year" id="repOrgYear">
                         @foreach (var y in Model.YearOptions)
                         {
@@ -130,8 +131,8 @@
                 </div>
                 <div></div><div></div><div></div>
                 <div style="display:flex;gap:8px;">
-                    <button type="submit" name="handler" value="OverallPdf" class="btn btn-primary">📄 Export PDF</button>
-                    <button type="submit" name="handler" value="OverallExcel" class="btn btn-secondary">📊 Export Excel</button>
+                    <button type="submit" name="handler" value="OverallPdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
+                    <button type="submit" name="handler" value="OverallExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
                 </div>
             </div>
         </form>

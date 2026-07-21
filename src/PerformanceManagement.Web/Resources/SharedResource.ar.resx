@@ -80,4 +80,128 @@
   <data name="Username" xml:space="preserve"><value>اسم المستخدم</value></data>
   <data name="Password" xml:space="preserve"><value>كلمة المرور</value></data>
   <data name="ApplicationName" xml:space="preserve"><value>نظام إدارة الأداء</value></data>
+  <!-- Actions -->
+  <data name="Create" xml:space="preserve"><value>إنشاء</value></data>
+  <data name="New" xml:space="preserve"><value>جديد</value></data>
+  <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Submit" xml:space="preserve"><value>إرسال</value></data>
+  <data name="Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="Download" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="Add" xml:space="preserve"><value>إضافة</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="Clear" xml:space="preserve"><value>مسح</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Refresh" xml:space="preserve"><value>تحديث</value></data>
+  <data name="Print" xml:space="preserve"><value>طباعة</value></data>
+  <data name="Continue" xml:space="preserve"><value>متابعة</value></data>
+  <data name="Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="Previous" xml:space="preserve"><value>السابق</value></data>
+  <data name="OK" xml:space="preserve"><value>موافق</value></data>
+  <data name="Select" xml:space="preserve"><value>اختيار</value></data>
+  <data name="ChooseFile" xml:space="preserve"><value>اختيار ملف</value></data>
+  <data name="NoFileChosen" xml:space="preserve"><value>لم يتم اختيار ملف</value></data>
+  <data name="MarkAllRead" xml:space="preserve"><value>تعليم الكل كمقروء</value></data>
+  <data name="MarkRead" xml:space="preserve"><value>تعليم كمقروء</value></data>
+  <data name="ViewAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="ViewLog" xml:space="preserve"><value>عرض السجل</value></data>
+  <data name="Enable" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="EnableAction" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="Disable" xml:space="preserve"><value>تعطيل</value></data>
+  <data name="RunNow" xml:space="preserve"><value>تشغيل الآن</value></data>
+  <data name="Return" xml:space="preserve"><value>العودة</value></data>
+  <!-- Common labels -->
+  <data name="Email" xml:space="preserve"><value>البريد الإلكتروني</value></data>
+  <data name="EmployeeCode" xml:space="preserve"><value>رقم الموظف</value></data>
+  <data name="Designation" xml:space="preserve"><value>المسمى الوظيفي</value></data>
+  <data name="Grade" xml:space="preserve"><value>الدرجة الوظيفية</value></data>
+  <data name="Section" xml:space="preserve"><value>الشعبة</value></data>
+  <data name="Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Time" xml:space="preserve"><value>الوقت</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Comments" xml:space="preserve"><value>التعليقات</value></data>
+  <data name="Notes" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="Remarks" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="Weight" xml:space="preserve"><value>الوزن</value></data>
+  <data name="WeightPercent" xml:space="preserve"><value>الوزن %</value></data>
+  <data name="Target" xml:space="preserve"><value>الهدف</value></data>
+  <data name="Achievement" xml:space="preserve"><value>الإنجاز</value></data>
+  <data name="AchievementPercent" xml:space="preserve"><value>نسبة الإنجاز %</value></data>
+  <data name="Score" xml:space="preserve"><value>الدرجة</value></data>
+  <data name="OverallScore" xml:space="preserve"><value>الدرجة الإجمالية</value></data>
+  <data name="Rating" xml:space="preserve"><value>التقييم</value></data>
+  <data name="Type" xml:space="preserve"><value>النوع</value></data>
+  <data name="DirectManager" xml:space="preserve"><value>المدير المباشر</value></data>
+  <data name="ReferenceNumber" xml:space="preserve"><value>الرقم المرجعي</value></data>
+  <data name="FinalStatus" xml:space="preserve"><value>الحالة النهائية</value></data>
+  <data name="All" xml:space="preserve"><value>الكل</value></data>
+  <data name="AllDepartments" xml:space="preserve"><value>جميع الأقسام</value></data>
+  <data name="AllEmployees" xml:space="preserve"><value>جميع الموظفين</value></data>
+  <data name="AllManagers" xml:space="preserve"><value>جميع المديرين</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>جميع الحالات</value></data>
+  <data name="NotSet" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="Required" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="From" xml:space="preserve"><value>من</value></data>
+  <data name="To" xml:space="preserve"><value>إلى</value></data>
+  <data name="ChangedBy" xml:space="preserve"><value>تم التغيير بواسطة</value></data>
+  <data name="ChangedAt" xml:space="preserve"><value>تاريخ التغيير</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="GeneratedOn" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="Total" xml:space="preserve"><value>الإجمالي</value></data>
+  <data name="Finalized" xml:space="preserve"><value>نهائي</value></data>
+  <data name="ReadyNotStarted" xml:space="preserve"><value>جاهز / لم يبدأ</value></data>
+  <data name="InProgress" xml:space="preserve"><value>قيد التنفيذ</value></data>
+  <data name="Completion" xml:space="preserve"><value>نسبة الإكمال</value></data>
+  <data name="Progress" xml:space="preserve"><value>التقدم</value></data>
+  <data name="AverageScore" xml:space="preserve"><value>متوسط الدرجة</value></data>
+  <data name="TeamSize" xml:space="preserve"><value>حجم الفريق</value></data>
+  <data name="EmployeeCount" xml:space="preserve"><value>عدد الموظفين</value></data>
+  <!-- Statuses / workflow -->
+  <data name="Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Pending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="Approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Locked" xml:space="preserve"><value>مقفل</value></data>
+  <data name="Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <!-- Navigation -->
+  <data name="NavPmForm" xml:space="preserve"><value>نموذج الأداء</value></data>
+  <data name="NavPmFormSummary" xml:space="preserve"><value>ملخص نماذج الأداء</value></data>
+  <data name="NavEmployeeMaster" xml:space="preserve"><value>بيانات الموظفين</value></data>
+  <data name="NavKpiMaster" xml:space="preserve"><value>مؤشرات الأداء الرئيسية</value></data>
+  <data name="NavCompetencyMaster" xml:space="preserve"><value>الكفاءات</value></data>
+  <data name="NavReferenceMaster" xml:space="preserve"><value>البيانات المرجعية</value></data>
+  <data name="NavDepartmentMaster" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="NavReports" xml:space="preserve"><value>التقارير</value></data>
+  <data name="NavUserManagement" xml:space="preserve"><value>إدارة المستخدمين</value></data>
+  <data name="NavLoginAs" xml:space="preserve"><value>تسجيل الدخول كـ</value></data>
+  <data name="NavScheduledJobs" xml:space="preserve"><value>المهام المجدولة</value></data>
+  <data name="NavSystemSettings" xml:space="preserve"><value>إعدادات النظام</value></data>
+  <data name="NavNotifications" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="NavMainNavigation" xml:space="preserve"><value>التنقل الرئيسي</value></data>
+  <!-- Auth -->
+  <data name="RememberMeDevice" xml:space="preserve"><value>تذكرني على هذا الجهاز</value></data>
+  <data name="ChangePassword" xml:space="preserve"><value>تغيير كلمة المرور</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>كلمة المرور الحالية</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>كلمة المرور الجديدة</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>تأكيد كلمة المرور</value></data>
+  <!-- Misc -->
+  <data name="NoDataFound" xml:space="preserve"><value>لا توجد بيانات.</value></data>
+  <data name="NoResultsFound" xml:space="preserve"><value>لا توجد نتائج.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="SkipToMainContent" xml:space="preserve"><value>الانتقال إلى المحتوى الرئيسي</value></data>
+  <data name="NoNotificationsYet" xml:space="preserve"><value>لا توجد إشعارات بعد.</value></data>
+  <data name="ImpersonatingLabel" xml:space="preserve"><value>أنت حاليًا تنتحل صفة:</value></data>
+  <data name="SignedInAsLabel" xml:space="preserve"><value>مسجّل الدخول باسم</value></data>
+  <data name="ReturnToAdministrator" xml:space="preserve"><value>العودة إلى المسؤول</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="ToggleSidebar" xml:space="preserve"><value>تبديل الشريط الجانبي</value></data>
+  <data name="Open" xml:space="preserve"><value>فتح</value></data>
+  <data name="AvgScore" xml:space="preserve"><value>متوسط الدرجة</value></data>
 </root>

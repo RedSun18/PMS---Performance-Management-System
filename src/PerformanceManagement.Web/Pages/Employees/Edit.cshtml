@@ -3,9 +3,13 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Model.IsNew ? Localizer["NewEmployeeTitle"].Value : Localizer["EditEmployeeTitle", Model.Empcd!].Value;
+    // IViewLocalizer's indexer, unlike IStringLocalizer<T>'s, returns a LocalizedHtmlString whose
+    // .Value is the RAW, un-formatted resource string — the {0} placeholder substitution only
+    // happens when the object is rendered as markup (its IHtmlContent.WriteTo), never via .Value.
+    // ViewData["Title"] needs a plain string, so the substitution has to be done by hand here.
+    ViewData["Title"] = Model.IsNew ? Localizer["NewEmployeeTitle"].Value : string.Format(Localizer["EditEmployeeTitle"].Value, Model.Empcd!);
 }
-<div class="page-header">@(Model.IsNew ? Localizer["NewEmployeeHeader"].Value : Localizer["EditEmployeeHeader", Model.Empcd!].Value)</div>
+<div class="page-header">@(Model.IsNew ? Localizer["NewEmployeeHeader"] : Localizer["EditEmployeeHeader", Model.Empcd!])</div>
 
 @if (Model.Error is not null) { <div class="alert alert-error">@Model.Error</div> }
 

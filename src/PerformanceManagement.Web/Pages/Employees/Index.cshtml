@@ -73,7 +73,7 @@
             <td>@r.E.Grade</td>
             <td>@r.E.JoinDate?.ToString("dd/MM/yyyy")</td>
             <td>@r.ManagerLabel</td>
-            <td>@(r.E.IsActive ? SharedLocalizer["Active"].Value : Localizer["TerminatedOn", r.E.TermDate!.Value].Value)</td>
+            <td>@(r.E.IsActive ? SharedLocalizer["Active"].Value : string.Format(Localizer["TerminatedOn"].Value, r.E.TermDate!.Value))</td>
             <td class="muted">@r.E.Source</td>
             @if (Model.IsHrAdmin)
             {

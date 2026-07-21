@@ -232,7 +232,7 @@
                                 <label for="kpiAchievement">@SharedLocalizer["AchievementPercent"]</label>
                                 <input type="number" name="achievement" id="kpiAchievement" min="0" max="100"
                                        value="@(ek?.Achievement > 0 ? ek.Achievement.ToString() : "")"
-                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : Localizer["LockedUntilDate", Model.AchievementOpenDate].Value)"
+                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : string.Format(Localizer["LockedUntilDate"].Value, Model.AchievementOpenDate))"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcKpiScore()" />
                             </div>
                             <div>
@@ -331,7 +331,7 @@
                 <div class="summary-card @ScoringService.CardColor(kw)">
                     <div class="label">@Localizer["TotalKpiWeightLabel"]</div>
                     <div class="value">@kw%</div>
-                    <div class="sub">@(kw == 100 ? ("✓ " + Localizer["TargetMetMessage"]) : kw < 100 ? Localizer["NeedMoreWeightMessage", 100 - kw].Value : Localizer["ExceedsWeightMessage", kw - 100].Value)</div>
+                    <div class="sub">@(kw == 100 ? ("✓ " + Localizer["TargetMetMessage"].Value) : kw < 100 ? string.Format(Localizer["NeedMoreWeightMessage"].Value, 100 - kw) : string.Format(Localizer["ExceedsWeightMessage"].Value, kw - 100))</div>
                 </div>
                 <div class="summary-card blue">
                     <div class="label">@Localizer["KpiScoreLabel"]</div>
@@ -384,7 +384,7 @@
                                 <label for="compAchievement">@SharedLocalizer["AchievementPercent"]</label>
                                 <input type="number" name="achievement" id="compAchievement" min="0" max="100"
                                        value="@(ec?.Achievement > 0 ? ec.Achievement.ToString() : "")"
-                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : Localizer["LockedUntilDate", Model.AchievementOpenDate].Value)"
+                                       placeholder="@(Model.AchievementOpen ? Localizer["ToBeEnteredAtYearEnd"].Value : string.Format(Localizer["LockedUntilDate"].Value, Model.AchievementOpenDate))"
                                        @(Model.AchievementOpen ? "" : "disabled") oninput="calcCompScore()" />
                             </div>
                             <div>
@@ -481,7 +481,7 @@
                 <div class="summary-card @ScoringService.CardColor(cw)">
                     <div class="label">@Localizer["TotalCompWeightLabel"]</div>
                     <div class="value">@cw%</div>
-                    <div class="sub">@(cw == 100 ? ("✓ " + Localizer["TargetMetMessage"]) : cw < 100 ? Localizer["NeedMoreWeightMessage", 100 - cw].Value : Localizer["ExceedsWeightMessage", cw - 100].Value)</div>
+                    <div class="sub">@(cw == 100 ? ("✓ " + Localizer["TargetMetMessage"].Value) : cw < 100 ? string.Format(Localizer["NeedMoreWeightMessage"].Value, 100 - cw) : string.Format(Localizer["ExceedsWeightMessage"].Value, cw - 100))</div>
                 </div>
                 <div class="summary-card blue">
                     <div class="label">@Localizer["CompScoreLabel"]</div>

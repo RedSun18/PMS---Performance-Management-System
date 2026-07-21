@@ -41,7 +41,7 @@ else
                         <select name="userId" id="userSelect" data-searchable>
                             @foreach (var u in Model.Users)
                             {
-                                <option value="@u.Id">@u.Id | @u.DisplayName@(string.IsNullOrEmpty(u.EmpCode) ? "" : Localizer["EmployeeInlineLabel", u.EmpCode].Value) (@u.UserName)</option>
+                                <option value="@u.Id">@u.Id | @u.DisplayName@(string.IsNullOrEmpty(u.EmpCode) ? "" : string.Format(Localizer["EmployeeInlineLabel"].Value, u.EmpCode)) (@u.UserName)</option>
                             }
                         </select>
                     </div>

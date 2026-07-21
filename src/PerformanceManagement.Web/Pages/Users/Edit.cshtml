@@ -3,7 +3,10 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Model.IsNew ? Localizer["PageTitleNew"].Value : Localizer["EditUserHeader", Model.Form.UserName].Value;
+    // See the matching comment in Employees/Edit.cshtml — IViewLocalizer's .Value is the raw,
+    // un-formatted resource string; {0} only gets substituted when rendered as markup, so a plain
+    // string like ViewData["Title"] needs the substitution done explicitly.
+    ViewData["Title"] = Model.IsNew ? Localizer["PageTitleNew"].Value : string.Format(Localizer["EditUserHeader"].Value, Model.Form.UserName);
 }
 <div class="page-header">@(Model.IsNew ? Localizer["CreateUserHeader"] : Localizer["EditUserHeader", Model.Form.UserName])</div>
 

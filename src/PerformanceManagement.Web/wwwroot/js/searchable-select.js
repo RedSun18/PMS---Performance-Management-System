@@ -66,9 +66,16 @@
 
         select.parentNode.insertBefore(wrap, select);
         wrap.appendChild(input);
-        wrap.appendChild(listbox);
         wrap.appendChild(select);
         select.classList.add('ssel-native');
+        // The listbox is deliberately NOT a child of `wrap` — it's appended straight to <body>
+        // (a "portal") and positioned with `position: fixed` from the input's own measured
+        // coordinates in reposition() below. Every card in this app sets `overflow: hidden` (for
+        // its rounded corners), which clips any absolutely-positioned descendant to the card's
+        // bounds; there is no CSS-only way around that for content that must visually escape its
+        // own clipped ancestor, so the listbox has to live outside that DOM subtree entirely —
+        // the same technique native <select> popups and libraries like Select2 use.
+        document.body.appendChild(listbox);
         // Excluded from the accessibility tree and tab order — otherwise a screen-reader or
         // keyboard user would hit this hidden select as a second, redundant combobox right after
         // the visible one. It stays perfectly functional for form submission either way.
@@ -117,16 +124,46 @@
             });
         }
 
+        // Positions the (now body-level) listbox against the input's own live coordinates.
+        // `position: fixed` is viewport-relative, so no scrollX/scrollY offset is needed — but it
+        // does mean the position goes stale the moment the page scrolls or resizes, which is why
+        // open() attaches listeners that keep calling this for as long as the listbox stays open.
+        function reposition() {
+            var r = input.getBoundingClientRect();
+            var vh = window.innerHeight;
+            var spaceBelow = vh - r.bottom;
+            var spaceAbove = r.top;
+            var openUpward = spaceBelow < 200 && spaceAbove > spaceBelow;
+            listbox.style.left = r.left + 'px';
+            listbox.style.width = r.width + 'px';
+            if (openUpward) {
+                listbox.style.top = '';
+                listbox.style.bottom = (vh - r.top + 4) + 'px';
+                listbox.style.maxHeight = Math.max(120, spaceAbove - 8) + 'px';
+            } else {
+                listbox.style.bottom = '';
+                listbox.style.top = (r.bottom + 4) + 'px';
+                listbox.style.maxHeight = Math.max(120, spaceBelow - 8) + 'px';
+            }
+        }
+        function onViewportChange() { reposition(); }
         function open() {
             if (!listbox.hidden) return;
+            reposition();
             listbox.hidden = false;
             input.setAttribute('aria-expanded', 'true');
+            // Capture phase so this also fires for scrolling inside a nested container (e.g.
+            // .table-scroll), which never bubbles a 'scroll' event to window otherwise.
+            window.addEventListener('scroll', onViewportChange, true);
+            window.addEventListener('resize', onViewportChange);
         }
         function close() {
             listbox.hidden = true;
             input.setAttribute('aria-expanded', 'false');
             input.removeAttribute('aria-activedescendant');
             highlighted = -1;
+            window.removeEventListener('scroll', onViewportChange, true);
+            window.removeEventListener('resize', onViewportChange);
         }
         function filterFrom(query) {
             var q = query.trim().toLowerCase();

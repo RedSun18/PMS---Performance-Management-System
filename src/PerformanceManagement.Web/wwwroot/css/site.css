@@ -462,17 +462,20 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 /* ── Searchable select (Phase 12 Part 4) ──────────────────────────────
    Progressive enhancement over a plain <select data-searchable> — see
    wwwroot/js/searchable-select.js. The original select stays in the DOM
-   (same id/name/value) and is only visually hidden; a text input + listbox
-   overlay sits in its place for typing-to-filter, keyboard nav and mouse
-   selection. Logical (inset-inline-*) properties so it flips for RTL for free. */
-.ssel { position: relative; }
+   (same id/name/value) and is only visually hidden; a text input overlay
+   sits in its place for typing-to-filter, keyboard nav and mouse selection.
+   The listbox itself is appended straight to <body> and positioned with
+   `position: fixed` from live JS-measured coordinates (left/top/width set
+   inline per instance) rather than css-anchored to `.ssel` — every `.card`
+   in this app sets `overflow: hidden` for its rounded corners, which would
+   otherwise clip an absolutely-positioned descendant to the card's bounds. */
 .ssel-native {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 .ssel-listbox {
-  position: absolute; z-index: 60; top: calc(100% + 4px); inset-inline-start: 0; inset-inline-end: 0;
-  max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid var(--border-strong);
+  position: fixed; z-index: 2000;
+  overflow-y: auto; background: #fff; border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); padding: 4px; margin: 0; list-style: none;
 }
 .ssel-listbox[hidden] { display: none; }

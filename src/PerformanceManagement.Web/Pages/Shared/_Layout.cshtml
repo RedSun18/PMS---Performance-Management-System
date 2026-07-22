@@ -251,18 +251,33 @@
         }
 
         // ---- Prevent duplicate submissions ---------------------------------
-        // Disables every submit button in a form the instant it's submitted, so a slow
+        // Disables every submit button in a form shortly after it's submitted, so a slow
         // request (or an impatient double-click) can't fire the same POST twice. The page
         // navigates away right after anyway, so there's no need to re-enable on success;
         // native browser validation (required/pattern) still runs first and blocks invalid
         // submissions, which never reach this handler.
+        //
+        // The disabling is deferred a tick (setTimeout 0) rather than done inline in the
+        // listener. The browser reads the form's current control values to build the actual
+        // submission (query string for GET, request body for POST) only AFTER the 'submit'
+        // event finishes dispatching — and a disabled control's name/value is excluded from
+        // that data set. Disabling synchronously, inside this same capture-phase listener,
+        // was stripping the CLICKED BUTTON's own name/value from the submission whenever a
+        // page relied on it (e.g. Reports' "<button name='handler' value='EmployeePdf'>",
+        // which picks the Razor Page handler to run) — the export silently fell back to the
+        // plain page-load handler with none of the intended filters ever reaching it. A one
+        // tick delay is imperceptible for the "prevent double submit" UX but happens after
+        // the browser has already captured this submission's data, so it can no longer
+        // affect what gets sent.
         document.addEventListener('submit', function(e) {
             var form = e.target;
             if (!(form instanceof HTMLFormElement) || form.dataset.noDupeGuard) return;
-            form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function(btn) {
-                btn.disabled = true;
-                btn.classList.add('is-submitting');
-            });
+            setTimeout(function () {
+                form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function(btn) {
+                    btn.disabled = true;
+                    btn.classList.add('is-submitting');
+                });
+            }, 0);
         }, true);
 
         // ---- Unsaved-changes warning ----------------------------------------

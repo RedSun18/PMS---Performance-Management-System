@@ -102,7 +102,14 @@ public class SettingsService
             SenderEmail = section["SenderEmail"] ?? section["SmtpUsername"],
             SmtpEnableSsl = !bool.TryParse(section["EnableSsl"], out var ssl) || ssl,
             EnableEmailNotifications = !bool.TryParse(section["EnableEmailNotifications"], out var en) || en,
-            DevelopmentRedirectEmail = section["DevelopmentRedirectEmail"]
+            DevelopmentRedirectEmail = section["DevelopmentRedirectEmail"],
+            // Seeds the encrypted DB value from the same config key Program.cs's Production
+            // boot guard checks (Security:LoginAsVerificationPassword) — otherwise an ops
+            // person who overrides it via config/env var before first boot would satisfy the
+            // guard while the actual "Login As" verification check kept using the unrelated
+            // DefaultLoginAsVerificationPassword fallback forever.
+            LoginAsVerificationPasswordProtected = string.IsNullOrEmpty(_config["Security:LoginAsVerificationPassword"])
+                ? null : _verificationProtector.Protect(_config["Security:LoginAsVerificationPassword"]!)
         };
         _db.SystemSettings.Add(row);
         await _db.SaveChangesAsync();

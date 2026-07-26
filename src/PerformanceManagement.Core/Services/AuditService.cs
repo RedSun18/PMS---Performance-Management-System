@@ -6,7 +6,8 @@ namespace PerformanceManagement.Core.Services;
 
 public record AuditLogFilter(
     string? EmpCode = null, string? DeptCode = null, string? PerformedBy = null,
-    string? Action = null, DateOnly? FromDate = null, DateOnly? ToDate = null);
+    string? Action = null, DateOnly? FromDate = null, DateOnly? ToDate = null,
+    string? EntityType = null, string? EntityId = null);
 
 /// <summary>
 /// Writes and queries the append-only admin action trail (AuditLog). Writes are skipped
@@ -28,7 +29,22 @@ public class AuditService
     {
         var rules = await _settings.GetSecurityRulesAsync();
         if (!rules.EnableAuditLogging) return;
+        await WriteAsync(action, performedBy, empCode, deptCode, entityType, entityId, details);
+    }
 
+    /// <summary>
+    /// Writes an entry unconditionally, ignoring SystemSettings.EnableAuditLogging — reserved
+    /// for the toggle itself (Settings/Index.cshtml.cs's Security tab) so an admin turning audit
+    /// logging off (or back on) is always recorded, never silently suppressed by the very flag
+    /// being changed. Not for general use — every other call site should use LogAsync.
+    /// </summary>
+    public async Task LogAlwaysAsync(string action, string performedBy, string? empCode = null,
+        string? deptCode = null, string? entityType = null, string? entityId = null, string? details = null) =>
+        await WriteAsync(action, performedBy, empCode, deptCode, entityType, entityId, details);
+
+    private async Task WriteAsync(string action, string performedBy, string? empCode,
+        string? deptCode, string? entityType, string? entityId, string? details)
+    {
         _db.AuditLogs.Add(new AuditLog
         {
             OccurredAt = _clock.Now,
@@ -53,6 +69,8 @@ public class AuditService
         if (!string.IsNullOrWhiteSpace(filter.Action)) query = query.Where(a => a.Action.ToLower().Contains(filter.Action.ToLower()));
         if (filter.FromDate is { } from) query = query.Where(a => a.OccurredAt >= from.ToDateTime(TimeOnly.MinValue));
         if (filter.ToDate is { } to) query = query.Where(a => a.OccurredAt < to.ToDateTime(TimeOnly.MinValue).AddDays(1));
+        if (!string.IsNullOrWhiteSpace(filter.EntityType)) query = query.Where(a => a.EntityType == filter.EntityType);
+        if (!string.IsNullOrWhiteSpace(filter.EntityId)) query = query.Where(a => a.EntityId == filter.EntityId);
 
         return await query.OrderByDescending(a => a.OccurredAt).Take(take).ToListAsync();
     }

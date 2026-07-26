@@ -25,20 +25,19 @@ public class LoginAsModel : AppPageModel
     private static readonly TimeSpan VerificationValidity = TimeSpan.FromMinutes(5);
 
     private readonly PmDbContext _db;
-    private readonly IConfiguration _config;
+    private readonly SettingsService _settings;
     private readonly IClock _clock;
     private readonly IStringLocalizer<LoginAsModel> _localizer;
-    public LoginAsModel(PmDbContext db, IConfiguration config, IClock clock, IStringLocalizer<LoginAsModel> localizer)
+    private readonly AuditService _audit;
+    public LoginAsModel(PmDbContext db, SettingsService settings, IClock clock, IStringLocalizer<LoginAsModel> localizer, AuditService audit)
     {
-        _db = db; _config = config; _clock = clock; _localizer = localizer;
+        _db = db; _settings = settings; _clock = clock; _localizer = localizer; _audit = audit;
     }
 
     public bool Verified { get; set; }
     public string? Error { get; set; }
     public List<(int Id, string UserName, string DisplayName, string? EmpCode)> Users { get; set; } = new();
     public List<ImpersonationLog> RecentHistory { get; set; } = new();
-
-    private string VerificationPassword => _config["Security:LoginAsVerificationPassword"] ?? "Password123";
 
     public async Task<IActionResult> OnGetAsync()
     {
@@ -56,8 +55,23 @@ public class LoginAsModel : AppPageModel
     {
         if (IsImpersonating || !IsHrAdmin) return AccessDenied(_localizer["NotPermittedMessage"]);
 
-        if (verificationPassword != VerificationPassword)
+        // Reads the admin-configured value from Settings > Authentication (encrypted at rest),
+        // not raw IConfiguration — the latter would silently ignore whatever an admin actually
+        // set on that page and keep gating on the shipped appsettings.json default forever.
+        var expected = await _settings.GetLoginAsVerificationPasswordAsync();
+        var actual = verificationPassword ?? "";
+        // Fixed-time byte comparison: a plain `!=` string compare can return early on the first
+        // differing character, which is a (small, but real) timing side-channel for an attacker
+        // guessing this password character-by-character.
+        var expectedBytes = System.Text.Encoding.UTF8.GetBytes(expected);
+        var actualBytes = System.Text.Encoding.UTF8.GetBytes(actual);
+        var match = expectedBytes.Length == actualBytes.Length &&
+            System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes);
+
+        if (!match)
         {
+            await _audit.LogAsync("Login As: Verification Failed", CurrentUserName,
+                details: $"IP: {HttpContext.Connection.RemoteIpAddress}");
             Error = _localizer["IncorrectVerificationPasswordMessage"];
             Verified = false;
             return Page();

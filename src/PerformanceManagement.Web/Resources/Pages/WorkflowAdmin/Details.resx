@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DetailsPageHeader" xml:space="preserve"><value>Workflow Details</value></data>
+  <data name="EmployeeInfoHeader" xml:space="preserve"><value>Employee Information</value></data>
+  <data name="ReportingStructureHeader" xml:space="preserve"><value>Reporting Structure</value></data>
+  <data name="WorkflowStatusHeader" xml:space="preserve"><value>Current Workflow Status</value></data>
+  <data name="CurrentStageHeader" xml:space="preserve"><value>Current Stage</value></data>
+  <data name="CurrentOwnerHeader" xml:space="preserve"><value>Current Owner</value></data>
+  <data name="StartedLabel" xml:space="preserve"><value>Started Date</value></data>
+  <data name="LastUpdatedHeader" xml:space="preserve"><value>Last Updated</value></data>
+  <data name="CompletedDateLabel" xml:space="preserve"><value>Completed Date</value></data>
+  <data name="WorkflowTimelineHeader" xml:space="preserve"><value>Workflow Timeline</value></data>
+  <data name="NoTimelineEntries" xml:space="preserve"><value>No workflow transitions recorded yet.</value></data>
+  <data name="DateHeader" xml:space="preserve"><value>Date</value></data>
+  <data name="UserHeader" xml:space="preserve"><value>User</value></data>
+  <data name="PreviousStageHeader" xml:space="preserve"><value>Previous Stage</value></data>
+  <data name="NewStageHeader" xml:space="preserve"><value>New Stage</value></data>
+  <data name="NoteHeader" xml:space="preserve"><value>Action Taken / Comments</value></data>
+  <data name="AuditHistoryHeader" xml:space="preserve"><value>Audit History</value></data>
+  <data name="NoAuditEntries" xml:space="preserve"><value>No audit entries recorded for this appraisal yet.</value></data>
+  <data name="TimestampHeader" xml:space="preserve"><value>Timestamp</value></data>
+  <data name="ActionHeader" xml:space="preserve"><value>Action</value></data>
+  <data name="DetailsHeader" xml:space="preserve"><value>Details</value></data>
+  <data name="AdminActionsHeader" xml:space="preserve"><value>Administrative Actions</value></data>
+  <data name="ReasonPlaceholder" xml:space="preserve"><value>Explain why this administrative action is needed…</value></data>
+
+  <data name="ReturnToEmployeeButton" xml:space="preserve"><value>Return to Employee</value></data>
+  <data name="ReturnToEmployeeUnavailable" xml:space="preserve"><value>Not available — this appraisal has not yet been sent to the employee.</value></data>
+  <data name="ReturnToEmployeeConfirmText" xml:space="preserve"><value>The appraisal will be sent back to the Employee Acknowledgement stage and the employee will be asked to acknowledge it again. This action will be recorded in the audit trail.</value></data>
+
+  <data name="ReturnToManagerButton" xml:space="preserve"><value>Return to Manager</value></data>
+  <data name="ReturnToManagerUnavailable" xml:space="preserve"><value>Not available — this appraisal is not currently with HR for review.</value></data>
+  <data name="ReturnToManagerConfirmText" xml:space="preserve"><value>The appraisal will be returned to the manager's End-Year Review stage so ratings can be edited again. This action will be recorded in the audit trail.</value></data>
+
+  <data name="ReopenReviewButton" xml:space="preserve"><value>Reopen Review</value></data>
+  <data name="ReopenReviewUnavailable" xml:space="preserve"><value>Not available — only a completed review can be reopened.</value></data>
+  <data name="ReopenReviewConfirmText" xml:space="preserve"><value>This completed review will be reopened for editing. Prior HR reviewer sign-offs will be cleared since the form will be modified again. This action will be recorded in the audit trail.</value></data>
+
+  <data name="ResendNotificationButton" xml:space="preserve"><value>Resend Notification</value></data>
+  <data name="ResendNotificationUnavailable" xml:space="preserve"><value>Not available — no notification email exists for the current stage yet.</value></data>
+  <data name="ResendNotificationConfirmText" xml:space="preserve"><value>The notification email for the appraisal's current stage will be sent again to its usual recipients. This action will be recorded in the audit trail.</value></data>
+
+  <data name="AdministrativeCompletionButton" xml:space="preserve"><value>Administrative Completion</value></data>
+  <data name="AdministrativeCompletionUnavailable" xml:space="preserve"><value>Not available — this review is already completed.</value></data>
+  <data name="AdministrativeCompletionConfirmText" xml:space="preserve"><value>The appraisal will be marked Completed directly, skipping the remaining review steps. The usual data checks (scores, weights) still apply. This action will be recorded in the audit trail.</value></data>
+
+  <data name="UnlockButton" xml:space="preserve"><value>Unlock Review</value></data>
+  <data name="UnlockUnavailable" xml:space="preserve"><value>Not available — this form is already unlocked.</value></data>
+  <data name="UnlockConfirmText" xml:space="preserve"><value>The form will be unlocked for editing without changing its current stage — use this when only a small correction is needed. This action will be recorded in the audit trail.</value></data>
+</root>

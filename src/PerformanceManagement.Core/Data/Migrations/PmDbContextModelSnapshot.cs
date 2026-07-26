@@ -120,6 +120,8 @@ namespace PerformanceManagement.Core.Data.Migrations
 
                     b.HasIndex("OccurredAt");
 
+                    b.HasIndex("EntityType", "EntityId");
+
                     b.ToTable("AuditLogs");
                 });
 
@@ -553,6 +555,8 @@ namespace PerformanceManagement.Core.Data.Migrations
 
                     b.HasKey("EmpCode");
 
+                    b.HasIndex("ManagerEmpCode");
+
                     b.ToTable("ManagerAssignments");
                 });
 
@@ -764,6 +768,8 @@ namespace PerformanceManagement.Core.Data.Migrations
 
                     b.HasIndex("EmpCode", "EvalYear")
                         .IsUnique();
+
+                    b.HasIndex("EvalYear", "Status");
 
                     b.ToTable("PmForms");
                 });

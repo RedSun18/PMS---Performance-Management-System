@@ -15,6 +15,8 @@ namespace PerformanceManagement.Web.Pages.PmFormSummary;
 [Authorize(Roles = Roles.HrAdminOrViewer)]
 public class IndexModel : AppPageModel
 {
+    private const int PageSize = 50;
+
     private readonly PmDbContext _db;
     private readonly IStringLocalizer<IndexModel> _localizer;
     public IndexModel(PmDbContext db, IStringLocalizer<IndexModel> localizer) { _db = db; _localizer = localizer; }
@@ -24,6 +26,11 @@ public class IndexModel : AppPageModel
     [BindProperty(SupportsGet = true)] public string? Year { get; set; }
     [BindProperty(SupportsGet = true)] public string? Status { get; set; }
     [BindProperty(SupportsGet = true)] public string? Manager { get; set; }
+    // Query key is "pageNum", not "page" — collides with Razor Pages' own ambient route value
+    // for the target page's path, both for binding and for asp-route-page link generation
+    // (produces an empty href); see WorkflowAdmin/Index.cshtml.cs's PageNumber for the full
+    // explanation.
+    [FromQuery(Name = "pageNum")] public int PageNumber { get; set; } = 1;
 
     public List<Department> Departments { get; set; } = new();
     public List<(string Code, string Label)> EmployeeOptions { get; set; } = new();
@@ -31,6 +38,15 @@ public class IndexModel : AppPageModel
     public List<int> YearOptions { get; set; } = new();
     public List<Row> Rows { get; set; } = new();
     public string Title { get; set; } = "";
+    public int TotalCount { get; set; }
+    public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
+
+    /// <summary>Route-data dictionary for pager links — every current filter value except `page`,
+    /// so Prev/Next preserve the search HR is looking at.</summary>
+    public Dictionary<string, string?> FilterRouteData => new()
+    {
+        ["dept"] = Dept, ["empcd"] = Empcd, ["year"] = Year, ["status"] = Status, ["manager"] = Manager
+    };
 
     public record Row(int Srl, string Employee, string Designation, decimal KpiScore, decimal CompScore,
         decimal OverallScore, int RatingScore, string Rating, string Status, string RefNo,
@@ -69,13 +85,16 @@ public class IndexModel : AppPageModel
             q = q.Where(x => managedEmpCodes.Contains(x.f.EmpCode));
         }
 
-        var data = await q.OrderBy(x => x.e.DeptCode).ThenBy(x => x.e.LatinName).ToListAsync();
+        TotalCount = await q.CountAsync();
+        var page = Math.Max(1, PageNumber);
+        var data = await q.OrderBy(x => x.e.DeptCode).ThenBy(x => x.e.LatinName)
+            .Skip((page - 1) * PageSize).Take(PageSize).ToListAsync();
 
         var scales = await _db.RatingScales.AsNoTracking().Where(r => r.Status == "A").ToListAsync();
         var depts = await _db.Departments.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.NameEn);
         var desigs = await _db.Designations.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.Description);
 
-        var srl = 1;
+        var srl = (page - 1) * PageSize + 1;
         foreach (var x in data)
         {
             var ratingScore = (int)Math.Round(x.f.PerformanceScore, MidpointRounding.AwayFromZero);

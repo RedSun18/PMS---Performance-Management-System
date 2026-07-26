@@ -15,7 +15,7 @@
         <p class="muted" style="margin-top:0;">@Localizer["EmployeeReportDescription"]</p>
         <form method="get">
             <div class="filters">
-                <div>
+                <div class="filter-wide">
                     <label for="repEmpcd">@SharedLocalizer["Employee"]</label>
                     <select name="empcd" id="repEmpcd" data-searchable required>
                         <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Employee"].Value]</option>
@@ -34,7 +34,7 @@
                         }
                     </select>
                 </div>
-                <div></div><div></div>
+                <div></div>
                 <div style="display:flex;gap:8px;">
                     <button type="submit" name="handler" value="EmployeePdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
                     <button type="submit" name="handler" value="EmployeeExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
@@ -50,7 +50,7 @@
         <p class="muted" style="margin-top:0;">@Localizer["DepartmentSummaryDescription"]</p>
         <form method="get">
             <div class="filters">
-                <div>
+                <div class="filter-wide">
                     <label for="repDept">@SharedLocalizer["Department"]</label>
                     <select name="dept" id="repDept" data-searchable required>
                         <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Department"].Value]</option>
@@ -69,7 +69,7 @@
                         }
                     </select>
                 </div>
-                <div></div><div></div>
+                <div></div>
                 <div style="display:flex;gap:8px;">
                     <button type="submit" name="handler" value="DepartmentPdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
                     <button type="submit" name="handler" value="DepartmentExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>
@@ -85,7 +85,7 @@
         <p class="muted" style="margin-top:0;">@Localizer["ManagerSummaryDescription"]</p>
         <form method="get">
             <div class="filters">
-                <div>
+                <div class="filter-wide">
                     <label for="repManager">@SharedLocalizer["Manager"]</label>
                     <select name="manager" id="repManager" data-searchable required>
                         <option value="">@Localizer["SelectPlaceholderFormat", SharedLocalizer["Manager"].Value]</option>
@@ -104,7 +104,7 @@
                         }
                     </select>
                 </div>
-                <div></div><div></div>
+                <div></div>
                 <div style="display:flex;gap:8px;">
                     <button type="submit" name="handler" value="ManagerPdf" class="btn btn-primary">@Localizer["ExportPdfButton"]</button>
                     <button type="submit" name="handler" value="ManagerExcel" class="btn btn-secondary">@Localizer["ExportExcelButton"]</button>

@@ -67,12 +67,10 @@ public class WorkflowTests : IAsyncLifetime
         var mails = await _h.Db.EmailLogs.ToListAsync();
         var sent = Assert.Single(mails);
         Assert.Equal("ACK_REQUEST", sent.TemplateKey);
-        // Safety guardrail: never address the real employee inbox from empmaster —
-        // every dispatch is redirected to the fixed safe recipient.
-        Assert.Equal(EmailService.SafeRecipient, sent.ToRecipients);
-        Assert.Equal("", sent.CcRecipients);
-        Assert.Contains("1504@test.local", sent.Note);
-        Assert.Contains("854@test.local", sent.Note);
+        // No DevelopmentRedirectEmail configured ⇒ mail goes to the real intended recipients.
+        Assert.Equal("1504@test.local", sent.ToRecipients);
+        Assert.Equal("854@test.local", sent.CcRecipients);
+        Assert.Contains("SMTP is not configured", sent.Note);
 
         // A.3 duplicate send (stale second browser)
         var dup = await _h.Workflow.SendToEmployeeAsync("u854", _mgr, _h.Content1504());
@@ -274,21 +272,40 @@ public class WorkflowTests : IAsyncLifetime
 
     // ---- E.1 / E.2 email dispatch --------------------------------------------------
     [Fact]
-    public async Task Email_dedupes_intended_recipients_but_always_sends_to_safe_address()
+    public async Task Email_dedupes_intended_recipients_and_sends_to_them_when_no_redirect_is_configured()
     {
         var dedup = await _h.Email.DispatchAsync(new EmailSpec("T", new[] { "a@x", "A@X", "b@x" },
             new[] { "a@x", "c@x" }, "s", "b", null, null));
-        // Never the legacy addresses — always the fixed safety recipient
-        Assert.Equal(EmailService.SafeRecipient, dedup.ToRecipients);
-        Assert.Equal("", dedup.CcRecipients);
+        // No DevelopmentRedirectEmail configured (TestHost's Settings has no SMTP host at all,
+        // so GetSmtpCredentialsAsync returns null) ⇒ mail addresses the real deduped recipients.
+        Assert.Equal("a@x;b@x", dedup.ToRecipients);
+        Assert.Equal("c@x", dedup.CcRecipients);
         Assert.Equal("LOGGED", dedup.Status);
-        Assert.Contains("a@x;b@x", dedup.Note);   // deduped intended To preserved for traceability
-        Assert.Contains("c@x", dedup.Note);       // deduped intended Cc preserved for traceability
+        Assert.Contains("SMTP is not configured", dedup.Note);
 
         var empty = await _h.Email.DispatchAsync(new EmailSpec("T", Array.Empty<string>(),
             Array.Empty<string>(), "s", "b", null, null));
         Assert.Equal("SKIPPED_NO_RECIPIENT", empty.Status);
         Assert.Equal("", empty.ToRecipients);
+    }
+
+    [Fact]
+    public async Task Email_redirects_to_the_configured_dev_address_and_never_the_real_recipients()
+    {
+        // Opt-in safety guardrail: only once an admin explicitly sets DevelopmentRedirectEmail
+        // (e.g. UAT against real imported employee data) does dispatch stop addressing real
+        // recipients — EnableEmailNotifications=false keeps this test from attempting a real
+        // SMTP connection while still exercising the redirect/log logic.
+        await _h.Settings.SaveEmailSettingsAsync(new EmailSettingsInput(
+            "smtp.test.local", 587, "user", "pw", "PMS", "pms@test.local", true, false, "safe@test.local"), "admin");
+
+        var dedup = await _h.Email.DispatchAsync(new EmailSpec("T", new[] { "a@x", "A@X", "b@x" },
+            new[] { "a@x", "c@x" }, "s", "b", null, null));
+        Assert.Equal("safe@test.local", dedup.ToRecipients);
+        Assert.Equal("", dedup.CcRecipients);
+        Assert.Equal("DISABLED", dedup.Status);
+        Assert.Contains("a@x;b@x", dedup.Note);   // deduped intended To preserved for traceability
+        Assert.Contains("c@x", dedup.Note);       // deduped intended Cc preserved for traceability
     }
 
     [Fact]
@@ -301,5 +318,222 @@ public class WorkflowTests : IAsyncLifetime
         var (_, body) = EmailTemplates.AcknowledgementRequest(f, "Mgr", "https://pms.example.com/OpenForm?token=abc", new DateTime(2026, 9, 7, 10, 0, 0));
         Assert.Contains("background-color:#0f2b5c", body);
         Assert.Contains("color:#fff", body);
+    }
+
+    // ==================================================================================
+    // Workflow Administration (Phase 13)
+    // ==================================================================================
+
+    private async Task<AuditLog> SingleAuditRowAsync() =>
+        Assert.Single(await _h.Db.AuditLogs.Where(a => a.EmpCode == "1504").ToListAsync());
+
+    [Fact]
+    public async Task Admin_return_to_employee_resets_ack_and_relocks_form()
+    {
+        await DriveToSubmittedAsync();
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.ReturnToEmployeeAsync("hr1", "1504", Year, "manager resigned mid-cycle", "10.0.0.1");
+        Assert.True(r.Success, r.ErrorText);
+
+        var f = await FormAsync();
+        Assert.Equal(PmFormStatus.PendingEmployeeAck, f.Status);
+        Assert.True(f.IsLocked);
+        Assert.Null(f.EmpAckBy);
+        Assert.Null(f.EmpAckDate);
+        Assert.Null(f.EmpAckSign);
+        Assert.Null(f.EmpAckComments);
+
+        var history = await _h.Db.PmFormStatusHistory.Where(x => x.PmFormId == f.Id).OrderByDescending(x => x.Id).FirstAsync();
+        Assert.Equal(PmFormStatus.PendingEmployeeAck, history.ToStatus);
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Return to Employee", audit.Action);
+        Assert.Equal("hr1", audit.PerformedBy);
+        Assert.Equal("PmForm", audit.EntityType);
+        Assert.Equal(f.Id.ToString(), audit.EntityId);
+        Assert.Contains("manager resigned mid-cycle", audit.Details);
+        Assert.Contains("IP: 10.0.0.1", audit.Details);
+    }
+
+    [Fact]
+    public async Task Admin_return_to_employee_rejected_before_form_ever_sent()
+    {
+        await _h.Workflow.SaveDraftAsync("u854", _mgr, _h.Content1504());
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.ReturnToEmployeeAsync("hr1", "1504", Year, "not reachable yet", null);
+        Assert.False(r.Success);
+        Assert.Equal(PmFormStatus.Draft, (await FormAsync()).Status);
+        Assert.Empty(await _h.Db.AuditLogs.Where(a => a.EmpCode == "1504").ToListAsync());
+    }
+
+    [Fact]
+    public async Task Admin_return_to_manager_delegates_to_hr_revert_and_logs_audit()
+    {
+        await DriveToSubmittedAsync();
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.ReturnToManagerAsync("hr1", "hr1", "1504", Year, "wrong ratings entered", null);
+        Assert.True(r.Success, r.ErrorText);
+
+        var f = await FormAsync();
+        Assert.Equal(PmFormStatus.EmployeeAcknowledged, f.Status);
+        Assert.False(f.IsLocked);
+        Assert.Contains(await _h.Db.EmailLogs.ToListAsync(), m => m.TemplateKey == "HR_REVERTED");
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Return to Manager", audit.Action);
+    }
+
+    [Fact]
+    public async Task Admin_reopen_review_only_valid_from_approved_and_clears_hr_signatures()
+    {
+        await DriveToSubmittedAsync();
+        await _h.AddHrAdminAsync("hr1");
+        await _h.AddHrAdminAsync("hr2");
+        var hr1 = await _h.PermsAsync("hr1", "1504", userName: "hr1");
+        var hr2 = await _h.PermsAsync("hr2", "1504", userName: "hr2");
+        await _h.Workflow.HrApprove1Async("hr1", hr1, "1504", Year, "HR Reviewer 1", "hr1", "ok");
+        await _h.Workflow.HrFinalApproveAsync("hr2", hr2, "hr2", "1504", Year, "HR Reviewer 2", "hr2", "final");
+        Assert.Equal(PmFormStatus.Approved, (await FormAsync()).Status);
+
+        var reopen = await _h.WorkflowAdmin.ReopenReviewAsync("hr1", "1504", Year, "employee disputes final rating", null);
+        Assert.True(reopen.Success, reopen.ErrorText);
+
+        var f = await FormAsync();
+        Assert.Equal(PmFormStatus.EmployeeAcknowledged, f.Status);
+        Assert.False(f.IsLocked);
+        Assert.Null(f.Hr1ReviewerName);
+        Assert.Null(f.Hr1ReviewDate);
+        Assert.Null(f.Hr1Sign);
+        Assert.Null(f.Hr1Remarks);
+        Assert.Null(f.Hr2ReviewerName);
+        Assert.Null(f.Hr2ReviewDate);
+        Assert.Null(f.Hr2Sign);
+        Assert.Null(f.Hr2Remarks);
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Reopen Review", audit.Action);
+
+        // The form is no longer Approved (it's EmployeeAcknowledged again) — reopening again must be rejected.
+        var again = await _h.WorkflowAdmin.ReopenReviewAsync("hr1", "1504", Year, "cannot reopen an already open workflow", null);
+        Assert.False(again.Success);
+    }
+
+    [Fact]
+    public async Task Admin_reopen_review_rejected_when_not_yet_completed()
+    {
+        await DriveToSubmittedAsync();
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.ReopenReviewAsync("hr1", "1504", Year, "trying to reopen before completion", null);
+        Assert.False(r.Success);
+        Assert.Equal(PmFormStatus.SubmittedToHr, (await FormAsync()).Status);
+        Assert.Empty(await _h.Db.AuditLogs.Where(a => a.EmpCode == "1504").ToListAsync());
+    }
+
+    [Fact]
+    public async Task Admin_resend_notification_dispatches_matching_template_per_status_bypassing_dedup()
+    {
+        await _h.Workflow.SendToEmployeeAsync("u854", _mgr, _h.Content1504());
+        await _h.AddHrAdminAsync("hr1");
+
+        var before = await _h.Db.EmailLogs.CountAsync();
+        var r = await _h.WorkflowAdmin.ResendNotificationAsync("hr1", "1504", Year, "employee says email never arrived", null);
+        Assert.True(r.Success, r.ErrorText);
+
+        var logs = await _h.Db.EmailLogs.Where(m => m.TemplateKey == "ACK_REQUEST").ToListAsync();
+        Assert.Equal(2, logs.Count);   // original SendToEmployee dispatch + the resend
+        Assert.DoesNotContain(logs, m => m.Status == "SKIPPED_DUPLICATE");
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Resend Notification", audit.Action);
+    }
+
+    [Fact]
+    public async Task Admin_resend_notification_fails_gracefully_when_no_template_exists_for_stage()
+    {
+        await _h.Workflow.SaveDraftAsync("u854", _mgr, _h.Content1504());
+        await _h.AddHrAdminAsync("hr1");
+
+        var before = await _h.Db.EmailLogs.CountAsync();
+        var r = await _h.WorkflowAdmin.ResendNotificationAsync("hr1", "1504", Year, "checking on draft", null);
+        Assert.False(r.Success);
+        Assert.Contains("No notification exists for the current stage", r.ErrorText);
+        Assert.Equal(before, await _h.Db.EmailLogs.CountAsync());
+        Assert.Empty(await _h.Db.AuditLogs.Where(a => a.EmpCode == "1504").ToListAsync());
+    }
+
+    [Fact]
+    public async Task Admin_administrative_completion_succeeds_from_multiple_statuses_and_rejects_when_already_approved()
+    {
+        await _h.Workflow.SendToEmployeeAsync("u854", _mgr, _h.Content1504());
+        await _h.Workflow.AcknowledgeAsync("u1504", "1504", "1504", Year, null);
+        _h.Clock.Today = new DateOnly(Year, 12, 1);   // opens the achievement-entry window
+        var save = await _h.Workflow.SaveDraftAsync("u854", _mgr, _h.Content1504(achievement: 90));
+        Assert.True(save.Success, save.ErrorText);
+        Assert.Equal(PmFormStatus.EmployeeAcknowledged, (await FormAsync()).Status);   // content-only save, no transition
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.AdministrativeCompletionAsync("hr1", "1504", Year,
+            "manager left the company, HR completing on their behalf", jobFamilyConfigured: true, perspectiveExempt: false, ip: null);
+        Assert.True(r.Success, r.ErrorText);
+
+        var f = await FormAsync();
+        Assert.Equal(PmFormStatus.Approved, f.Status);
+        Assert.True(f.IsLocked);
+        Assert.NotNull(f.OverallRatingCode);
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Administrative Completion", audit.Action);
+
+        var again = await _h.WorkflowAdmin.AdministrativeCompletionAsync("hr1", "1504", Year,
+            "double click", jobFamilyConfigured: true, perspectiveExempt: false, ip: null);
+        Assert.False(again.Success);
+    }
+
+    [Fact]
+    public async Task Admin_administrative_completion_rejects_incomplete_workflow()
+    {
+        // achievement: 0 ⇒ FormValidationService.ValidateForSubmitToHr flags missing achievement scores.
+        await _h.Workflow.SaveDraftAsync("u854", _mgr, _h.Content1504(achievement: 0));
+        await _h.AddHrAdminAsync("hr1");
+
+        var r = await _h.WorkflowAdmin.AdministrativeCompletionAsync("hr1", "1504", Year,
+            "trying to skip validation", jobFamilyConfigured: true, perspectiveExempt: false, ip: null);
+        Assert.False(r.Success);
+        Assert.Equal(PmFormStatus.Draft, (await FormAsync()).Status);
+        Assert.Empty(await _h.Db.AuditLogs.Where(a => a.EmpCode == "1504").ToListAsync());
+    }
+
+    [Fact]
+    public async Task Admin_unlock_flips_lock_flag_without_changing_status_and_rejects_if_already_unlocked()
+    {
+        await _h.Workflow.SendToEmployeeAsync("u854", _mgr, _h.Content1504());
+        await _h.AddHrAdminAsync("hr1");
+        Assert.True((await FormAsync()).IsLocked);
+
+        var r = await _h.WorkflowAdmin.UnlockAsync("hr1", "1504", Year, "employee needs to fix one typo", null);
+        Assert.True(r.Success, r.ErrorText);
+
+        var f = await FormAsync();
+        Assert.False(f.IsLocked);
+        Assert.Equal(PmFormStatus.PendingEmployeeAck, f.Status);   // status unchanged by Unlock
+
+        var audit = await SingleAuditRowAsync();
+        Assert.Equal("Workflow Administration: Unlock Review", audit.Action);
+
+        var again = await _h.WorkflowAdmin.UnlockAsync("hr1", "1504", Year, "double click", null);
+        Assert.False(again.Success);
+        Assert.Contains("already unlocked", again.ErrorText);
+    }
+
+    [Fact]
+    public async Task Admin_actions_are_rejected_for_a_form_that_does_not_exist()
+    {
+        await _h.AddHrAdminAsync("hr1");
+        var r = await _h.WorkflowAdmin.ReturnToEmployeeAsync("hr1", "9999", Year, "no such employee form", null);
+        Assert.False(r.Success);
     }
 }

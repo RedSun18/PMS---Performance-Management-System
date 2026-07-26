@@ -63,4 +63,7 @@
   <data name="NoEmployeesMatch" xml:space="preserve"><value>No employees match your search.</value></data>
   <data name="TerminatedOn" xml:space="preserve"><value>Terminated {0:dd/MM/yyyy}</value></data>
   <data name="FooterNote" xml:space="preserve"><value>{0} employees. Rows sourced from HDR_SNAPSHOT were synthesized from the legacy pm_form_records export because no empmaster export exists (docs/data-migration-plan.md §2).</value></data>
+  <data name="PreviousPageButton" xml:space="preserve"><value>◀ Previous</value></data>
+  <data name="PageIndicator" xml:space="preserve"><value>Page {0} of {1}</value></data>
+  <data name="NextPageButton" xml:space="preserve"><value>Next ▶</value></data>
 </root>

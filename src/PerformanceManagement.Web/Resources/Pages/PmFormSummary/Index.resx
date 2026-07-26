@@ -63,4 +63,7 @@
   <data name="RatingScoreHeader" xml:space="preserve"><value>Rating Score</value></data>
   <data name="LastUpdatedHeader" xml:space="preserve"><value>Last Updated</value></data>
   <data name="ViewFormHeader" xml:space="preserve"><value>View Form</value></data>
+  <data name="PreviousPageButton" xml:space="preserve"><value>◀ Previous</value></data>
+  <data name="PageIndicator" xml:space="preserve"><value>Page {0} of {1}</value></data>
+  <data name="NextPageButton" xml:space="preserve"><value>Next ▶</value></data>
 </root>

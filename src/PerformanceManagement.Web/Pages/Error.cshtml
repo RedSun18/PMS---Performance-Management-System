@@ -1,0 +1,20 @@
+@page
+@model PerformanceManagement.Web.Pages.ErrorModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+}
+<div class="page-header danger">@Localizer["PageTitle"]</div>
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-error">
+            @Localizer["UnexpectedErrorMessage"]
+        </div>
+        <p class="muted">@Localizer["TryAgainExplanation"]</p>
+        @if (!string.IsNullOrEmpty(Model.RequestId))
+        {
+            <p class="muted">@Localizer["RequestIdLabel"]: <code>@Model.RequestId</code></p>
+        }
+        <a class="btn btn-primary" asp-page="/Dashboard">@Localizer["BackToDashboardButton"]</a>
+    </div>
+</div>

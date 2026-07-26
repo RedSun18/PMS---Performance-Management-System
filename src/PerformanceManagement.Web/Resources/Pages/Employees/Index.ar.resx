@@ -63,4 +63,7 @@
   <data name="NoEmployeesMatch" xml:space="preserve"><value>لا يوجد موظفون مطابقون لبحثك.</value></data>
   <data name="TerminatedOn" xml:space="preserve"><value>انتهت الخدمة بتاريخ {0:dd/MM/yyyy}</value></data>
   <data name="FooterNote" xml:space="preserve"><value>{0} موظف. تم توليف صفوف HDR_SNAPSHOT من ملف تصدير pm_form_records القديم نظرًا لعدم وجود ملف تصدير empmaster (docs/data-migration-plan.md §2).</value></data>
+  <data name="PreviousPageButton" xml:space="preserve"><value>◀ السابق</value></data>
+  <data name="PageIndicator" xml:space="preserve"><value>صفحة {0} من {1}</value></data>
+  <data name="NextPageButton" xml:space="preserve"><value>التالي ▶</value></data>
 </root>

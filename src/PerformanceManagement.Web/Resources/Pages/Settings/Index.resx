@@ -121,7 +121,7 @@
 
   <data name="CompanyLogoLabel" xml:space="preserve"><value>Company Logo</value></data>
   <data name="CurrentLogoAlt" xml:space="preserve"><value>Current company logo</value></data>
-  <data name="LogoHint" xml:space="preserve"><value>PNG, JPG, GIF or SVG, up to 2 MB.</value></data>
+  <data name="LogoHint" xml:space="preserve"><value>PNG, JPG or GIF, up to 2 MB.</value></data>
   <data name="PrimaryColorLabel" xml:space="preserve"><value>Primary Colour</value></data>
   <data name="SecondaryColorLabel" xml:space="preserve"><value>Secondary Colour</value></data>
   <data name="FooterTextLabel" xml:space="preserve"><value>Footer Text</value></data>

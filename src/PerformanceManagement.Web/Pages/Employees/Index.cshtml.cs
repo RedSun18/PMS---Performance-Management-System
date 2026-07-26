@@ -9,6 +9,8 @@ namespace PerformanceManagement.Web.Pages.Employees;
 [Authorize(Roles = Roles.HrAdminOrViewer)]
 public class IndexModel : AppPageModel
 {
+    private const int PageSize = 50;
+
     private readonly PmDbContext _db;
     public IndexModel(PmDbContext db) => _db = db;
 
@@ -16,9 +18,22 @@ public class IndexModel : AppPageModel
     [BindProperty(SupportsGet = true)] public string? Dept { get; set; }
     /// <summary>"active" (default), "inactive", or "all".</summary>
     [BindProperty(SupportsGet = true)] public string ActiveStatus { get; set; } = "active";
+    // Query key is "pageNum", not "page" — collides with Razor Pages' own ambient route value
+    // for the target page's path, both for binding and for asp-route-page link generation
+    // (produces an empty href); see WorkflowAdmin/Index.cshtml.cs's PageNumber for the full
+    // explanation.
+    [FromQuery(Name = "pageNum")] public int PageNumber { get; set; } = 1;
 
     public List<Department> Departments { get; set; } = new();
     public List<Row> Rows { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
+
+    /// <summary>Route-data dictionary for pager links — every current filter value except `page`.</summary>
+    public Dictionary<string, string?> FilterRouteData => new()
+    {
+        ["q"] = Q, ["dept"] = Dept, ["activeStatus"] = ActiveStatus
+    };
 
     public record Row(Employee E, string DeptName, string DesigName, string ManagerLabel, string? UserName);
 
@@ -49,7 +64,10 @@ public class IndexModel : AppPageModel
                 || empCodesByUsername.Contains(e.EmpCode));
         }
 
-        var emps = await q.OrderBy(e => e.EmpCode.PadLeft(6, '0')).ToListAsync();
+        TotalCount = await q.CountAsync();
+        var page = Math.Max(1, PageNumber);
+        var emps = await q.OrderBy(e => e.EmpCode.PadLeft(6, '0'))
+            .Skip((page - 1) * PageSize).Take(PageSize).ToListAsync();
         var depts = await _db.Departments.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.NameEn);
         var desigs = await _db.Designations.AsNoTracking().ToDictionaryAsync(d => d.Code, d => d.Description);
         var mgrs = await _db.ManagerAssignments.AsNoTracking().ToDictionaryAsync(m => m.EmpCode, m => m.ManagerEmpCode);

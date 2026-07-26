@@ -63,4 +63,7 @@
   <data name="RatingScoreHeader" xml:space="preserve"><value>درجة التقييم</value></data>
   <data name="LastUpdatedHeader" xml:space="preserve"><value>آخر تحديث</value></data>
   <data name="ViewFormHeader" xml:space="preserve"><value>عرض النموذج</value></data>
+  <data name="PreviousPageButton" xml:space="preserve"><value>◀ السابق</value></data>
+  <data name="PageIndicator" xml:space="preserve"><value>صفحة {0} من {1}</value></data>
+  <data name="NextPageButton" xml:space="preserve"><value>التالي ▶</value></data>
 </root>

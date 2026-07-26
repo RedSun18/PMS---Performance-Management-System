@@ -72,6 +72,9 @@ public class PmDbContext : DbContext
             // Dashboard/summary pages filter by year alone — (EmpCode, EvalYear) above doesn't
             // help since EvalYear isn't the leading column.
             e.HasIndex(x => x.EvalYear);
+            // WorkflowAdminService.SearchAsync and PmFormSummary/Index both filter by
+            // (year, status) together — the common "this year, this status" search pattern.
+            e.HasIndex(x => new { x.EvalYear, x.Status });
             e.Property(x => x.LegacyRefNo).HasMaxLength(20);
             e.Property(x => x.Status).HasMaxLength(20);
             e.Property(x => x.PreviousStatus).HasMaxLength(20);
@@ -99,7 +102,14 @@ public class PmDbContext : DbContext
             e.Property(x => x.WeightedCalculation).HasPrecision(7, 2);
         });
 
-        b.Entity<ManagerAssignment>().HasKey(x => x.EmpCode);
+        b.Entity<ManagerAssignment>(e =>
+        {
+            e.HasKey(x => x.EmpCode);
+            // Every manager-filtered search/report (WorkflowAdminService, PmFormSummary,
+            // WorkflowAdmin/Index, Reports/Index, ReportDataService) queries this column, not
+            // the primary key.
+            e.HasIndex(x => x.ManagerEmpCode);
+        });
 
         b.Entity<EmployeeException>(e =>
         {
@@ -134,6 +144,11 @@ public class PmDbContext : DbContext
             e.HasIndex(x => x.EmpCode);
             e.HasIndex(x => x.DeptCode);
             e.HasIndex(x => x.Action);
+            // AuditService.SearchAsync filters on exactly this pair, and WorkflowAdmin/Details
+            // hits it on every page load (EntityType: "PmForm", EntityId: form.Id) — an
+            // ever-growing, never-pruned table (see docs/operations.md), so this needs to be an
+            // index from the start rather than retrofitted once it's already large.
+            e.HasIndex(x => new { x.EntityType, x.EntityId });
         });
 
         b.Entity<ScheduledJobRun>(e =>

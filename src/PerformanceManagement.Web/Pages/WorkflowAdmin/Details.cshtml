@@ -1,0 +1,165 @@
+@page
+@model PerformanceManagement.Web.Pages.WorkflowAdmin.DetailsModel
+@using PerformanceManagement.Core.Domain
+@using PerformanceManagement.Core.Services
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
+@{
+    var d = Model.Details!;
+    ViewData["Title"] = $"{SharedLocalizer["NavWorkflowAdministration"]} — {d.EmpName}";
+    var nodes = WorkflowStageDisplay.TrackerNodes();
+    var actions = new (string Handler, string DialogId, string ButtonKey, string ConfirmKey, bool Enabled, string UnavailableKey)[]
+    {
+        ("ReturnToEmployee", "dlg-rte", "ReturnToEmployeeButton", "ReturnToEmployeeConfirmText", Model.CanReturnToEmployee, "ReturnToEmployeeUnavailable"),
+        ("ReturnToManager", "dlg-rtm", "ReturnToManagerButton", "ReturnToManagerConfirmText", Model.CanReturnToManager, "ReturnToManagerUnavailable"),
+        ("ReopenReview", "dlg-reopen", "ReopenReviewButton", "ReopenReviewConfirmText", Model.CanReopenReview, "ReopenReviewUnavailable"),
+        ("ResendNotification", "dlg-resend", "ResendNotificationButton", "ResendNotificationConfirmText", Model.CanResendNotification, "ResendNotificationUnavailable"),
+        ("AdministrativeCompletion", "dlg-complete", "AdministrativeCompletionButton", "AdministrativeCompletionConfirmText", Model.CanCompleteAdministratively, "AdministrativeCompletionUnavailable"),
+        ("Unlock", "dlg-unlock", "UnlockButton", "UnlockConfirmText", Model.CanUnlock, "UnlockUnavailable")
+    };
+}
+<div class="page-header">@Localizer["DetailsPageHeader"] — @d.EmpName</div>
+
+<div class="card">
+    <div class="card-header">👤 @Localizer["EmployeeInfoHeader"]</div>
+    <div class="card-body">
+        <div class="emp-info-grid" style="grid-template-columns:1fr 1fr 1fr;">
+            <div class="emp-info-group">
+                <div class="emp-info-group-title">@Localizer["EmployeeInfoHeader"]</div>
+                <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["EmployeeCode"]</span><span class="emp-val">@d.Form.EmpCode</span></div>
+                <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Employee"]</span><span class="emp-val">@d.EmpName</span></div>
+                <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["ReviewYear"]</span><span class="emp-val">@d.Form.EvalYear</span></div>
+            </div>
+            <div class="emp-info-group">
+                <div class="emp-info-group-title">@Localizer["ReportingStructureHeader"]</div>
+                <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Department"]</span><span class="emp-val">@d.DeptName</span></div>
+                <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Manager"]</span><span class="emp-val">@(string.IsNullOrEmpty(d.ManagerName) ? "—" : d.ManagerName)</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">📍 @Localizer["WorkflowStatusHeader"]</div>
+    <div class="card-body">
+        <div class="lock-timeline" style="margin-top:0;">
+            @for (var i = 0; i < nodes.Length; i++)
+            {
+                var state = nodes[i].Ordinal < d.StageOrdinal ? "done" : nodes[i].Ordinal == d.StageOrdinal ? "active" : "";
+                var symbol = state == "done" ? "✓" : state == "active" ? "●" : "○";
+                <span class="lock-step @state">@symbol @nodes[i].Label</span>
+                if (i < nodes.Length - 1)
+                {
+                    <span class="lock-connector"></span>
+                }
+            }
+        </div>
+        <div class="emp-info-grid" style="grid-template-columns:1fr 1fr 1fr;margin-top:18px;">
+            <div class="emp-info-row"><span class="emp-lbl">@Localizer["CurrentStageHeader"]</span><span class="emp-val">@d.Stage</span></div>
+            <div class="emp-info-row"><span class="emp-lbl">@Localizer["CurrentOwnerHeader"]</span><span class="emp-val">@d.Owner</span></div>
+            <div class="emp-info-row"><span class="emp-lbl">@SharedLocalizer["Status"]</span><span class="emp-val">@PmFormStatus.DisplayName(d.Form.Status)</span></div>
+            <div class="emp-info-row"><span class="emp-lbl">@Localizer["StartedLabel"]</span><span class="emp-val">@(d.Form.CreatedAt?.ToString("dd/MM/yyyy") ?? "—")</span></div>
+            <div class="emp-info-row"><span class="emp-lbl">@Localizer["LastUpdatedHeader"]</span><span class="emp-val">@(d.Form.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span></div>
+            <div class="emp-info-row"><span class="emp-lbl">@Localizer["CompletedDateLabel"]</span><span class="emp-val">@(d.Form.Status == PmFormStatus.Approved ? (d.Form.StatusChangeDate?.ToString("dd/MM/yyyy") ?? "—") : "—")</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">🕒 @Localizer["WorkflowTimelineHeader"]</div>
+    <div class="card-body">
+        @if (d.Timeline.Count == 0)
+        {
+            <p class="muted">@Localizer["NoTimelineEntries"]</p>
+        }
+        else
+        {
+            <div class="table-scroll">
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th>@Localizer["DateHeader"]</th><th>@Localizer["UserHeader"]</th>
+                        <th>@Localizer["PreviousStageHeader"]</th><th>@Localizer["NewStageHeader"]</th><th>@Localizer["NoteHeader"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var h in d.Timeline)
+                {
+                    <tr>
+                        <td>@h.ChangedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@h.ChangedBy</td>
+                        <td>@(h.FromStatus is null ? "—" : PmFormStatus.DisplayName(h.FromStatus))</td>
+                        <td>@PmFormStatus.DisplayName(h.ToStatus)</td>
+                        <td>@h.Note</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">📜 @Localizer["AuditHistoryHeader"]</div>
+    <div class="card-body">
+        @if (d.AuditHistory.Count == 0)
+        {
+            <p class="muted">@Localizer["NoAuditEntries"]</p>
+        }
+        else
+        {
+            <div class="table-scroll">
+            <table class="grid">
+                <thead><tr><th>@Localizer["TimestampHeader"]</th><th>@Localizer["UserHeader"]</th><th>@Localizer["ActionHeader"]</th><th>@Localizer["DetailsHeader"]</th></tr></thead>
+                <tbody>
+                @foreach (var a in d.AuditHistory)
+                {
+                    <tr>
+                        <td>@a.OccurredAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@a.PerformedBy</td>
+                        <td>@a.Action</td>
+                        <td>@a.Details</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">⚙️ @Localizer["AdminActionsHeader"]</div>
+    <div class="card-body">
+        <div class="grid-3" style="gap:14px;">
+            @foreach (var a in actions)
+            {
+                <div>
+                    <button type="button" class="btn btn-secondary" style="width:100%;" @(a.Enabled ? "" : "disabled")
+                            onclick="document.getElementById('@a.DialogId').showModal()">@Localizer[a.ButtonKey]</button>
+                    @if (!a.Enabled)
+                    {
+                        <p class="muted" style="font-size:11px;margin:4px 0 0;">@Localizer[a.UnavailableKey]</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@foreach (var a in actions)
+{
+    <dialog id="@a.DialogId" class="admin-action-dialog" aria-labelledby="title-@a.DialogId">
+        <form method="post" asp-page-handler="@a.Handler" asp-route-empcd="@Model.Empcd" asp-route-year="@Model.Year">
+            <h3 id="title-@a.DialogId">@Localizer[a.ButtonKey]</h3>
+            <p>@Localizer[a.ConfirmKey]</p>
+            <label for="reason-@a.DialogId">@SharedLocalizer["Reason"]</label>
+            <textarea name="reason" id="reason-@a.DialogId" required minlength="10" rows="3" placeholder="@Localizer["ReasonPlaceholder"]"></textarea>
+            <div class="form-actions" style="margin-top:12px;justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">@SharedLocalizer["Cancel"]</button>
+                <button type="submit" class="btn btn-primary">@SharedLocalizer["Confirm"]</button>
+            </div>
+        </form>
+    </dialog>
+}

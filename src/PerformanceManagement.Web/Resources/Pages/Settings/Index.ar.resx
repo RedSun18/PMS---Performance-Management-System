@@ -121,7 +121,7 @@
 
   <data name="CompanyLogoLabel" xml:space="preserve"><value>شعار الشركة</value></data>
   <data name="CurrentLogoAlt" xml:space="preserve"><value>الشعار الحالي للشركة</value></data>
-  <data name="LogoHint" xml:space="preserve"><value>PNG أو JPG أو GIF أو SVG، بحد أقصى 2 ميغابايت.</value></data>
+  <data name="LogoHint" xml:space="preserve"><value>PNG أو JPG أو GIF، بحد أقصى 2 ميغابايت.</value></data>
   <data name="PrimaryColorLabel" xml:space="preserve"><value>اللون الأساسي</value></data>
   <data name="SecondaryColorLabel" xml:space="preserve"><value>اللون الثانوي</value></data>
   <data name="FooterTextLabel" xml:space="preserve"><value>نص التذييل</value></data>

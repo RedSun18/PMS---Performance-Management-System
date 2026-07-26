@@ -1,15 +1,382 @@
+# ============================================
+# .NET Core & ASP.NET Core
+# ============================================
+
 # Build outputs
 bin/
 obj/
+[Bb]in/
+[Oo]bj/
 *.user
 .vs/
 .idea/
 
-# Local dev
-*.db
-*.log
-.DS_Store
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vsp
+*.vspx
+*.sln.ide
+*.vspscc
+*.vssscc
+*.vstemplate
+*.vstm
+*.vsd
+*.vcxproj.filters
+*.vcxproj.user
 
-# Legacy read-only snapshot + approved data exports (kept outside source control
-# per References/DATABASE_EXPORT_CHECKLIST.md; importer reads them from this path)
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# NuGet
+*.nupkg
+*.snupkg
+*.symbols.nupkg
+packages/
+*.packages.config
+*.packages.lock.json
+.nuget/
+*.nuget.props
+*.nuget.targets
+
+# ============================================
+# Database & Data Files
+# ============================================
+
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# PostgreSQL
+*.dump
+*.dmp
+*.backup
+*.bak
+*.sql.bak
+*.pgdump
+
+# Local dev databases
+*.mdf
+*.ldf
+*.ncb
+*.sdf
+
+# Migrations backup (keep only current)
+Migrations/*.Designer.cs
+!Migrations/*.Designer.cs
+Migrations/*.cs
+!Migrations/*.cs
+Migrations/*.sql
+!Migrations/*.sql
+
+# ============================================
+# Logs
+# ============================================
+
+*.log
+*.logs/
+logs/
+Logs/
+log/
+Log/
+*.tmp
+*.temp
+
+# ============================================
+# Configuration & Secrets
+# ============================================
+
+# Sensitive configs
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+*.Development.json
+*.Production.json
+*.Staging.json
+secrets.json
+*.secrets.json
+*.secrets
+*.config.user
+*.private.*
+*secret*
+*password*
+*.key
+*.pem
+*.cert
+*.pfx
+*.p12
+*.crt
+*.pub
+*.priv
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Connection strings (if hardcoded)
+connectionStrings.json
+connection-strings.json
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+
+# VS Code
+.vscode/
+*.code-workspace
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains Rider / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+
+# Visual Studio
+.vs/
+*.userprefs
+*.dotSettings
+*.dotSettings.user
+*.resharper
+*.r#
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# OS Files
+# ============================================
+
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.~
+*.swp
+*.swo
+*#
+.#*
+\#*#
+._*
+
+# ============================================
+# Test & Coverage
+# ============================================
+
+*.trx
+*.coverage
+*.coveragexml
+*.coverageuser
+*.coverageinfo
+*.vstest
+*.TestResults
+test-results/
+TestResults/
+*.vsmdi
+*.testsettings
+*.testrunconfig
+coverlet/
+*.coverlet.xml
+*.cobertura.xml
+
+# ============================================
+# Docker & Containers
+# ============================================
+
+[Dd]ockerfile*
+*.dockerignore
+*.docker-compose.yml
+*.docker-compose.override.yml
+.docker/
+docker-compose.*.yml
+!docker-compose.yml
+!docker-compose.override.yml
+
+# ============================================
+# Application Data & Uploads
+# ============================================
+
+/App_Data/
+/Uploads/
+/uploads/
+/UploadFiles/
+/uploadfiles/
+/Downloads/
+/downloads/
+/Temp/
+/temp/
+/backups/
+/archive/
+/dumps/
+/screenshots/
+
+# ============================================
+# CI/CD & Deployment
+# ============================================
+
+/.github/workflows/*.yml
+!.github/workflows/*.yml
+/.github/workflows/*.yaml
+!.github/workflows/*.yaml
+
+# Publish profiles
+*.publishsettings
+*.pubxml
+*.pubxml.user
+/_PublishedWebsites/
+/_PublishProfiles/
+*.deploy.cmd
+*.deploy-readme.md
+*.publish.xml
+
+# ============================================
+# Node.js & Frontend (if any)
+# ============================================
+
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================
+# Azure & Cloud
+# ============================================
+
+*.azure/
+*.azureprofile
+*.AzureStorageExplorer
+AzureFunctions/
+azw/
+*.azpublish
+
+# ============================================
+# GitHub Specific
+# ============================================
+
+# GitHub Actions artifacts
+*.workflow
+*.github
+
+# ============================================
+# Security & SSL
+# ============================================
+
+*.pfx
+*.p12
+*.cert
+*.crt
+*.key
+*.pem
+*.der
+*.csr
+*.cer
+*.pvk
+*.spc
+*.snk
+*.strongname
+
+# ============================================
+# Project Specific
+# ============================================
+
+# Legacy read-only snapshot + approved data exports
+# kept outside source control per References/DATABASE_EXPORT_CHECKLIST.md
+# importer reads them from this path
 References/
+
+# Local app settings (not checked in)
+appsettings.local.json
+appsettings.*.local.json
+
+# Health check logs
+healthcheck-*.log
+
+# Email templates (if generated)
+EmailTemplates/Generated/
+EmailTemplates/Compiled/
+
+# Reports cache
+Reports/Cache/
+Reports/Generated/
+
+# Temp files from exports
+Exports/
+/Exports/
+/*.xlsx
+/*.pdf
+!Sample*.xlsx
+!Sample*.pdf
+
+# ============================================
+# Backup & Archive
+# ============================================
+
+*.bak
+*.old
+*.orig
+*.rej
+*.patch
+*.diff
+
+# ============================================
+# Performance Profiling
+# ============================================
+
+*.diagsession
+*.trace
+*.etl
+*.etlx
+*.perfview
+
+# ============================================
+# Miscellaneous
+# ============================================
+
+# Windows
+*.lnk
+*.ini
+*.config.user
+
+# Linux
+*.pid
+*.socket
+
+# Mac
+*.localized
+*.metadata
+*.spotlight
+
+# ============================================
+# Sensitive Data Exports (Keep References/ but exclude exports)
+# ============================================
+
+# Keep the References folder structure but exclude actual data exports
+References/*.csv
+References/*.xlsx
+References/*.json
+!References/*.md
+!References/*.txt

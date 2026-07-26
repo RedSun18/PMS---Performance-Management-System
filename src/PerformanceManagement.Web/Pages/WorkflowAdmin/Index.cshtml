@@ -1,0 +1,123 @@
+@page
+@model PerformanceManagement.Web.Pages.WorkflowAdmin.IndexModel
+@using PerformanceManagement.Core.Domain
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = SharedLocalizer["NavWorkflowAdministration"].Value;
+}
+<div class="page-header">@Localizer["PageHeader"]</div>
+
+<div class="card">
+    <div class="card-header">@Localizer["FiltersHeader"]</div>
+    <div class="card-body">
+        <form method="get">
+            <div class="filters-7">
+                <div>
+                    <label for="waEmpcd">@SharedLocalizer["EmployeeCode"]</label>
+                    <input type="text" name="empcd" id="waEmpcd" value="@Model.Empcd" />
+                </div>
+                <div>
+                    <label for="waEmpname">@Localizer["EmployeeNameLabel"]</label>
+                    <input type="text" name="empname" id="waEmpname" value="@Model.Empname" />
+                </div>
+                <div>
+                    <label for="waDept">@SharedLocalizer["Department"]</label>
+                    <select name="dept" id="waDept" data-searchable>
+                        <option value="">@SharedLocalizer["AllDepartments"]</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            <option value="@d.Code" selected="@(d.Code == Model.Dept)">@d.NameEn</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="waManager">@SharedLocalizer["Manager"]</label>
+                    <select name="manager" id="waManager" data-searchable>
+                        <option value="">@SharedLocalizer["AllManagers"]</option>
+                        @foreach (var (code, label) in Model.ManagerOptions)
+                        {
+                            <option value="@code" selected="@(code == Model.Manager)">@label</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="waYear">@SharedLocalizer["ReviewYear"]</label>
+                    <select name="year" id="waYear">
+                        <option value="">@Localizer["AllYearsOption"]</option>
+                        @foreach (var y in Model.YearOptions)
+                        {
+                            <option value="@y" selected="@(y.ToString() == Model.Year)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="waStatus">@SharedLocalizer["Status"]</label>
+                    <select name="status" id="waStatus">
+                        <option value="">@SharedLocalizer["AllStatuses"]</option>
+                        @foreach (var s in PmFormStatus.All)
+                        {
+                            <option value="@s" selected="@(s == Model.Status)">@PmFormStatus.DisplayName(s)</option>
+                        }
+                    </select>
+                </div>
+                <div><button type="submit" class="btn btn-primary">@SharedLocalizer["Apply"]</button></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<h3 style="margin:14px 2px;">@Localizer["ResultsCountSuffix", Model.Result.TotalCount]</h3>
+
+@if (Model.Result.Rows.Count == 0)
+{
+    <div class="alert alert-warn">@Localizer["NoWorkflowsMatch"]</div>
+}
+else
+{
+    <div class="table-scroll">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th>@SharedLocalizer["Employee"]</th><th>@SharedLocalizer["Department"]</th><th>@SharedLocalizer["Manager"]</th>
+                <th>@SharedLocalizer["ReviewYear"]</th><th>@Localizer["CurrentStageHeader"]</th><th>@Localizer["CurrentOwnerHeader"]</th>
+                <th>@Localizer["LastUpdatedHeader"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["ActionsHeader"]</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model.Result.Rows)
+        {
+            <tr>
+                <td>@r.EmpCode - @r.EmpName</td>
+                <td>@r.DeptName</td>
+                <td>@r.ManagerName</td>
+                <td>@r.EvalYear</td>
+                <td>@r.Stage</td>
+                <td>@r.Owner</td>
+                <td>@(r.LastUpdated?.ToString("dd/MM/yyyy HH:mm") ?? "")</td>
+                <td>@PmFormStatus.DisplayName(r.Status)</td>
+                <td>
+                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                       asp-page="/WorkflowAdmin/Details" asp-route-empcd="@r.EmpCode" asp-route-year="@r.EvalYear">@Localizer["ViewWorkflowButton"]</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    </div>
+
+    @if (Model.Result.TotalPages > 1)
+    {
+        <div class="form-actions" style="margin-top:14px;">
+            @if (Model.Result.Page > 1)
+            {
+                <a class="btn btn-secondary" asp-all-route-data="Model.FilterRouteData" asp-route-pageNum="@(Model.Result.Page - 1)">@Localizer["PreviousPageButton"]</a>
+            }
+            <span class="muted">@Localizer["PageIndicator", Model.Result.Page, Model.Result.TotalPages]</span>
+            @if (Model.Result.Page < Model.Result.TotalPages)
+            {
+                <a class="btn btn-secondary" asp-all-route-data="Model.FilterRouteData" asp-route-pageNum="@(Model.Result.Page + 1)">@Localizer["NextPageButton"]</a>
+            }
+        </div>
+    }
+}

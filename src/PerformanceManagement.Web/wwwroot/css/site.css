@@ -415,6 +415,11 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 .form-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .filters { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 14px; align-items: end; }
 .filters-6 { display: grid; grid-template-columns: repeat(5, 1fr) auto; gap: 14px; align-items: end; }
+.filters-7 { display: grid; grid-template-columns: repeat(6, 1fr) auto; gap: 14px; align-items: end; }
+/* Widens a single field within a .filters grid (Reports page Employee/Department/Manager
+   selects) without resizing the shared class elsewhere. A no-op on the 1-column responsive
+   collapse below, so mobile layout is unaffected. */
+.filter-wide { grid-column: span 2; }
 .rating-pill {
   display: inline-block; padding: 3px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
   background: #e9eefb; color: var(--navy-mid); border: 1px solid #d3ddf7;
@@ -426,7 +431,7 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
 @media (max-width: 900px) {
   .page { padding: 16px 16px 48px; }
   .grid-2, .grid-3, .grid-4, .emp-info-grid { grid-template-columns: 1fr; }
-  .filters, .filters-6 { grid-template-columns: 1fr; }
+  .filters, .filters-6, .filters-7 { grid-template-columns: 1fr; }
   .perf-metrics { grid-template-columns: 1fr 1fr; }
   .perf-metric { border-inline-end: none; border-bottom: 1px solid var(--border); }
   /* Same flex-item-won't-shrink-below-content issue as .main-area (see its comment) — the
@@ -456,7 +461,7 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
   .page { padding: 12px 12px 36px; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .emp-info-grid { grid-template-columns: 1fr; }
-  .filters, .filters-6 { grid-template-columns: 1fr; }
+  .filters, .filters-6, .filters-7 { grid-template-columns: 1fr; }
 }
 
 /* ── Searchable select (Phase 12 Part 4) ──────────────────────────────
@@ -483,7 +488,21 @@ table.grid tfoot td { background: var(--navy-mid); color: #fff; font-weight: 700
   padding: 9px 11px; border-radius: var(--radius-sm); font-size: 13.5px; color: var(--text);
   cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.ssel-option:hover { background: var(--surface-alt); }
 .ssel-option.ssel-highlighted { background: var(--surface-alt); }
 .ssel-option[aria-selected="true"] { font-weight: 700; color: var(--navy-mid); }
 .ssel-option.ssel-empty { color: var(--text-muted); cursor: default; font-style: italic; }
-.ssel-option.ssel-empty.ssel-highlighted { background: transparent; }
+.ssel-option.ssel-empty.ssel-highlighted, .ssel-option.ssel-empty:hover { background: transparent; }
+
+/* ── Admin action confirmation dialog (Phase 13) ──────────────────────
+   Native <dialog>+showModal() — free focus-trapping, Escape-to-close and
+   ::backdrop dimming, no JS framework needed. Used by Workflow Administration's
+   six administrative actions, each requiring a typed reason before submit. */
+dialog.admin-action-dialog {
+  border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md); padding: 22px; width: 100%; max-width: 440px; color: var(--text);
+}
+dialog.admin-action-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+dialog.admin-action-dialog h3 { margin: 0 0 8px; font-size: 15px; color: var(--navy); }
+dialog.admin-action-dialog p { margin: 0 0 14px; font-size: 13px; color: var(--text-muted); }
+dialog.admin-action-dialog label { margin-top: 4px; }

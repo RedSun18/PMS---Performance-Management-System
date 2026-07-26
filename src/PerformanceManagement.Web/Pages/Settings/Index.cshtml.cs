@@ -16,16 +16,23 @@ namespace PerformanceManagement.Web.Pages.Settings;
 [Authorize(Roles = Roles.HrAdmin)]
 public class IndexModel : AppPageModel
 {
-    private static readonly string[] AllowedLogoExtensions = { ".png", ".jpg", ".jpeg", ".gif", ".svg" };
+    // No .svg: an SVG can carry embedded <script>/event-handler payloads, and the uploaded file
+    // is served back same-origin (app-wide, in every page's header) — a stored-XSS vector that
+    // an image content-type sniff alone can't rule out. Raster formats only.
+    private static readonly string[] AllowedLogoExtensions = { ".png", ".jpg", ".jpeg", ".gif" };
     private const long MaxLogoBytes = 2 * 1024 * 1024;
 
     private readonly SettingsService _settings;
     private readonly IWebHostEnvironment _env;
     private readonly IStringLocalizer<IndexModel> _localizer;
-    public IndexModel(SettingsService settings, IWebHostEnvironment env, IStringLocalizer<IndexModel> localizer)
+    private readonly AuditService _audit;
+    public IndexModel(SettingsService settings, IWebHostEnvironment env, IStringLocalizer<IndexModel> localizer, AuditService audit)
     {
-        _settings = settings; _env = env; _localizer = localizer;
+        _settings = settings; _env = env; _localizer = localizer; _audit = audit;
     }
+
+    private Task LogSettingsChangeAsync(string tab, string? details = null) =>
+        _audit.LogAsync($"Settings Changed: {tab}", CurrentUserName, entityType: "SystemSettings", details: details);
 
     private static readonly string[] KnownTabs = { "general", "review", "email", "auth", "security", "dashboard", "branding" };
     private string _tab = "general";
@@ -135,6 +142,7 @@ public class IndexModel : AppPageModel
         await _settings.SaveGeneralSettingsAsync(new GeneralSettings(
             General.CompanyName, General.ApplicationName, null, General.CompanyAddress,
             General.ContactEmail, General.ApplicationBaseUrl, General.LanguageSelectionEnabled), CurrentUserName);
+        await LogSettingsChangeAsync("General");
         Message = _localizer["GeneralSettingsSaved"];
         return RedirectToPage(new { Tab = "general" });
     }
@@ -145,6 +153,7 @@ public class IndexModel : AppPageModel
         await _settings.SavePerformanceReviewSettingsAsync(new PerformanceReviewSettings(
             Review.CurrentReviewYear, Review.MidYearStart, Review.MidYearEnd, Review.EndYearStart, Review.EndYearEnd,
             Review.MidYearAchievementStartDate, Review.EndYearAchievementStartDate, Review.SubmitToHrStartDate), CurrentUserName);
+        await LogSettingsChangeAsync("Performance Review");
         Message = _localizer["ReviewSettingsSaved"];
         return RedirectToPage(new { Tab = "review" });
     }
@@ -156,6 +165,12 @@ public class IndexModel : AppPageModel
             Email.SmtpHost, Email.SmtpPort, Email.SmtpUsername, Email.NewPassword,
             Email.SenderName, Email.SenderEmail, Email.EnableSsl, Email.EnableEmailNotifications,
             Email.DevelopmentRedirectEmail), CurrentUserName);
+        // Redirect state controls whether real employee inboxes receive mail at all — worth its
+        // own detail line rather than a bare "Email settings changed".
+        await LogSettingsChangeAsync("Email",
+            string.IsNullOrWhiteSpace(Email.DevelopmentRedirectEmail)
+                ? "DevelopmentRedirectEmail cleared — mail now addresses real recipients."
+                : $"DevelopmentRedirectEmail set to {Email.DevelopmentRedirectEmail} — all mail redirected there.");
         Message = _localizer["EmailSettingsSaved"];
         return RedirectToPage(new { Tab = "email" });
     }
@@ -187,9 +202,13 @@ public class IndexModel : AppPageModel
     // ---- Authentication ----------------------------------------------------
     public async Task<IActionResult> OnPostSaveAuthAsync()
     {
+        var verificationPasswordChanged = !string.IsNullOrWhiteSpace(Auth.NewLoginAsVerificationPassword);
         await _settings.SaveAuthenticationSettingsAsync(new AuthenticationSettingsInput(
             Auth.DefaultUserPassword, Auth.PasswordComplexityRequired, Auth.MinimumPasswordLength,
             Auth.SessionTimeoutMinutes, Auth.NewLoginAsVerificationPassword, Auth.MaxLoginAttempts), CurrentUserName);
+        await LogSettingsChangeAsync("Authentication",
+            $"MaxLoginAttempts={Auth.MaxLoginAttempts}, SessionTimeoutMinutes={Auth.SessionTimeoutMinutes}" +
+            (verificationPasswordChanged ? "; Login As verification password changed" : ""));
         Message = _localizer["AuthSettingsSaved"];
         return RedirectToPage(new { Tab = "auth" });
     }
@@ -197,9 +216,18 @@ public class IndexModel : AppPageModel
     // ---- Security ------------------------------------------------------------
     public async Task<IActionResult> OnPostSaveSecurityAsync()
     {
+        var before = await _settings.GetSecuritySettingsAsync();
         await _settings.SaveSecuritySettingsAsync(new SecuritySettings(
             Security.EnableAuditLogging, Security.AccountLockoutMinutes,
             Security.PasswordExpiryDays, Security.RememberMeDurationDays), CurrentUserName);
+        // Unconditional (LogAlwaysAsync, not LogAsync): if this save is what just turned audit
+        // logging off, the normal gated LogAsync would silently no-op on its own change — the one
+        // event that must never be the one to erase its own record.
+        var auditToggleNote = before.EnableAuditLogging != Security.EnableAuditLogging
+            ? $" EnableAuditLogging changed {before.EnableAuditLogging} -> {Security.EnableAuditLogging}."
+            : "";
+        await _audit.LogAlwaysAsync("Settings Changed: Security", CurrentUserName, entityType: "SystemSettings",
+            details: $"AccountLockoutMinutes={Security.AccountLockoutMinutes}, PasswordExpiryDays={Security.PasswordExpiryDays}." + auditToggleNote);
         Message = _localizer["SecuritySettingsSaved"];
         return RedirectToPage(new { Tab = "security" });
     }
@@ -209,6 +237,7 @@ public class IndexModel : AppPageModel
     {
         await _settings.SaveDashboardSettingsAsync(new DashboardSettings(
             DashboardSettings.WelcomeMessage, DashboardSettings.AnnouncementBanner), CurrentUserName);
+        await LogSettingsChangeAsync("Dashboard");
         Message = _localizer["DashboardSettingsSaved"];
         return RedirectToPage(new { Tab = "dashboard" });
     }
@@ -243,6 +272,7 @@ public class IndexModel : AppPageModel
 
         await _settings.SaveBrandingSettingsAsync(new BrandingSettings(
             logoPath, Branding.PrimaryColorHex, Branding.SecondaryColorHex, Branding.FooterText), CurrentUserName);
+        await LogSettingsChangeAsync("Branding", logoPath is null ? null : $"Logo replaced: {logoPath}");
         Message = _localizer["BrandingSettingsSaved"];
         return RedirectToPage(new { Tab = "branding" });
     }

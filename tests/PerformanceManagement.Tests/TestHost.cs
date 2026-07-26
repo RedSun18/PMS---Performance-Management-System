@@ -44,6 +44,8 @@ public sealed class TestHost : IDisposable
     public EmailService Email { get; }
     public NotificationService Notifications { get; }
     public WorkflowService Workflow { get; }
+    public AuditService Audit { get; }
+    public WorkflowAdminService WorkflowAdmin { get; }
 
     public TestHost()
     {
@@ -63,6 +65,8 @@ public sealed class TestHost : IDisposable
         Email = new EmailService(Db, Clock, Settings, NullLogger<EmailService>.Instance);
         Notifications = new NotificationService(Db, Clock);
         Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links, Notifications);
+        Audit = new AuditService(Db, Clock, Settings);
+        WorkflowAdmin = new WorkflowAdminService(Db, Workflow, Audit, NullLogger<WorkflowAdminService>.Instance);
     }
 
     public PmDbContext NewContext() =>

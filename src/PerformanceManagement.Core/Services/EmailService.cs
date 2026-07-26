@@ -24,17 +24,15 @@ public record EmailSpec(
 /// idempotency key. Sends real mail via SMTP using <see cref="SettingsService"/>
 /// (database-backed, admin-editable) — see docs on the System Settings page.
 ///
-/// SAFETY GUARDRAIL: while a development redirect address is configured, this build
-/// must never address a real employee inbox imported from the legacy empmaster/
-/// pm_form_records export. Every dispatch that would have had a recipient is
-/// redirected there; the originally intended recipients are preserved in the log's
-/// Note field for traceability only, never used as an actual send target.
+/// SAFETY GUARDRAIL (opt-in): only while an admin has explicitly set a
+/// DevelopmentRedirectEmail in Settings — e.g. during UAT against real imported
+/// employee data — is every dispatch redirected there instead of the real recipients,
+/// with the originally intended recipients preserved in the log's Note field for
+/// traceability only. With no redirect configured (the normal production state), mail
+/// goes to the real intended recipients — there is no hardcoded fallback address.
 /// </summary>
 public class EmailService
 {
-    /// <summary>Fallback redirect used only if no DevelopmentRedirectEmail is configured in Settings.</summary>
-    public const string SafeRecipient = "aryanbhandary@gmail.com";
-
     private readonly PmDbContext _db;
     private readonly IClock _clock;
     private readonly SettingsService _settings;
@@ -45,7 +43,7 @@ public class EmailService
         _db = db; _clock = clock; _settings = settings; _logger = logger;
     }
 
-    /// <summary>Dedupe (To wins over CC), skip empties, redirect to the dev address, send via SMTP, write the log row.</summary>
+    /// <summary>Dedupe (To wins over CC), skip empties, redirect only if configured, send via SMTP, write the log row.</summary>
     public async Task<EmailLog> DispatchAsync(EmailSpec spec)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -54,11 +52,14 @@ public class EmailService
 
         var credentials = await _settings.GetSmtpCredentialsAsync();
         var redirectTo = credentials?.DevelopmentRedirectEmail?.Trim();
-        if (string.IsNullOrEmpty(redirectTo)) redirectTo = SafeRecipient;
+        var isRedirected = !string.IsNullOrEmpty(redirectTo);
 
-        // Redirect: never send to a legacy empmaster address while a dev redirect is
-        // configured. Empty intended-To still skips entirely (no SMTP call at all).
-        var to = intendedTo.Count == 0 ? new List<string>() : new List<string> { redirectTo };
+        // No intended recipient at all ⇒ skip entirely, regardless of redirect config.
+        // Otherwise: redirect (dev/UAT safety net) or send to the real To/Cc (production).
+        List<string> to, cc;
+        if (intendedTo.Count == 0) { to = new List<string>(); cc = new List<string>(); }
+        else if (isRedirected) { to = new List<string> { redirectTo! }; cc = new List<string>(); }
+        else { to = intendedTo; cc = intendedCc; }
 
         var log = new EmailLog
         {
@@ -66,13 +67,13 @@ public class EmailService
             TemplateKey = spec.TemplateKey,
             FormLegacyRefNo = spec.FormLegacyRefNo,
             ToRecipients = string.Join(";", to),
-            CcRecipients = "",
+            CcRecipients = string.Join(";", cc),
             Subject = spec.Subject,
             Body = spec.Body,
             IdempotencyKey = spec.IdempotencyKey,
-            Note = (intendedTo.Count == 0 && intendedCc.Count == 0)
-                ? null
-                : $"Redirected to {redirectTo}. Intended To=[{string.Join(";", intendedTo)}] Cc=[{string.Join(";", intendedCc)}].",
+            Note = (isRedirected && intendedTo.Count > 0)
+                ? $"Redirected to {redirectTo}. Intended To=[{string.Join(";", intendedTo)}] Cc=[{string.Join(";", intendedCc)}]."
+                : null,
             Status = to.Count == 0 ? "SKIPPED_NO_RECIPIENT" : "PENDING"
         };
 
@@ -102,7 +103,7 @@ public class EmailService
             {
                 try
                 {
-                    await SendAsync(credentials, to, spec.Subject, spec.Body);
+                    await SendAsync(credentials, to, cc, spec.Subject, spec.Body);
                     log.Status = "SENT";
                 }
                 catch (Exception ex)
@@ -120,7 +121,7 @@ public class EmailService
         return log;
     }
 
-    private static async Task SendAsync(SmtpCredentials creds, IReadOnlyList<string> to, string subject, string body)
+    private static async Task SendAsync(SmtpCredentials creds, IReadOnlyList<string> to, IReadOnlyList<string> cc, string subject, string body)
     {
         using var client = new SmtpClient(creds.Host, creds.Port)
         {
@@ -135,6 +136,7 @@ public class EmailService
             IsBodyHtml = true
         };
         foreach (var addr in to) message.To.Add(addr);
+        foreach (var addr in cc) message.CC.Add(addr);
         await client.SendMailAsync(message);
     }
 
@@ -165,7 +167,7 @@ public class EmailService
             </div>
             </body></html>
             """;
-        await SendAsync(creds, new[] { toAddress }, "PMS — SMTP Test Email", body);
+        await SendAsync(creds, new[] { toAddress }, Array.Empty<string>(), "PMS — SMTP Test Email", body);
     }
 }
 

@@ -15,11 +15,28 @@ _ = PdfRenderer.WarmupAsync();
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Cookies/HSTS/HTTPS-redirect are only forced on in non-Development environments — the local
+// dev server runs plain http://localhost (see .claude/launch.json), and a Secure cookie is
+// silently dropped by the browser over HTTP, which would otherwise break local login entirely.
+var isDevelopment = builder.Environment.IsDevelopment();
+
+const string DefaultDevConnection = "Host=localhost;Port=5445;Database=pms;Username=pms;Password=pms_dev";
 var connection = builder.Configuration.GetConnectionString("Pm")
     ?? Environment.GetEnvironmentVariable("PM_CONNECTION")
-    ?? "Host=localhost;Port=5445;Database=pms;Username=pms;Password=pms_dev";
+    ?? DefaultDevConnection;
 
-builder.Services.AddDbContext<PmDbContext>(o => o.UseNpgsql(connection));
+// 60s command timeout gives report/aggregate queries room without hanging a request forever on
+// a stuck connection. Not adding EnableRetryOnFailure here: this app's WorkflowService methods
+// open their own manual BeginTransactionAsync()/CommitAsync() blocks, and EF's retrying execution
+// strategy explicitly rejects user-initiated transactions unless every one of those call sites is
+// rewritten to run through CreateExecutionStrategy().ExecuteAsync(...) — tracked as a roadmap
+// item rather than attempted as part of this pass.
+builder.Services.AddDbContext<PmDbContext>(o => o.UseNpgsql(connection, npgsql => npgsql.CommandTimeout(60)));
+
+// Liveness/readiness probe for a load balancer or container orchestrator — no extra package
+// needed, just checks the DB is actually reachable rather than only "the process is up".
+builder.Services.AddHealthChecks()
+    .AddCheck<PmDbHealthCheck>("database");
 
 // Pinned application name so the Data Protection key ring (used to encrypt the SMTP
 // password at rest) stays valid across restarts regardless of content-root path changes.
@@ -37,6 +54,7 @@ builder.Services.AddScoped<FormLinkService>();
 builder.Services.AddScoped<ReportDataService>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<WorkflowService>();
+builder.Services.AddScoped<WorkflowAdminService>();
 
 // Scheduled jobs (Job Registry: GenerateAnnualForms, OpenMidYearReview, OpenEndYearReview,
 // DailyReminder, WeeklyEscalation, MonthlyCleanup) — see Jobs/ScheduledJobs.cs. Job/trigger keys
@@ -65,7 +83,18 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         o.AccessDeniedPath = "/AccessDenied";
         o.ExpireTimeSpan = TimeSpan.FromHours(8); // overridden below once Settings:Authentication is readable
         o.SlidingExpiration = true;
+        // Require HTTPS for the auth cookie in every real deployment — Secure=false only in
+        // Development, where the dev server is plain HTTP and a Secure cookie would never be
+        // sent back by the browser, breaking local login.
+        o.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+        o.Cookie.SameSite = SameSiteMode.Lax;
     });
+
+builder.Services.AddAntiforgery(o =>
+{
+    o.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    o.Cookie.SameSite = SameSiteMode.Strict;
+});
 
 // The admin-configured Session Timeout (Settings > Authentication) overrides the fallback
 // above. This Configure delegate is resolved lazily on first use (after startup migrations
@@ -95,6 +124,8 @@ builder.Services.AddSession(o =>
     o.IdleTimeout = TimeSpan.FromHours(2);
     o.Cookie.HttpOnly = true;
     o.Cookie.IsEssential = true;
+    o.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    o.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 // Localization architecture (Phase 10 Part 8): English + Arabic supported, cookie-driven
@@ -147,6 +178,7 @@ if (app.Environment.IsProduction())
         unchanged.Add("Security:LoginAsVerificationPassword");
     if ((builder.Configuration["Security:DefaultUserPassword"] ?? DatabaseSeeder.DevPassword) == DatabaseSeeder.DevPassword)
         unchanged.Add("Security:DefaultUserPassword");
+    if (connection == DefaultDevConnection) unchanged.Add("ConnectionStrings:Pm");
 
     if (unchanged.Count > 0)
         throw new InvalidOperationException(
@@ -162,6 +194,61 @@ using (var scope = app.Services.CreateScope())
     await DatabaseSeeder.SeedCoreAsync(db, adminUsername, adminPassword);
 }
 
+// A real user in Production must never see a raw stack trace/internal paths — the developer
+// exception page is exactly that, so it's confined to Development. UseHsts tells browsers to
+// remember to use HTTPS for this host going forward; skipped in Development for the same
+// plain-http-localhost reason as the cookie policies above.
+if (isDevelopment)
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
+    // Skipped in Development: the dev server only binds http://localhost (.claude/launch.json),
+    // so redirecting there would just loop against a port that was never opened for HTTPS.
+    app.UseHttpsRedirection();
+}
+
+// Trusts X-Forwarded-For/X-Forwarded-Proto from any upstream proxy so Request.IsHttps and
+// RemoteIpAddress (used for audit-log IP capture, e.g. WorkflowAdmin/Details.cshtml.cs and
+// Admin/LoginAs.cshtml.cs) reflect the real client, not the proxy, once deployed behind a
+// TLS-terminating load balancer/reverse proxy. KnownNetworks/KnownProxies are cleared because
+// the actual proxy IP isn't known at build time — operators fronting this app with their own
+// reverse proxy should lock this down to that proxy's address in their deployment config.
+var forwardedHeadersOptions = new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+        | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
+
+// Baseline security headers for every response. CSP keeps 'unsafe-inline' for script/style since
+// the app relies throughout on inline onclick="..." handlers and small per-page <script> blocks
+// (a nonce-based rewrite is tracked as a roadmap item, not attempted here) — but still blocks
+// framing, plugins, and base-tag injection, which cost nothing to fix and need no page changes.
+app.Use(async (ctx, next) =>
+{
+    var headers = ctx.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data:; " +
+        "font-src 'self' data:; " +
+        "object-src 'none'; " +
+        "base-uri 'self'; " +
+        "frame-ancestors 'none'; " +
+        "form-action 'self';";
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseRouting();
 // Authentication before localization (not the more common order) so SettingsAwareCultureProvider
@@ -173,7 +260,27 @@ app.UseRequestLocalization(app.Services.GetRequiredService<Microsoft.Extensions.
 app.UseAuthorization();
 app.UseSession();
 app.MapRazorPages();
+// Unauthenticated by design — a load balancer/orchestrator probe has no session/cookie to send,
+// and the check itself reveals nothing beyond "can this process reach its database".
+app.MapHealthChecks("/health").AllowAnonymous();
 
 app.Run();
 
 public partial class Program { }
+
+/// <summary>Reports healthy only if the database is actually reachable, not just that the
+/// process is up — a hung Postgres connection or failed migration should fail this check.</summary>
+public class PmDbHealthCheck : Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
+{
+    private readonly PmDbContext _db;
+    public PmDbHealthCheck(PmDbContext db) => _db = db;
+
+    public async Task<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult> CheckHealthAsync(
+        Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        return await _db.Database.CanConnectAsync(cancellationToken)
+            ? Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy()
+            : Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Unhealthy("Cannot connect to the database.");
+    }
+}

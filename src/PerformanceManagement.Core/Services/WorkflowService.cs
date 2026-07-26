@@ -322,8 +322,246 @@ public class WorkflowService
             return WorkflowResult.Fail($"Cannot delete a submitted or approved form. Current status: {PmFormStatus.DisplayName(form.Status)}.");
 
         _db.PmForms.Remove(form);
-        await _db.SaveChangesAsync();
-        await tx.CommitAsync();
+        try
+        {
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return WorkflowResult.Fail("This form was changed by another user. Please retry.");
+        }
+        return WorkflowResult.Ok();
+    }
+
+    // --------------------------------------------------------------- T9: Admin — Return to Employee
+    /// <summary>
+    /// Workflow Administration override (see <c>WorkflowAdminService</c>): forces the form back to
+    /// PENDING_EMPLOYEE_ACK so the employee must acknowledge again, regardless of how far past that
+    /// stage it has gone. Not reachable through the normal employee/manager/HR flows — only via the
+    /// HR-Admin-only Workflow Administration console, which supplies its own reason/audit trail on
+    /// top of this transition.
+    /// </summary>
+    public async Task<WorkflowResult> AdminReturnToEmployeeAsync(string actor, string empCode, int evalYear, string reason)
+    {
+        return await ExecuteAsync(empCode, evalYear, allowCreate: false,
+            expectedStatuses: new[] { PmFormStatus.PendingEmployeeAck, PmFormStatus.EmployeeAcknowledged,
+                PmFormStatus.SubmittedToHr, PmFormStatus.HrReview1Approved, PmFormStatus.Approved },
+            statusMismatchMessage: "Cannot return to the employee — this form has not yet been sent for acknowledgement.",
+            action: async form =>
+            {
+                TransitionTo(form, PmFormStatus.PendingEmployeeAck, actor, $"Admin: returned to employee — {reason}");
+                form.EmpAckBy = null;
+                form.EmpAckDate = null;
+                form.EmpAckSign = null;
+                form.EmpAckComments = null;
+                form.IsLocked = true;
+                await Task.CompletedTask;
+                return WorkflowResult.Ok();
+            },
+            email: async form =>
+            {
+                var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
+                var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
+                await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
+                    To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                await _notifications.CreateAsync(recipientUserName, "Performance Objectives Ready for Review",
+                    $"{form.EvalYear} review — please review and acknowledge your objectives.", "ReviewAssigned", actionUrl);
+            });
+    }
+
+    // --------------------------------------------------------------- T10: Admin — Reopen Review
+    /// <summary>
+    /// Workflow Administration override: restores a completed (APPROVED) review to the manager's
+    /// editable stage. Clears both HR reviewers' sign-off fields since they applied to a form that
+    /// is now being reopened for changes — a stale HR signature next to a since-modified form would
+    /// misrepresent who actually reviewed the final content.
+    /// </summary>
+    public async Task<WorkflowResult> AdminReopenReviewAsync(string actor, string empCode, int evalYear, string reason)
+    {
+        return await ExecuteAsync(empCode, evalYear, allowCreate: false,
+            expectedStatuses: new[] { PmFormStatus.Approved },
+            statusMismatchMessage: "Only a completed review can be reopened.",
+            action: async form =>
+            {
+                TransitionTo(form, PmFormStatus.EmployeeAcknowledged, actor, $"Admin: reopened review — {reason}");
+                form.IsLocked = false;
+                form.Hr1ReviewerName = null; form.Hr1ReviewDate = null; form.Hr1Sign = null; form.Hr1Remarks = null;
+                form.Hr2ReviewerName = null; form.Hr2ReviewDate = null; form.Hr2Sign = null; form.Hr2Remarks = null;
+                await Task.CompletedTask;
+                return WorkflowResult.Ok();
+            },
+            email: async form =>
+            {
+                var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
+                await _notifications.CreateAsync(managerUserName, "Performance Review Reopened",
+                    $"HR reopened {form.EmpNameSnapshot}'s {form.EvalYear} review for further editing.", "AdminReopened", actionUrl);
+            });
+    }
+
+    // --------------------------------------------------------------- T11: Admin — Resend Notification
+    /// <summary>
+    /// Workflow Administration override: re-dispatches whichever workflow email corresponds to the
+    /// form's CURRENT status, reusing the exact same <see cref="EmailTemplates"/> call and recipient
+    /// resolution the matching transition already uses — no new templates, no status change. Passes
+    /// a null idempotency key deliberately: the normal key (<see cref="IdemKey"/>) is scoped to the
+    /// form's current Version, so a same-version resend would otherwise collide with the original
+    /// send and get silently marked SKIPPED_DUPLICATE by <see cref="EmailService"/>'s dedup guard —
+    /// exactly wrong for an intentional resend.
+    /// </summary>
+    public async Task<WorkflowResult> AdminResendNotificationAsync(string actor, string empCode, int evalYear)
+    {
+        var form = await FindFormAsync(empCode, evalYear);
+        if (form is null) return WorkflowResult.Fail("No PM form exists for this employee and year.");
+
+        EmailLog log;
+        switch (form.Status)
+        {
+            case PmFormStatus.PendingEmployeeAck:
+            {
+                var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
+                var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
+                log = await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
+                    To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                break;
+            }
+            case PmFormStatus.EmployeeAcknowledged:
+            {
+                var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
+                var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
+                var achievementOpenDate = await _gate.AchievementOpenDateAsync(form.EvalYear);
+                var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
+                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture);
+                log = await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
+                    To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                break;
+            }
+            case PmFormStatus.SubmittedToHr:
+            {
+                var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
+                var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
+                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now);
+                log = await _email.DispatchAsync(new EmailSpec("SUBMIT_TO_HR",
+                    To: await HrAdminEmailsAsync(), Cc: await EmailsAsync(form.ManagerEmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                break;
+            }
+            case PmFormStatus.HrReview1Approved:
+            {
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
+                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now);
+                log = await _email.DispatchAsync(new EmailSpec("HR1_APPROVED",
+                    To: await HrAdminEmailsAsync(exceptEmpCode: form.Hr1Sign), Cc: Array.Empty<string>(),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                break;
+            }
+            case PmFormStatus.Approved:
+            {
+                var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
+                var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
+                log = await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
+                    To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+                break;
+            }
+            default:
+                return WorkflowResult.Fail("No notification exists for the current stage.");
+        }
+
+        return log.Status == "FAILED"
+            ? WorkflowResult.Fail($"The notification could not be sent (status: {log.Status}).")
+            : WorkflowResult.Ok();
+    }
+
+    // --------------------------------------------------------------- T12: Admin — Administrative Completion
+    /// <summary>
+    /// Workflow Administration override, surfaced in the UI as "Administrative Completion" (internal
+    /// name is more literal — this really does force-finalize a stuck workflow). Bypasses the normal
+    /// HR_REVIEW_1_APPROVED → APPROVED sequence requirement, but still runs the same completeness
+    /// rules <see cref="SubmitToHrAsync"/> enforces: "force" only means skipping the status-sequence
+    /// gate, never skipping data-quality validation.
+    /// </summary>
+    public async Task<WorkflowResult> AdminForceFinalizeAsync(string actor, string empCode, int evalYear,
+        string reason, bool jobFamilyConfigured, bool perspectiveExempt)
+    {
+        return await ExecuteAsync(empCode, evalYear, allowCreate: false,
+            expectedStatuses: PmFormStatus.All.Where(s => s != PmFormStatus.Approved).ToArray(),
+            statusMismatchMessage: "This review is already completed.",
+            action: async form =>
+            {
+                var errors = FormValidationService.ValidateForSubmitToHr(form, jobFamilyConfigured, perspectiveExempt);
+                if (errors.Count > 0) return WorkflowResult.Fail(errors);
+
+                ScoringService.Recalculate(form);
+                var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
+                form.OverallRatingCode = rating?.Code;
+
+                TransitionTo(form, PmFormStatus.Approved, actor, $"Admin: administrative completion — {reason}");
+                form.IsLocked = true;
+                return WorkflowResult.Ok();
+            },
+            email: async form =>
+            {
+                var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
+                var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
+                var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
+                var culture = await CultureForEmpCodeAsync(form.EmpCode);
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
+                await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
+                    To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
+                    subject, body, form.LegacyRefNo, IdempotencyKey: null));
+
+                var title = $"Performance Review Finalized ({form.EvalYear})";
+                var message = $"{form.EmpNameSnapshot}'s {form.EvalYear} performance review is finalized.";
+                await _notifications.CreateAsync(empUserName, title, message, "Finalized", actionUrl);
+                await _notifications.CreateAsync(await UserNameForEmpCodeAsync(form.ManagerEmpCode), title, message, "Finalized", actionUrl);
+            });
+    }
+
+    // --------------------------------------------------------------- T13: Admin — Unlock Review
+    /// <summary>
+    /// Workflow Administration override: unlocks the form for editing without rewinding its stage —
+    /// for when HR just needs the manager to fix one field, not move the whole workflow backward.
+    /// Records a same-status history row, the identical idiom <see cref="SaveDraftAsync"/> already
+    /// uses for EMPLOYEE_ACKNOWLEDGE-stage content-only saves. No email: nothing about the stage
+    /// changed, so none of the existing stage-transition templates apply.
+    /// </summary>
+    public async Task<WorkflowResult> AdminUnlockAsync(string actor, string empCode, int evalYear, string reason)
+    {
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        var form = await _db.PmForms.FirstOrDefaultAsync(f => f.EmpCode == empCode.Trim() && f.EvalYear == evalYear);
+        if (form is null) return WorkflowResult.Fail("No PM form exists for this employee and year.");
+        if (!form.IsLocked) return WorkflowResult.Fail("This form is already unlocked.");
+
+        form.IsLocked = false;
+        Audit(form, actor);
+        AddHistory(form, form.Status, form.Status, actor, $"Admin: unlocked — {reason}");
+        form.Version++;
+
+        try
+        {
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return WorkflowResult.Fail("This form was changed by another user. Please retry.");
+        }
         return WorkflowResult.Ok();
     }
 

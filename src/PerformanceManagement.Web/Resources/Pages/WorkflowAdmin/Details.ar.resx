@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DetailsPageHeader" xml:space="preserve"><value>تفاصيل سير العمل</value></data>
+  <data name="EmployeeInfoHeader" xml:space="preserve"><value>بيانات الموظف</value></data>
+  <data name="ReportingStructureHeader" xml:space="preserve"><value>هيكل التبعية</value></data>
+  <data name="WorkflowStatusHeader" xml:space="preserve"><value>حالة سير العمل الحالية</value></data>
+  <data name="CurrentStageHeader" xml:space="preserve"><value>المرحلة الحالية</value></data>
+  <data name="CurrentOwnerHeader" xml:space="preserve"><value>الجهة المسؤولة حاليًا</value></data>
+  <data name="StartedLabel" xml:space="preserve"><value>تاريخ البدء</value></data>
+  <data name="LastUpdatedHeader" xml:space="preserve"><value>آخر تحديث</value></data>
+  <data name="CompletedDateLabel" xml:space="preserve"><value>تاريخ الإكمال</value></data>
+  <data name="WorkflowTimelineHeader" xml:space="preserve"><value>سجل مراحل سير العمل</value></data>
+  <data name="NoTimelineEntries" xml:space="preserve"><value>لا توجد انتقالات مسجّلة لسير العمل بعد.</value></data>
+  <data name="DateHeader" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="UserHeader" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="PreviousStageHeader" xml:space="preserve"><value>المرحلة السابقة</value></data>
+  <data name="NewStageHeader" xml:space="preserve"><value>المرحلة الجديدة</value></data>
+  <data name="NoteHeader" xml:space="preserve"><value>الإجراء المتخذ / الملاحظات</value></data>
+  <data name="AuditHistoryHeader" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="NoAuditEntries" xml:space="preserve"><value>لا توجد سجلات تدقيق لهذا التقييم بعد.</value></data>
+  <data name="TimestampHeader" xml:space="preserve"><value>الوقت والتاريخ</value></data>
+  <data name="ActionHeader" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="DetailsHeader" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="AdminActionsHeader" xml:space="preserve"><value>الإجراءات الإدارية</value></data>
+  <data name="ReasonPlaceholder" xml:space="preserve"><value>وضّح سبب الحاجة إلى هذا الإجراء الإداري…</value></data>
+
+  <data name="ReturnToEmployeeButton" xml:space="preserve"><value>إعادة إلى الموظف</value></data>
+  <data name="ReturnToEmployeeUnavailable" xml:space="preserve"><value>غير متاح — لم يُرسَل هذا التقييم إلى الموظف بعد.</value></data>
+  <data name="ReturnToEmployeeConfirmText" xml:space="preserve"><value>سيُعاد التقييم إلى مرحلة إقرار الموظف، وسيُطلب من الموظف الإقرار به مرة أخرى. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+
+  <data name="ReturnToManagerButton" xml:space="preserve"><value>إعادة إلى المدير</value></data>
+  <data name="ReturnToManagerUnavailable" xml:space="preserve"><value>غير متاح — هذا التقييم ليس حاليًا قيد مراجعة الموارد البشرية.</value></data>
+  <data name="ReturnToManagerConfirmText" xml:space="preserve"><value>سيُعاد التقييم إلى مرحلة مراجعة نهاية العام الخاصة بالمدير للسماح بتعديل الدرجات مجددًا. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+
+  <data name="ReopenReviewButton" xml:space="preserve"><value>إعادة فتح التقييم</value></data>
+  <data name="ReopenReviewUnavailable" xml:space="preserve"><value>غير متاح — لا يمكن إعادة فتح إلا تقييم مكتمل.</value></data>
+  <data name="ReopenReviewConfirmText" xml:space="preserve"><value>سيُعاد فتح هذا التقييم المكتمل للتعديل. ستُمسح اعتمادات مراجعي الموارد البشرية السابقة نظرًا لأن النموذج سيُعدَّل مجددًا. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+
+  <data name="ResendNotificationButton" xml:space="preserve"><value>إعادة إرسال الإشعار</value></data>
+  <data name="ResendNotificationUnavailable" xml:space="preserve"><value>غير متاح — لا يوجد إشعار بريدي لهذه المرحلة الحالية بعد.</value></data>
+  <data name="ResendNotificationConfirmText" xml:space="preserve"><value>سيُعاد إرسال البريد الإلكتروني الخاص بالمرحلة الحالية للتقييم إلى المستلمين المعتادين. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+
+  <data name="AdministrativeCompletionButton" xml:space="preserve"><value>إكمال إداري</value></data>
+  <data name="AdministrativeCompletionUnavailable" xml:space="preserve"><value>غير متاح — هذا التقييم مكتمل بالفعل.</value></data>
+  <data name="AdministrativeCompletionConfirmText" xml:space="preserve"><value>سيُعلَّم التقييم كمكتمل مباشرة، متجاوزًا خطوات المراجعة المتبقية. ستظل الضوابط المعتادة على البيانات (الدرجات، الأوزان) سارية. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+
+  <data name="UnlockButton" xml:space="preserve"><value>إلغاء قفل التقييم</value></data>
+  <data name="UnlockUnavailable" xml:space="preserve"><value>غير متاح — هذا النموذج غير مقفل بالفعل.</value></data>
+  <data name="UnlockConfirmText" xml:space="preserve"><value>سيُفتح قفل النموذج للتعديل دون تغيير مرحلته الحالية — يُستخدم هذا عند الحاجة إلى تصحيح بسيط فقط. سيُسجَّل هذا الإجراء في سجل التدقيق.</value></data>
+</root>

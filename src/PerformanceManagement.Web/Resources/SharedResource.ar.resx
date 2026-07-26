@@ -181,7 +181,9 @@
   <data name="NavUserManagement" xml:space="preserve"><value>إدارة المستخدمين</value></data>
   <data name="NavLoginAs" xml:space="preserve"><value>تسجيل الدخول كـ</value></data>
   <data name="NavScheduledJobs" xml:space="preserve"><value>المهام المجدولة</value></data>
+  <data name="NavWorkflowAdministration" xml:space="preserve"><value>إدارة سير العمل</value></data>
   <data name="NavSystemSettings" xml:space="preserve"><value>إعدادات النظام</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
   <data name="NavNotifications" xml:space="preserve"><value>الإشعارات</value></data>
   <data name="NavMainNavigation" xml:space="preserve"><value>التنقل الرئيسي</value></data>
   <!-- Auth -->

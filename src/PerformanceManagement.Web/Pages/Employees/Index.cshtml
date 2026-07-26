@@ -84,4 +84,19 @@
     </tbody>
 </table>
 </div>
-<p class="muted">@Localizer["FooterNote", Model.Rows.Count]</p>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="form-actions" style="margin-top:14px;">
+        @if (Model.PageNumber > 1)
+        {
+            <a class="btn btn-secondary" asp-all-route-data="Model.FilterRouteData" asp-route-pageNum="@(Model.PageNumber - 1)">@Localizer["PreviousPageButton"]</a>
+        }
+        <span class="muted">@Localizer["PageIndicator", Model.PageNumber, Model.TotalPages]</span>
+        @if (Model.PageNumber < Model.TotalPages)
+        {
+            <a class="btn btn-secondary" asp-all-route-data="Model.FilterRouteData" asp-route-pageNum="@(Model.PageNumber + 1)">@Localizer["NextPageButton"]</a>
+        }
+    </div>
+}
+<p class="muted">@Localizer["FooterNote", Model.TotalCount]</p>

@@ -12,7 +12,9 @@ Description=Nightly pg_dump backup of the PMS Demo database (pms_demo only — n
 [Service]
 Type=oneshot
 User=root
-# Stable path into the persistent git checkout (see deploy/RUNBOOK.md "Server layout") —
-# deliberately NOT under /var/www/pms-demo/current, which is a symlink that publish.sh
-# repoints on every deploy and could vanish mid-swap.
+# Hardcoded path, not $REPO_DIR-derived — bootstrap-server.sh enforces the repo is checked
+# out at exactly /opt/pms-demo/repo specifically so this and the GitHub Actions deploy key
+# (see .github/workflows/deploy.yml) can hardcode it too, rather than templating it into
+# every file that needs it. Deliberately NOT under /var/www/pms-demo/current, which is a
+# symlink that publish.sh repoints on every deploy and could vanish mid-swap.
 ExecStart=/opt/pms-demo/repo/deploy/backup-demo-db.sh

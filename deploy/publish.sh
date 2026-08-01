@@ -17,8 +17,15 @@ RELEASES_DIR="$APP_ROOT/releases"
 SHARED_DIR="$APP_ROOT/shared"
 CURRENT_LINK="$APP_ROOT/current"
 KEEP_RELEASES=5
+# Kept in sync by hand with deploy/systemd/pms-demo.service's ASPNETCORE_URLS and
+# deploy/nginx/pms.aryanb.dev.conf's proxy_pass — all three must agree on this port.
 HEALTH_URL="http://127.0.0.1:8090/health"
 SERVICE_NAME="pms-demo"
+
+if ! command -v dotnet >/dev/null 2>&1; then
+  echo "!! 'dotnet' is not on PATH. Install the .NET 8 SDK/runtime first, then re-run." >&2
+  exit 1
+fi
 
 TS="$(date -u +%Y%m%d%H%M%S)"
 RELEASE_DIR="$RELEASES_DIR/$TS"
@@ -92,3 +99,15 @@ echo "==> Pruning old releases (keeping last $KEEP_RELEASES)"
 ls -1dt "$RELEASES_DIR"/*/ 2>/dev/null | tail -n +$((KEEP_RELEASES + 1)) | xargs -r rm -rf
 
 echo "==> Deploy OK: $GIT_COMMIT ($APP_VERSION) live at $DEPLOY_TIMESTAMP"
+
+# The rollback gate above only proves THIS release's app process is healthy — it says
+# nothing about Postgres, Nginx, HTTPS, or the static sites. Run the full verification pass
+# now that the release itself is confirmed good. Deliberately NOT part of the rollback
+# decision above: a DNS/certificate problem is an infra issue to fix on its own terms, not a
+# reason to revert an otherwise-working app release.
+echo "==> Verifying the full deployment"
+if ! "$REPO_DIR/deploy/healthcheck.sh"; then
+  echo "!! Deploy published successfully and the app itself is healthy, but the full"
+  echo "!! verification pass found a problem — see above."
+  exit 1
+fi

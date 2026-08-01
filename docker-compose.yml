@@ -7,10 +7,22 @@
 # via `localhost` either way, but on the production VPS this means Postgres is unreachable
 # from outside even if Docker's own iptables rules end up bypassing UFW (a known Docker/UFW
 # interaction gotcha) — UFW itself only allows 22/80/443 in anyway, see deploy/RUNBOOK.md.
+#
+# `name:` pins the Compose project name (covers both services in this file, dev and demo
+# alike) so the named volumes below always resolve to the same `pms_...` names regardless of
+# which directory this repo is checked out into. Compose otherwise derives the project name
+# from the checkout directory's basename, which differs between a local checkout (e.g.
+# "Performance Management Form") and the VPS (/opt/pms-demo/repo) — without this pin,
+# `docker compose down -v` run from a different directory than the container was originally
+# started from silently targets a DIFFERENT volume name and leaves the real one behind, which
+# is exactly how a "destroy and recreate the database" attempt can silently fail to actually
+# remove the old data.
+name: pms
 services:
   postgres:
     image: postgres:16-alpine
     container_name: pms-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: pms
       POSTGRES_USER: pms
@@ -29,12 +41,23 @@ services:
   # docs/DEMO.md). Different container name, different volume, different port: this can
   # never be confused with or accidentally point at the real `postgres` service above.
   #
-  # POSTGRES_DEMO_PASSWORD is unset for local dev (falls back to the checked-in default,
-  # same as before) — production supplies a real value via `--env-file deploy/postgres-demo.env`
-  # (gitignored, see deploy/postgres-demo.env.example), never by editing this file.
+  # POSTGRES_DEMO_PASSWORD comes from a `.env` file in the SAME directory as this compose
+  # file (repo root) — Docker Compose auto-loads that file for every invocation with zero
+  # flags needed, which is the point: an operator debugging with a bare `docker compose ...`
+  # command (no explicit --env-file) still gets the real password, not the checked-in
+  # `pms_demo_dev` fallback below. Unset (local dev, no .env present) falls back to that
+  # fallback, same as before. See .env.example / deploy/RUNBOOK.md "Create the database
+  # secret" — this is the ONE file that holds this password; deploy/bootstrap-server.sh
+  # derives everything else (including the app's ConnectionStrings__Pm) from it automatically.
   postgres-demo:
     image: postgres:16-alpine
     container_name: pms-demo-postgres
+    # unless-stopped (not `always`): must come back on its own after a host reboot or
+    # `docker.service` restart — pms-demo.service already does (it's `systemctl enable`d) —
+    # but must NOT fight an explicit `docker compose stop postgres-demo`, which the recovery
+    # procedure in deploy/RUNBOOK.md relies on before wiping the volume. `always` would
+    # immediately restart it out from under that.
+    restart: unless-stopped
     environment:
       POSTGRES_DB: pms_demo
       POSTGRES_USER: pms_demo

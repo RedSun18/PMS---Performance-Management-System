@@ -14,23 +14,32 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker-compose.yml"
 
+# docker-compose.yml pins `name: pms`, so the volume below is always named
+# `pms_pms-demo-pgdata` regardless of which directory this repo is checked out into —
+# no more guessing it from the checkout directory's name (a real prior bug: the guess and
+# the actual Compose-assigned name silently diverged once the checkout path changed,
+# e.g. between a local clone and /opt/pms-demo/repo on the VPS, so this "reset" could
+# leave the real volume — and its password — untouched).
+#
+# If a repo-root .env exists (see .env.example), pass it explicitly so this script's
+# behavior always matches deploy/bootstrap-server.sh's; local dev without a .env keeps
+# using docker-compose.yml's checked-in fallback password, same as before.
+ENV_FILE_ARGS=()
+if [ -f "$ROOT_DIR/.env" ]; then
+  ENV_FILE_ARGS=(--env-file "$ROOT_DIR/.env")
+fi
+
 echo "1) Stopping the demo Postgres container (if running)..."
-docker compose -f "$COMPOSE_FILE" stop postgres-demo 2>/dev/null || true
-docker compose -f "$COMPOSE_FILE" rm -f postgres-demo 2>/dev/null || true
+docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" stop postgres-demo 2>/dev/null || true
+docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" rm -f postgres-demo 2>/dev/null || true
 
 echo "2) Removing the demo database volume (full fresh database, not just a table wipe)..."
-docker volume rm "$(basename "$ROOT_DIR" | tr '[:upper:]' '[:lower:]' | tr -d ' ')_pms-demo-pgdata" 2>/dev/null || \
-  docker volume ls -q | grep -E 'pms-demo-pgdata$' | xargs -r docker volume rm
+docker volume rm pms_pms-demo-pgdata 2>/dev/null || true
 
-echo "3) Starting a fresh demo Postgres container..."
-docker compose -f "$COMPOSE_FILE" up -d postgres-demo
+echo "3) Starting a fresh demo Postgres container (--wait blocks until its healthcheck passes)..."
+docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" up -d --wait postgres-demo
 
-echo "4) Waiting for Postgres to accept connections..."
-until docker exec pms-demo-postgres pg_isready -U pms_demo -d pms_demo >/dev/null 2>&1; do
-  sleep 1
-done
-
-echo "5) Applying migrations and seeding deterministic demo data..."
+echo "4) Applying migrations and seeding deterministic demo data..."
 dotnet run --project "$ROOT_DIR/src/PerformanceManagement.DemoSeeder"
 
 echo

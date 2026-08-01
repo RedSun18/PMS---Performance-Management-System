@@ -10,6 +10,66 @@ Domains: `pms.aryanb.dev` (app) · `aryanb.dev` (portfolio) · `docs.aryanb.dev`
 
 ---
 
+## Recovering a server stuck at "SSL configuration" (missing options-ssl-nginx.conf / ssl-dhparam.pem)
+
+**If you already ran an older version of `bootstrap-server.sh`** and Nginx is failing to
+start/reload with something like:
+
+```
+nginx: [emerg] cannot load certificate "/etc/letsencrypt/live/.../fullchain.pem" ...
+# or
+open() "/etc/letsencrypt/options-ssl-nginx.conf" failed (No such file or directory)
+open() "/etc/letsencrypt/ssl-dhparam.pem" failed (No such file or directory)
+```
+
+— this is a fixed bug, not something to hand-edit around. **Root cause**: those two files
+are normally created as a side effect of Certbot's *nginx plugin* running (`certbot --nginx`).
+This deployment deliberately uses `certbot certonly --webroot` instead (so Certbot never
+rewrites the git-tracked Nginx configs), which means that side effect never fires — on
+**any** Ubuntu 24.04 box, whether Certbot came from the apt package (`certbot 2.9.0`, as
+you have) or Snap. It is not a packaging difference; it's a webroot-vs-nginx-plugin one.
+Separately, Ubuntu 24.04's apt `nginx` package is `1.24.0`, which predates the `http2 on;`
+directive (added in 1.25.1) — the old templates used that newer syntax and would have failed
+`nginx -t` with "unknown directive" on this exact setup even once the SSL files existed.
+
+**Fix — do not hand-edit anything under `/etc/nginx/` or `/etc/letsencrypt/`.** Pull the
+corrected repo and re-run the bootstrap script; it's idempotent and will not re-request
+certificates you already have:
+
+```bash
+cd /opt/pms-demo/repo
+sudo git pull
+sudo deploy/bootstrap-server.sh
+```
+
+What this does on a server that's already partway deployed, step by step:
+- Step 10 (certificate issuance) sees `/etc/letsencrypt/live/<domain>` already exists for
+  each domain and does nothing, **except** `aryanb.dev`: the corrected script now requests
+  that certificate with `www.aryanb.dev` included (`--expand`), so it reissues once to add
+  that name — one extra, harmless certificate operation, not a rate-limit concern.
+- Step 11 (new) creates `/etc/letsencrypt/options-ssl-nginx.conf` (copied from
+  `deploy/nginx/options-ssl-nginx.conf`, only if that path is empty — it will be, in your
+  case) and generates `/etc/letsencrypt/ssl-dhparam.pem` via `openssl dhparam` (takes up to
+  ~a minute; skipped on any future re-run since it already exists).
+- Step 12 reinstalls the (now `http2`-syntax-fixed) final Nginx configs from
+  `deploy/nginx/*.conf` and reloads.
+
+Nginx briefly serves the plain-HTTP bootstrap stub for each domain partway through this
+run (step 9, unconditionally re-applied) before step 12 puts the real HTTPS config back —
+a few seconds of flapping is expected and not a sign anything went wrong. Verify afterward:
+
+```bash
+sudo nginx -t
+curl -I https://pms.aryanb.dev/health
+curl -I https://aryanb.dev
+curl -I https://www.aryanb.dev   # should now present a valid cert too, not a mismatch
+```
+
+If you hadn't reached `sudo deploy/publish.sh` yet before hitting this error, continue from
+§5 below now that Nginx is healthy.
+
+---
+
 ## 0. Server layout (reference)
 
 ```

@@ -22,7 +22,6 @@ fi
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DOMAINS=(pms.aryanb.dev aryanb.dev www.aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev)
-CERT_DOMAINS=(pms.aryanb.dev aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev)
 CERTBOT_EMAIL="hello@aryanb.dev"
 
 echo "############################################################"
@@ -132,18 +131,56 @@ echo "# 10) Let's Encrypt certificates (HTTP-01 via shared webroot)"
 echo "############################################################"
 echo "If this fails behind Cloudflare, see deploy/RUNBOOK.md 'HTTPS via Let's Encrypt' for"
 echo "the DNS-only fallback before retrying."
-for d in "${CERT_DOMAINS[@]}"; do
-  if [ ! -d "/etc/letsencrypt/live/$d" ]; then
-    certbot certonly --webroot -w /var/www/certbot -d "$d" \
-      --non-interactive --agree-tos -m "$CERTBOT_EMAIL" || \
-      echo "!! Certbot failed for $d — see message above, fix, and re-run this step manually."
-  else
-    echo "-- Certificate for $d already exists, skipping."
-  fi
-done
+# --expand makes each of these safe to re-run: if a cert already covers exactly these names,
+# Certbot just reports "not yet due for renewal" and does nothing; if the name list has
+# changed since it was issued (e.g. adding www.aryanb.dev to an existing aryanb.dev-only
+# cert on a server that already ran an older version of this script), it reissues to cover
+# the full set instead of erroring. aryanb.dev and www.aryanb.dev deliberately share ONE
+# certificate (aryanb.dev.conf serves both from the same cert) rather than getting separate
+# ones.
+request_cert() {
+  certbot certonly --webroot -w /var/www/certbot "$@" \
+    --non-interactive --agree-tos --expand -m "$CERTBOT_EMAIL" || \
+    echo "!! Certbot failed for: $* — see message above, fix, and re-run this step manually."
+}
+request_cert -d pms.aryanb.dev
+request_cert -d aryanb.dev -d www.aryanb.dev
+request_cert -d docs.aryanb.dev
+request_cert -d renewalflow.aryanb.dev
 
 echo "############################################################"
-echo "# 11) Nginx — final TLS-enabled site configs"
+echo "# 11) Certbot's Nginx SSL support files"
+echo "############################################################"
+# The Nginx configs below (deploy/nginx/*.conf) reference /etc/letsencrypt/options-ssl-nginx.conf
+# and /etc/letsencrypt/ssl-dhparam.pem. Those two files are normally created as a SIDE EFFECT
+# of Certbot's nginx *plugin* running (`certbot --nginx` / `certbot install --nginx`) — but
+# step 10 deliberately uses `certonly --webroot` instead, specifically so Certbot never
+# rewrites our git-tracked Nginx configs itself. That means the plugin's prepare() step that
+# would normally drop these two files never runs, and `nginx -t` fails on a fresh box
+# ("cannot load certificate ... ssl-dhparam.pem: No such file or directory") regardless of
+# whether Certbot came from the Ubuntu apt package or Snap — this is not a snap-vs-apt
+# packaging difference, it's specifically a webroot-vs-nginx-plugin one.
+#
+# Fix: provide both files ourselves. options-ssl-nginx.conf is Certbot's own long-standing
+# publicly-documented baseline (TLSv1.2/1.3, modern cipher list) — deploy/nginx/options-ssl-nginx.conf
+# is a checked-in copy of it, installed only if nothing is there yet (never overwrites a
+# real Certbot-managed copy, e.g. if `--nginx` was ever used on this box for something else).
+# ssl-dhparam.pem has no meaningful "checked-in" version (it's meant to be host-specific, and
+# hand-embedding a long DH parameter blob in git is exactly the kind of thing a single typo
+# would silently make cryptographically weak rather than obviously broken) — generated once
+# with openssl instead; skipped on re-runs since it's slow (up to ~a minute) and never needs
+# to change.
+mkdir -p /etc/letsencrypt
+if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
+  cp "$REPO_DIR/deploy/nginx/options-ssl-nginx.conf" /etc/letsencrypt/options-ssl-nginx.conf
+fi
+if [ ! -f /etc/letsencrypt/ssl-dhparam.pem ]; then
+  echo "-- Generating a 2048-bit DH parameter file (one-time, can take up to ~a minute)..."
+  openssl dhparam -out /etc/letsencrypt/ssl-dhparam.pem 2048
+fi
+
+echo "############################################################"
+echo "# 12) Nginx — final TLS-enabled site configs"
 echo "############################################################"
 for f in pms.aryanb.dev aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev; do
   if [ -d "/etc/letsencrypt/live/$f" ]; then
@@ -158,7 +195,7 @@ rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/ww
 nginx -t && systemctl reload nginx
 
 echo "############################################################"
-echo "# 12) Certbot auto-renewal deploy-hook (reload Nginx after renewal)"
+echo "# 13) Certbot auto-renewal deploy-hook (reload Nginx after renewal)"
 echo "############################################################"
 mkdir -p /etc/letsencrypt/renewal-hooks/deploy
 cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh <<'EOF'
@@ -169,7 +206,7 @@ chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 systemctl enable --now certbot.timer 2>/dev/null || true
 
 echo "############################################################"
-echo "# 13) systemd units: app + nightly backup"
+echo "# 14) systemd units: app + nightly backup"
 echo "############################################################"
 cp "$REPO_DIR/deploy/systemd/pms-demo.service" /etc/systemd/system/pms-demo.service
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.service" /etc/systemd/system/pms-demo-backup.service

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PMS Documentation — Performance Management System</title>
+<meta name="description" content="Documentation for the Performance Management System: User Guide, Administrator Guide, Technical Architecture, Database, Workflow, and Deployment guides, built entirely from the public Apex Corporation demo." />
+<link rel="canonical" href="https://docs.aryanb.dev/" />
+
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0f2b5c" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="PMS Documentation" />
+<meta property="og:title" content="PMS Documentation — Performance Management System" />
+<meta property="og:description" content="User Guide, Administrator Guide, Technical Architecture, Database, Workflow, and Deployment guides — built from the public Apex Corporation demo." />
+<meta property="og:url" content="https://docs.aryanb.dev/" />
+<meta property="og:image" content="https://docs.aryanb.dev/assets/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="PMS Documentation" />
+<meta name="twitter:description" content="Guides for the Performance Management System, built from the public Apex Corporation demo." />
+<meta name="twitter:image" content="https://docs.aryanb.dev/assets/og-image.png" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "PMS Documentation",
+  "url": "https://docs.aryanb.dev/",
+  "publisher": { "@type": "Person", "name": "Aryan Bhandary", "url": "https://aryanb.dev/" }
+}
+</script>
+
+<style>
+  :root {
+    --navy: #0f2b5c; --navy2: #1e3a8a; --blue: #2f5fd6;
+    --bg: #f4f6fb; --card: #ffffff; --text: #1a2333; --muted: #5b6478; --border: #e3e7ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b1120; --card: #121a2e; --text: #eef1f8; --muted: #9aa5bd; --border: #23304d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; }
+  a { color: var(--blue); }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+  header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); color: #fff; padding: 64px 0 48px; }
+  header h1 { margin: 0 0 10px; font-size: 34px; }
+  header p { margin: 0; color: #dbe3f7; max-width: 640px; }
+  section { padding: 48px 0; }
+  h2 { font-size: 22px; margin: 0 0 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .doc-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: 6px;
+  }
+  .doc-card:hover { border-color: var(--blue); }
+  .doc-card strong { font-size: 15.5px; }
+  .doc-card span { font-size: 13px; color: var(--muted); }
+  .shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .shots a { display: block; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .shots img { width: 100%; display: block; }
+  .note { padding: 14px 18px; border-radius: 10px; background: var(--card); border: 1px dashed var(--border); color: var(--muted); font-size: 13.5px; }
+  footer { border-top: 1px solid var(--border); padding: 24px 0 36px; color: var(--muted); font-size: 12.5px; }
+  footer .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  footer code { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <h1>Performance Management System — Documentation</h1>
+  <p>
+    Every guide and screenshot here is generated from the public <strong>Apex Corporation</strong>
+    demo — no real company data. See the live demo at
+    <a href="https://pms.aryanb.dev" style="color:#fff;text-decoration:underline;">pms.aryanb.dev</a>.
+  </p>
+</header>
+
+<main class="wrap">
+  <section id="guides">
+    <h2>Guides</h2>
+    <div class="grid">
+      <a class="doc-card" href="User_Guide.pdf"><strong>User Guide</strong><span>Employees, Managers, HR Reviewers</span></a>
+      <a class="doc-card" href="Administrator_Guide.pdf"><strong>Administrator Guide</strong><span>HR Administrator reference</span></a>
+      <a class="doc-card" href="Technical_Architecture_Guide.pdf"><strong>Technical Architecture Guide</strong><span>System design &amp; diagrams</span></a>
+      <a class="doc-card" href="Database_Guide.pdf"><strong>Database Guide</strong><span>Schema &amp; ER diagrams</span></a>
+      <a class="doc-card" href="Workflow_Guide.pdf"><strong>Workflow Guide</strong><span>PM Form state machine</span></a>
+      <a class="doc-card" href="Deployment_Guide.pdf"><strong>Deployment Guide</strong><span>Production deployment reference</span></a>
+      <a class="doc-card" href="Performance_Management_System.pptx"><strong>Product Deck</strong><span>Full presentation (.pptx)</span></a>
+      <a class="doc-card" href="sample_employee_report.pdf"><strong>Sample Report</strong><span>A real PDF export from the demo</span></a>
+    </div>
+  </section>
+
+  <section id="screenshots">
+    <h2>Screenshots</h2>
+    <div class="shots">
+      <a href="screenshots/dashboard.png"><img src="screenshots/dashboard.png" loading="lazy" alt="Dashboard" /></a>
+      <a href="screenshots/arabic_dashboard.png"><img src="screenshots/arabic_dashboard.png" loading="lazy" alt="Dashboard, Arabic RTL" /></a>
+      <a href="screenshots/pmform_top.png"><img src="screenshots/pmform_top.png" loading="lazy" alt="PM Form" /></a>
+      <a href="screenshots/reports.png"><img src="screenshots/reports.png" loading="lazy" alt="Reports" /></a>
+      <a href="screenshots/workflow_admin_search.png"><img src="screenshots/workflow_admin_search.png" loading="lazy" alt="Workflow Administration" /></a>
+      <a href="screenshots/employee_management.png"><img src="screenshots/employee_management.png" loading="lazy" alt="Employee Management" /></a>
+    </div>
+    <p class="note" style="margin-top:16px;">More screenshots in the <a href="screenshots/">screenshots folder</a>.</p>
+  </section>
+
+  <section id="about">
+    <p class="note">
+      This is a temporary documentation home. Once <a href="https://aryanb.dev">aryanb.dev</a>'s
+      full portfolio ships, <strong>docs.aryanb.dev</strong> will host documentation for all
+      projects, not just this one.
+    </p>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="meta">
+    <span>Deployed <code>{{DEPLOY_TIMESTAMP}}</code></span>
+    <span>Commit <code>{{GIT_COMMIT}}</code></span>
+    <span>Version <code>{{APP_VERSION}}</code></span>
+    <span>Environment <code>{{ENVIRONMENT}}</code></span>
+  </div>
+</footer>
+
+</body>
+</html>

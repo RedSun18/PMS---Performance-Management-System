@@ -23,16 +23,16 @@ run() {
   fi
 }
 
-echo "1) Ensure Postgres container is running (docker compose up -d)"
-run "docker compose -f \"$ROOT_DIR/docker-compose.yml\" up -d"
+echo "1) Ensure the Development Postgres container is running (docker compose up -d postgres)"
+run "docker compose -f \"$ROOT_DIR/docker-compose.yml\" up -d postgres"
 
 echo "2) Restore dotnet global tools (if needed)"
 run "dotnet tool restore"
 
 echo "3) Run the importer to load References/Database (idempotent)"
-run "dotnet run --project \"$ROOT_DIR/src/PerformanceManagement.Importer\" -- --data \"$ROOT_DIR/References/Database\" --connection \"Host=localhost;Port=5445;Database=aicpm;Username=aicpm;Password=aicpm_dev\""
+run "dotnet run --project \"$ROOT_DIR/src/PerformanceManagement.Importer\" -- --data \"$ROOT_DIR/References/Database\" --connection \"Host=localhost;Port=5445;Database=pms;Username=pms;Password=pms_dev\""
 
 echo "4) Start the web app (will apply migrations and seed core data)"
-run "PM_CONNECTION=\"Host=localhost;Port=5445;Database=aicpm;Username=aicpm;Password=aicpm_dev\" dotnet run --project \"$ROOT_DIR/src/PerformanceManagement.Web\""
+run "PM_CONNECTION=\"Host=localhost;Port=5445;Database=pms;Username=pms;Password=pms_dev\" dotnet run --project \"$ROOT_DIR/src/PerformanceManagement.Web\""
 
 echo "Done."

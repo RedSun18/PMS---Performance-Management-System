@@ -1,0 +1,10 @@
+[Unit]
+Description=Run pms-demo-backup.service nightly
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=600
+Persistent=true
+
+[Install]
+WantedBy=timers.target

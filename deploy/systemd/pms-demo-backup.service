@@ -1,0 +1,18 @@
+# One-shot nightly backup of the Demo Postgres database. Paired with
+# pms-demo-backup.timer — this unit is never started directly except for a manual test run
+# (`sudo systemctl start pms-demo-backup.service`).
+#
+# Install alongside pms-demo-backup.timer:
+#   sudo cp deploy/systemd/pms-demo-backup.* /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now pms-demo-backup.timer
+
+[Unit]
+Description=Nightly pg_dump backup of the PMS Demo database (pms_demo only — never Development)
+
+[Service]
+Type=oneshot
+User=root
+# Stable path into the persistent git checkout (see deploy/RUNBOOK.md "Server layout") —
+# deliberately NOT under /var/www/pms-demo/current, which is a symlink that publish.sh
+# repoints on every deploy and could vanish mid-swap.
+ExecStart=/opt/pms-demo/repo/deploy/backup-demo-db.sh

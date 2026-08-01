@@ -191,7 +191,11 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<PmDbContext>();
     await db.Database.MigrateAsync();
-    await DatabaseSeeder.SeedCoreAsync(db, adminUsername, adminPassword);
+    // Real company department/manager/exception reference data (SeedData.cs) is seeded for
+    // every environment except Demo, which supplies its own fictional equivalents via
+    // PerformanceManagement.DemoSeeder — see docs/DEMO.md.
+    await DatabaseSeeder.SeedCoreAsync(db, adminUsername, adminPassword,
+        seedLegacyReferenceData: !app.Environment.IsEnvironment("Demo"));
 }
 
 // A real user in Production must never see a raw stack trace/internal paths — the developer

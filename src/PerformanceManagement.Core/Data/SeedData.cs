@@ -15,7 +15,7 @@ public static class SeedData
     // A real deployment assigns the Roles.HrAdmin role to whichever accounts the
     // organization designates — role membership, not username pattern-matching.
 
-    /// <summary>Departments from the hardcoded aiccom.DeptName map (reference DPT rows were not exported).</summary>
+    /// <summary>Departments from the legacy system's hardcoded department-name map (reference DPT rows were not exported).</summary>
     public static readonly (string Code, string NameEn)[] Departments =
     {
         ("AC",  "Finance Dept."),
@@ -45,8 +45,8 @@ public static class SeedData
     /// </summary>
     public static readonly (string EmpCode, string RuleCode, string Reason)[] Exceptions =
     {
-        ("1058", ExceptionRule.PerspectiveMinExempt, "Approved temporary exception (Ahmad Fathi)"),
-        ("1470", ExceptionRule.PerspectiveMinExempt, "Approved temporary exception (Ahmad Sharqawi)"),
+        ("1058", ExceptionRule.PerspectiveMinExempt, "Approved temporary exception."),
+        ("1470", ExceptionRule.PerspectiveMinExempt, "Approved temporary exception."),
         // Grade < 6 employees granted a 50/50 KPI/Competency mix
         ("1553", ExceptionRule.Kpi5050, "50/50 KPI-competency mix exception"),
         ("1376", ExceptionRule.Kpi5050, "50/50 KPI-competency mix exception"),

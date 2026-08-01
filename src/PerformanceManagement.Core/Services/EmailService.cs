@@ -275,12 +275,12 @@ public static class EmailTemplates
         """;
 
     public static (string Subject, string Body) AcknowledgementRequest(
-        PmForm f, string managerName, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+        PmForm f, string managerName, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("AckReqSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("AckReqTitle"),
+         Wrap(appName ?? AppName, G("AckReqTitle"),
               $"<p>{G("DearName", f.EmpNameSnapshot)}</p>" +
               $"<p>{G("AckReqIntro")}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
@@ -294,12 +294,12 @@ public static class EmailTemplates
     }
 
     public static (string Subject, string Body) EmployeeAcknowledged(
-        PmForm f, string managerName, string actionUrl, DateTime sentAt, DateOnly achievementOpenDate, CultureInfo? culture = null)
+        PmForm f, string managerName, string actionUrl, DateTime sentAt, DateOnly achievementOpenDate, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("EmpAckSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("EmpAckTitle"),
+         Wrap(appName ?? AppName, G("EmpAckTitle"),
               $"<p>{G("DearName", managerName)}</p>" +
               $"<p>{G("EmpAckIntro", f.EmpNameSnapshot, f.EvalYear)}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
@@ -315,12 +315,12 @@ public static class EmailTemplates
     }
 
     public static (string Subject, string Body) SubmittedToHr(
-        PmForm f, string managerName, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+        PmForm f, string managerName, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("SubToHrSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("SubToHrTitle"),
+         Wrap(appName ?? AppName, G("SubToHrTitle"),
               $"<p>{G("DearHrTeam")}</p><p>{G("SubToHrIntro")}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         (G("ReviewYear"), f.EvalYear.ToString()),
@@ -333,12 +333,12 @@ public static class EmailTemplates
               ActionButton(actionUrl, G("OpenHrReview")), sentAt, c));
     }
 
-    public static (string Subject, string Body) Hr1Approved(PmForm f, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+    public static (string Subject, string Body) Hr1Approved(PmForm f, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("Hr1ApprovedSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("Hr1ApprovedTitle"),
+         Wrap(appName ?? AppName, G("Hr1ApprovedTitle"),
               $"<p>{G("DearHrTeam")}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         (G("ReviewYear"), f.EvalYear.ToString()),
@@ -351,12 +351,12 @@ public static class EmailTemplates
     }
 
     public static (string Subject, string Body) FinalApproved(
-        PmForm f, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+        PmForm f, string rating, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("FinalApprovedSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("FinalApprovedTitle"),
+         Wrap(appName ?? AppName, G("FinalApprovedTitle"),
               $"<p>{G("DearTeam")}</p><p>{G("FinalApprovedIntro")}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         (G("ReviewYear"), f.EvalYear.ToString()),
@@ -371,12 +371,12 @@ public static class EmailTemplates
     }
 
     public static (string Subject, string Body) Reverted(
-        PmForm f, string managerName, string hrComments, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+        PmForm f, string managerName, string hrComments, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("RevertedSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("RevertedTitle"),
+         Wrap(appName ?? AppName, G("RevertedTitle"),
               $"<p>{G("DearName", managerName)}</p><p>{G("RevertedIntro")}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
                         (G("ReviewYear"), f.EvalYear.ToString()),
@@ -390,12 +390,12 @@ public static class EmailTemplates
 
     /// <summary>Daily scheduled nudge for a form that has been sitting in the same actionable status too long.</summary>
     public static (string Subject, string Body) Reminder(
-        PmForm f, string recipientLabel, string requiredAction, int daysWaiting, string actionUrl, DateTime sentAt, CultureInfo? culture = null)
+        PmForm f, string recipientLabel, string requiredAction, int daysWaiting, string actionUrl, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         var c = culture ?? CultureInfo.CurrentUICulture;
         string G(string k, params object?[] a) => EmailResource.Get(k, c, a);
         return (G("ReminderSubject", f.EmpNameSnapshot, f.EvalYear),
-         Wrap(AppName, G("ReminderTitle"),
+         Wrap(appName ?? AppName, G("ReminderTitle"),
               $"<p>{G("DearPlain", recipientLabel)}</p>" +
               $"<p>{G("ReminderIntro", daysWaiting)}</p>" +
               InfoTable(c, (G("Reference"), f.LegacyRefNo), (G("Employee"), $"{f.EmpNameSnapshot} ({f.EmpCode})"),
@@ -418,7 +418,7 @@ public static class EmailTemplates
     /// is exactly the kind of thing that overflows its container in Outlook's Word rendering
     /// engine (which doesn't support horizontal scrolling the way a browser does). Year and
     /// Reference fold into the Employee cell instead of getting their own columns.</summary>
-    public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt, CultureInfo? culture = null)
+    public static (string Subject, string Body) EscalationDigest(IReadOnlyList<EscalationRow> rows, DateTime sentAt, CultureInfo? culture = null, string? appName = null)
     {
         // Broadcast to the whole HR team rather than one named recipient, so there's no single
         // PreferredCulture to honor — defaults to the ambient culture (English unless a caller
@@ -454,7 +454,7 @@ public static class EmailTemplates
             </table>
             """;
         return (G("EscalationSubject", rows.Count),
-            Wrap(AppName, G("EscalationTitle"),
+            Wrap(appName ?? AppName, G("EscalationTitle"),
                  $"<p>{G("DearHrTeam")}</p><p>{G("EscalationIntro", rows.Count)}</p>" +
                  table, sentAt, c));
     }

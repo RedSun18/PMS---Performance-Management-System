@@ -64,7 +64,7 @@ public sealed class TestHost : IDisposable
         Links = new FormLinkService(new FakeDataProtectionProvider(), Settings, Clock);
         Email = new EmailService(Db, Clock, Settings, NullLogger<EmailService>.Instance);
         Notifications = new NotificationService(Db, Clock);
-        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links, Notifications);
+        Workflow = new WorkflowService(Db, Clock, Gate, Permissions, Email, Ratings, Links, Notifications, Settings);
         Audit = new AuditService(Db, Clock, Settings);
         WorkflowAdmin = new WorkflowAdminService(Db, Workflow, Audit, NullLogger<WorkflowAdminService>.Instance);
     }
@@ -99,7 +99,7 @@ public sealed class TestHost : IDisposable
         Db.Employees.AddRange(
             new Employee { EmpCode = "854", LatinName = "Manager EightFiveFour", DeptCode = "MAR", Grade = "8", Email = "854@test.local" },
             new Employee { EmpCode = "1504", LatinName = "Employee 1504", DeptCode = "MAR", Grade = "7", Email = "1504@test.local" },
-            new Employee { EmpCode = "1058", LatinName = "Ahmad Fathi", DeptCode = "AC", Grade = "7", Email = "1058@test.local" },
+            new Employee { EmpCode = "1058", LatinName = "Exempt Employee 1058", DeptCode = "AC", Grade = "7", Email = "1058@test.local" },
             new Employee { EmpCode = "548", LatinName = "Manager 548", DeptCode = "AC", Grade = "8", Email = "548@test.local" },
             new Employee { EmpCode = "656", LatinName = "SelfManaged 656", DeptCode = "MT", Grade = "8", Email = "656@test.local" },
             new Employee { EmpCode = "1541", LatinName = "Branch Viewer 1541", DeptCode = "BDM", Grade = "6", Email = "1541@test.local" },

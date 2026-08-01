@@ -15,7 +15,7 @@ that contradicts production.
 | `Personnel/EmpMasterEnteryMgmt.aspx` + `.vb` | `/Employees` | Employee Master. The legacy page is a full HR/payroll master (documents, allowances, bank, leave). Only the PM-relevant subset is recreated (see §5). |
 | `Personnel/EmpREFMaster.aspx` + `.vb` | `/ReferenceMaster` | Reference Master: KPI Master CRUD, Competency Master CRUD, KPI reference codes (job families, rating scales). Legacy leave/loan/deduction tabs are out of PM scope. |
 | `Adm02.master` | `Pages/Shared/_Layout.cshtml` | Shell/navigation only. |
-| `App_Code/aiccom.vb`, `App_Code/aicdbo.vb` | **Not ported.** | Helper semantics re-implemented as injectable services (see §4). No runtime dependency on AICAPPS/DevExpress/Informix. |
+| the legacy helper/data-access modules | **Not ported.** | Helper semantics re-implemented as injectable services (see §4). No runtime dependency on the legacy WebForms stack/DevExpress/Informix. |
 
 ## 2. Database mapping (Informix → PostgreSQL)
 
@@ -32,7 +32,7 @@ preserving legacy reference-number compatibility.
 | `kpi_master` | `kpi_masters` | All 24 columns kept (EN + AR fields, dept CSV list or `*`, min/max weight, status A/I, audit). |
 | `competency_master` | `competency_masters` | All columns kept. |
 | `reference` (`rf_codetype='ADM'`, `rf_moduleno='KPI'`) | `job_families` (subtype `J`), `rating_scales` (subtype `R`) | `J`: rf_codeno JF001–JF006, EN/AR descriptions, `rf_lastsrl` = comma list of grades, `rf_frac` = KPI weight %, `rf_toac` = COMP weight %. `R`: code 1–6, EN/AR descriptions, `rf_frac`..`rf_toac` = score range (0–0 = "Pending"). |
-| `reference` (`rf_codetype='DPT'`) | `departments` | **Not exported.** Seeded from the hardcoded `DeptName()` map in `aiccom.vb` (AC, INV, ADM, CRC, BDM, PRO, LIF, MT, MAR, FGA, RIN, EDP, IA, LGL, RMD, COM, AAD, TPM, DRO). |
+| `reference` (`rf_codetype='DPT'`) | `departments` | **Not exported.** Seeded from the hardcoded department-name map in the legacy helper module (AC, INV, ADM, CRC, BDM, PRO, LIF, MT, MAR, FGA, RIN, EDP, IA, LGL, RMD, COM, AAD, TPM, DRO). |
 | `reference` (`rf_codetype='DSG'`, `'SEC'`) | `designations`, `sections` | **Not exported.** Codes derived from HDR data; descriptions default to the code and are editable in Reference Master. Documented data gap. |
 | `empmaster` | `employees` | **Not exported** (see data-migration-plan §2). PM-relevant subset: emp_code, latin_name, arabic_name, designation_code, dept_code, section_code, grade, join_date, term_date. |
 | `ta_users` | `app_users` | App-owned auth: username, password hash, employee link, email. Legacy assumption "HR dept member = HR admin" is **not** ported. |
@@ -83,7 +83,7 @@ Historical rows include unpadded 3-digit codes (`PM2026907HDR01`). Rules preserv
 
 ## 4. Helper/service mapping
 
-| Legacy helper (aiccom/aicdbo) | New service |
+| Legacy helper module | New service |
 |---|---|
 | `emp_id(usr)` / `UserEmpId` | `ICurrentUserService.EmployeeCode` (from claims) |
 | `UserName(usr)` | `ICurrentUserService.DisplayName` |
@@ -96,7 +96,7 @@ Historical rows include unpadded 3-digit codes (`PM2026907HDR01`). Rules preserv
 | `GetRatingCode` + `reference` R rows | `IRatingService` reading `rating_scales` |
 | `Arabic_win` (1256↔1252 mojibake repair) | Not needed: PostgreSQL/UTF-8 end-to-end; importer decodes once at load time |
 | `LanguageManager` (en/ar, RTL) | Culture cookie + `ILanguageService`; AR fields fall back to EN when blank (same rule as legacy) |
-| `aicdbo.SelTable/UpdTable/...` (raw ODBC, string-concatenated SQL) | EF Core 8 + parameterized queries; every state transition in one DB transaction |
+| Legacy data-access layer (raw ODBC, string-concatenated SQL) | EF Core 8 + parameterized queries; every state transition in one DB transaction |
 
 ## 5. Employee Master scope decision
 

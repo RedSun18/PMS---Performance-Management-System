@@ -2,6 +2,7 @@
 @model PerformanceManagement.Web.Pages.Account.LoginModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @inject Microsoft.Extensions.Localization.IStringLocalizer<PerformanceManagement.Web.SharedResource> SharedLocalizer
+@inject PerformanceManagement.Core.Services.SettingsService SettingsService
 @{
     // ViewData["Title"] is a plain string consumed via string interpolation in _Layout, not
     // rendered as HTML — IViewLocalizer's indexer returns LocalizedHtmlString, whose ToString()
@@ -9,9 +10,17 @@
     // actual resolved string.
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_Layout";
+    // Prefer the DB-backed company/application name (e.g. a Demo/customer deployment's own
+    // branding) over the generic compiled resx literal — same fallback chain _Layout.cshtml
+    // already uses for its own header, so Development (no CompanyName seeded) renders
+    // byte-identical to before.
+    var general = await SettingsService.GetGeneralSettingsAsync();
+    var brandName = !string.IsNullOrWhiteSpace(general.CompanyName) ? general.CompanyName
+        : !string.IsNullOrWhiteSpace(general.ApplicationName) ? general.ApplicationName
+        : SharedLocalizer["ApplicationName"].Value;
 }
 <div class="login-box card">
-    <div class="card-header">@Localizer["CardHeader", SharedLocalizer["ApplicationName"]]</div>
+    <div class="card-header">@Localizer["CardHeader", brandName]</div>
     <div class="card-body">
         @if (Model.Error is not null)
         {

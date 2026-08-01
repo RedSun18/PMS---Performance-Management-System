@@ -177,10 +177,18 @@ public class DailyReminderJob : IJob
     private readonly IClock _clock;
     private readonly EmailService _email;
     private readonly FormLinkService _links;
+    private readonly SettingsService _settings;
 
-    public DailyReminderJob(PmDbContext db, IClock clock, EmailService email, FormLinkService links)
+    public DailyReminderJob(PmDbContext db, IClock clock, EmailService email, FormLinkService links, SettingsService settings)
     {
-        _db = db; _clock = clock; _email = email; _links = links;
+        _db = db; _clock = clock; _email = email; _links = links; _settings = settings;
+    }
+
+    private async Task<string> GetBrandNameAsync()
+    {
+        var general = await _settings.GetGeneralSettingsAsync();
+        return string.IsNullOrWhiteSpace(general.CompanyName)
+            ? await _settings.GetApplicationNameAsync() : general.CompanyName;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -216,7 +224,7 @@ public class DailyReminderJob : IJob
             // reminder should honor; the HR Team case (empCode is null) is a role-based broadcast with
             // no single recipient, so it falls back to the default (English).
             var culture = string.IsNullOrEmpty(empCode) ? null : await CultureForEmpCodeAsync(empCode);
-            var (subject, body) = EmailTemplates.Reminder(form, recipientLabel, requiredAction, days, actionUrl, _clock.Now, culture);
+            var (subject, body) = EmailTemplates.Reminder(form, recipientLabel, requiredAction, days, actionUrl, _clock.Now, culture, await GetBrandNameAsync());
             await _email.DispatchAsync(new EmailSpec("REMINDER", recipients, Array.Empty<string>(),
                 subject, body, form.LegacyRefNo, $"REMINDER-{form.LegacyRefNo}-{today:yyyyMMdd}"));
 
@@ -270,10 +278,18 @@ public class WeeklyEscalationJob : IJob
     private readonly IClock _clock;
     private readonly EmailService _email;
     private readonly FormLinkService _links;
+    private readonly SettingsService _settings;
 
-    public WeeklyEscalationJob(PmDbContext db, IClock clock, EmailService email, FormLinkService links)
+    public WeeklyEscalationJob(PmDbContext db, IClock clock, EmailService email, FormLinkService links, SettingsService settings)
     {
-        _db = db; _clock = clock; _email = email; _links = links;
+        _db = db; _clock = clock; _email = email; _links = links; _settings = settings;
+    }
+
+    private async Task<string> GetBrandNameAsync()
+    {
+        var general = await _settings.GetGeneralSettingsAsync();
+        return string.IsNullOrWhiteSpace(general.CompanyName)
+            ? await _settings.GetApplicationNameAsync() : general.CompanyName;
     }
 
     public async Task Execute(IJobExecutionContext context)
@@ -310,7 +326,7 @@ public class WeeklyEscalationJob : IJob
 
             // One digest email per run (not one per form) — a 14-day-overdue backlog can be sizeable,
             // and HR needs one triaging list, not dozens of separate messages.
-            var (subject, body) = EmailTemplates.EscalationDigest(rows, _clock.Now);
+            var (subject, body) = EmailTemplates.EscalationDigest(rows, _clock.Now, appName: await GetBrandNameAsync());
             await _email.DispatchAsync(new EmailSpec("ESCALATION_DIGEST", hrEmails, Array.Empty<string>(),
                 subject, body, null, $"ESCALATION_DIGEST-{today:yyyyMMdd}"));
         }

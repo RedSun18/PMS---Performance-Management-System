@@ -209,6 +209,12 @@ Migrations and core reference-data seeding run automatically on startup. Default
 `admin` (HR Administrator) and one account per employee (4-digit employee code) — see the
 repository root `README.md` for initial passwords.
 
+### Demo environment
+A separate, fully fictional "Apex Corporation" instance — its own database, its own
+seeded data (~200 employees, three review years, every workflow stage represented), its
+own branding — safe to run publicly or hand to a recruiter/client. See
+[`DEMO.md`](DEMO.md) for setup, credentials, and how to reset it.
+
 ### Production deployment
 See [`Deployment_Guide.pdf`](Deployment_Guide.pdf) for the full checklist: required environment
 variables, HTTPS/reverse-proxy setup, the `/health` endpoint, logging, backups, and the

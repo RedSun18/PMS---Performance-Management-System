@@ -22,14 +22,24 @@ public class WorkflowService
     private readonly RatingService _rating;
     private readonly FormLinkService _links;
     private readonly NotificationService _notifications;
+    private readonly SettingsService _settings;
 
     public WorkflowService(PmDbContext db, IClock clock, AchievementGate gate,
         PermissionService permissions, EmailService email, RatingService rating, FormLinkService links,
-        NotificationService notifications)
+        NotificationService notifications, SettingsService settings)
     {
         _db = db; _clock = clock; _gate = gate;
         _permissions = permissions; _email = email; _rating = rating; _links = links;
-        _notifications = notifications;
+        _notifications = notifications; _settings = settings;
+    }
+
+    /// <summary>Email header brand text — the environment's own company name if set
+    /// (e.g. a Demo/customer deployment), else the generic product name.</summary>
+    private async Task<string> GetBrandNameAsync()
+    {
+        var general = await _settings.GetGeneralSettingsAsync();
+        return string.IsNullOrWhiteSpace(general.CompanyName)
+            ? await _settings.GetApplicationNameAsync() : general.CompanyName;
     }
 
     public async Task<PmForm?> FindFormAsync(string empCode, int evalYear, bool track = false)
@@ -106,7 +116,8 @@ public class WorkflowService
                 var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "ACK_REQUEST")));
@@ -142,7 +153,8 @@ public class WorkflowService
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
                 var achievementOpenDate = await _gate.AchievementOpenDateAsync(form.EvalYear);
                 var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
-                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "EMP_ACKNOWLEDGED")));
@@ -187,7 +199,8 @@ public class WorkflowService
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
                 // Role-based recipient (any current HR admin) — no single intended username to bind to.
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
-                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now, appName: brandName);
                 await _email.DispatchAsync(new EmailSpec("SUBMIT_TO_HR",
                     To: await HrAdminEmailsAsync(), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "SUBMIT_TO_HR")));
@@ -220,7 +233,8 @@ public class WorkflowService
             email: async form =>
             {
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
-                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now, appName: brandName);
                 await _email.DispatchAsync(new EmailSpec("HR1_APPROVED",
                     To: await HrAdminEmailsAsync(exceptEmpCode: form.Hr1Sign), Cc: Array.Empty<string>(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR1_APPROVED")));
@@ -264,7 +278,8 @@ public class WorkflowService
                 var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdemKey(form, "FINAL_APPROVED")));
@@ -297,7 +312,8 @@ public class WorkflowService
                 var managerUserName = await UserNameForEmpCodeAsync(form.ManagerEmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
                 var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
-                var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.Reverted(form, managerName, hrComments ?? form.Hr1Remarks ?? "", actionUrl, _clock.Now, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("HR_REVERTED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await HrAdminEmailsAsync(),
                     subject, body, form.LegacyRefNo, IdemKey(form, "HR_REVERTED")));
@@ -365,7 +381,8 @@ public class WorkflowService
                 var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -419,6 +436,7 @@ public class WorkflowService
         var form = await FindFormAsync(empCode, evalYear);
         if (form is null) return WorkflowResult.Fail("No PM form exists for this employee and year.");
 
+        var brandName = await GetBrandNameAsync();
         EmailLog log;
         switch (form.Status)
         {
@@ -428,7 +446,7 @@ public class WorkflowService
                 var recipientUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, recipientUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture);
+                var (subject, body) = EmailTemplates.AcknowledgementRequest(form, managerName, actionUrl, _clock.Now, culture, brandName);
                 log = await _email.DispatchAsync(new EmailSpec("ACK_REQUEST",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -441,7 +459,7 @@ public class WorkflowService
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, managerUserName);
                 var achievementOpenDate = await _gate.AchievementOpenDateAsync(form.EvalYear);
                 var culture = await CultureForEmpCodeAsync(form.ManagerEmpCode);
-                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture);
+                var (subject, body) = EmailTemplates.EmployeeAcknowledged(form, managerName, actionUrl, _clock.Now, achievementOpenDate, culture, brandName);
                 log = await _email.DispatchAsync(new EmailSpec("EMP_ACKNOWLEDGED",
                     To: await EmailsAsync(form.ManagerEmpCode), Cc: await EmailsAsync(form.EmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -452,7 +470,7 @@ public class WorkflowService
                 var managerName = await EmployeeNameAsync(form.ManagerEmpCode);
                 var rating = await _rating.GetRatingAsync((int)Math.Round(form.PerformanceScore, MidpointRounding.AwayFromZero));
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
-                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now);
+                var (subject, body) = EmailTemplates.SubmittedToHr(form, managerName, RatingService.RatingName(rating), actionUrl, _clock.Now, appName: brandName);
                 log = await _email.DispatchAsync(new EmailSpec("SUBMIT_TO_HR",
                     To: await HrAdminEmailsAsync(), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -461,7 +479,7 @@ public class WorkflowService
             case PmFormStatus.HrReview1Approved:
             {
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, "");
-                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now);
+                var (subject, body) = EmailTemplates.Hr1Approved(form, actionUrl, _clock.Now, appName: brandName);
                 log = await _email.DispatchAsync(new EmailSpec("HR1_APPROVED",
                     To: await HrAdminEmailsAsync(exceptEmpCode: form.Hr1Sign), Cc: Array.Empty<string>(),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -473,7 +491,7 @@ public class WorkflowService
                 var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture, brandName);
                 log = await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));
@@ -521,7 +539,8 @@ public class WorkflowService
                 var empUserName = await UserNameForEmpCodeAsync(form.EmpCode);
                 var actionUrl = await _links.BuildFormUrlAsync(form.EmpCode, form.EvalYear, empUserName);
                 var culture = await CultureForEmpCodeAsync(form.EmpCode);
-                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture);
+                var brandName = await GetBrandNameAsync();
+                var (subject, body) = EmailTemplates.FinalApproved(form, RatingService.RatingName(rating), actionUrl, _clock.Now, culture, brandName);
                 await _email.DispatchAsync(new EmailSpec("FINAL_APPROVED",
                     To: await EmailsAsync(form.EmpCode), Cc: await EmailsAsync(form.ManagerEmpCode),
                     subject, body, form.LegacyRefNo, IdempotencyKey: null));

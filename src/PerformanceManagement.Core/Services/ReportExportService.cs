@@ -24,12 +24,12 @@ public static class ReportExportService
     private const string AppName = "Performance Management System";
 
     // ================================================================ PDF
-    public static Task<byte[]> EmployeeReportToPdfAsync(EmployeePerformanceReport r)
+    public static Task<byte[]> EmployeeReportToPdfAsync(EmployeePerformanceReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         var h = new HtmlReportBuilder(c);
-        h.AddBrandHeader(G("EmployeePerformanceReport"), r.GeneratedAt);
+        h.AddBrandHeader(G("EmployeePerformanceReport"), r.GeneratedAt, brandName);
 
         h.AddKeyValueTable(G("EmployeeInformation"),
             (G("Employee"), $"{r.EmpName} ({r.EmpCode})"),
@@ -88,12 +88,12 @@ public static class ReportExportService
         return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static Task<byte[]> DepartmentReportToPdfAsync(DepartmentSummaryReport r)
+    public static Task<byte[]> DepartmentReportToPdfAsync(DepartmentSummaryReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         var h = new HtmlReportBuilder(c);
-        h.AddBrandHeader(G("DepartmentSummaryReport"), r.GeneratedAt);
+        h.AddBrandHeader(G("DepartmentSummaryReport"), r.GeneratedAt, brandName);
 
         h.AddKeyValueTable(G("DepartmentInformation"),
             (G("Department"), $"{r.DeptName} ({r.DeptCode})"),
@@ -106,12 +106,12 @@ public static class ReportExportService
         return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static Task<byte[]> ManagerReportToPdfAsync(ManagerSummaryReport r)
+    public static Task<byte[]> ManagerReportToPdfAsync(ManagerSummaryReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         var h = new HtmlReportBuilder(c);
-        h.AddBrandHeader(G("ManagerSummaryReport"), r.GeneratedAt);
+        h.AddBrandHeader(G("ManagerSummaryReport"), r.GeneratedAt, brandName);
 
         h.AddKeyValueTable(G("ManagerInformation"),
             (G("Manager"), $"{r.ManagerName} ({r.ManagerEmpCode})"),
@@ -124,12 +124,12 @@ public static class ReportExportService
         return PdfRenderer.RenderAsync(h.Build());
     }
 
-    public static Task<byte[]> OverallReportToPdfAsync(OverallOrganizationReport r)
+    public static Task<byte[]> OverallReportToPdfAsync(OverallOrganizationReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         var h = new HtmlReportBuilder(c);
-        h.AddBrandHeader(G("OverallOrganizationSummary"), r.GeneratedAt);
+        h.AddBrandHeader(G("OverallOrganizationSummary"), r.GeneratedAt, brandName);
 
         h.AddKeyValueTable(G("OrganizationOverview"),
             (G("ReviewYear"), r.EvalYear.ToString()),
@@ -151,14 +151,14 @@ public static class ReportExportService
     }
 
     // ================================================================ Excel
-    public static byte[] EmployeeReportToExcel(EmployeePerformanceReport r)
+    public static byte[] EmployeeReportToExcel(EmployeePerformanceReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add(G("EmployeePerformanceReport"));
         SetSheetDirection(ws, c);
-        var row = WriteBrandHeader(ws, G("EmployeePerformanceReport"), r.GeneratedAt, c);
+        var row = WriteBrandHeader(ws, G("EmployeePerformanceReport"), r.GeneratedAt, c, brandName);
 
         row = WriteKeyValueBlock(ws, row, G("EmployeeInformation"),
             (G("Employee"), $"{r.EmpName} ({r.EmpCode})"), (G("Department"), r.Department ?? "—"),
@@ -205,14 +205,14 @@ public static class ReportExportService
         return ToBytes(wb);
     }
 
-    public static byte[] DepartmentReportToExcel(DepartmentSummaryReport r)
+    public static byte[] DepartmentReportToExcel(DepartmentSummaryReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add(G("DepartmentSummaryReport"));
         SetSheetDirection(ws, c);
-        var row = WriteBrandHeader(ws, G("DepartmentSummaryReport"), r.GeneratedAt, c);
+        var row = WriteBrandHeader(ws, G("DepartmentSummaryReport"), r.GeneratedAt, c, brandName);
         row = WriteKeyValueBlock(ws, row, G("DepartmentInformation"),
             (G("Department"), $"{r.DeptName} ({r.DeptCode})"), (G("ReviewYear"), r.EvalYear.ToString()),
             (G("EmployeeCount"), r.TotalEmployees.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
@@ -222,14 +222,14 @@ public static class ReportExportService
         return ToBytes(wb);
     }
 
-    public static byte[] ManagerReportToExcel(ManagerSummaryReport r)
+    public static byte[] ManagerReportToExcel(ManagerSummaryReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add(G("ManagerSummaryReport"));
         SetSheetDirection(ws, c);
-        var row = WriteBrandHeader(ws, G("ManagerSummaryReport"), r.GeneratedAt, c);
+        var row = WriteBrandHeader(ws, G("ManagerSummaryReport"), r.GeneratedAt, c, brandName);
         row = WriteKeyValueBlock(ws, row, G("ManagerInformation"),
             (G("Manager"), $"{r.ManagerName} ({r.ManagerEmpCode})"), (G("ReviewYear"), r.EvalYear.ToString()),
             (G("TeamSize"), r.TotalEmployees.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
@@ -239,14 +239,14 @@ public static class ReportExportService
         return ToBytes(wb);
     }
 
-    public static byte[] OverallReportToExcel(OverallOrganizationReport r)
+    public static byte[] OverallReportToExcel(OverallOrganizationReport r, string? brandName = null)
     {
         var c = CultureInfo.CurrentUICulture;
         string G(string k) => ReportResource.Get(k, c);
         using var wb = new XLWorkbook();
         var ws = wb.Worksheets.Add(G("OverallOrganizationSummary"));
         SetSheetDirection(ws, c);
-        var row = WriteBrandHeader(ws, G("OverallOrganizationSummary"), r.GeneratedAt, c);
+        var row = WriteBrandHeader(ws, G("OverallOrganizationSummary"), r.GeneratedAt, c, brandName);
         row = WriteKeyValueBlock(ws, row, G("OrganizationOverview"),
             (G("ReviewYear"), r.EvalYear.ToString()), (G("TotalEmployees"), r.TotalEmployees.ToString(c)),
             (G("FormsGenerated"), r.TotalForms.ToString(c)), (G("FinalizedReviews"), r.FinalizedCount.ToString(c)),
@@ -269,9 +269,9 @@ public static class ReportExportService
     private static void SetSheetDirection(IXLWorksheet ws, CultureInfo c) =>
         ws.RightToLeft = c.TwoLetterISOLanguageName == "ar";
 
-    private static int WriteBrandHeader(IXLWorksheet ws, string title, DateTime generatedAt, CultureInfo c)
+    private static int WriteBrandHeader(IXLWorksheet ws, string title, DateTime generatedAt, CultureInfo c, string? brandName = null)
     {
-        ws.Cell(1, 1).Value = AppName;
+        ws.Cell(1, 1).Value = brandName ?? AppName;
         ws.Cell(1, 1).Style.Font.FontSize = 10;
         ws.Cell(2, 1).Value = title;
         ws.Cell(2, 1).Style.Font.FontSize = 16;
@@ -366,10 +366,10 @@ public static class ReportExportService
             _isRtl = culture.TwoLetterISOLanguageName == "ar";
         }
 
-        public void AddBrandHeader(string title, DateTime generatedAt)
+        public void AddBrandHeader(string title, DateTime generatedAt, string? brandName = null)
         {
             _body.Append($"""
-                <div class="brand">{Enc(AppName)}</div>
+                <div class="brand">{Enc(brandName ?? AppName)}</div>
                 <div class="report-title">{Enc(title)}</div>
                 <div class="generated">{Enc(ReportResource.Get("Generated", _culture))} {Enc(generatedAt.ToString("dddd, dd MMMM yyyy", _culture))} {Enc(generatedAt.ToString("HH:mm", _culture))}</div>
                 <hr class="rule" />

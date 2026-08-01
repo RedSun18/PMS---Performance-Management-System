@@ -54,6 +54,49 @@ accounts, exceptions, manager map) at every startup — `dotnet run` alone is sa
 importer if you only need the login page and reference seeds, but PM forms/employees require
 step 3.
 
+## Environments
+
+One codebase, three environments, switched purely by `ASPNETCORE_ENVIRONMENT` and
+standard ASP.NET Core `appsettings.{Environment}.json` layering — no code branches on
+environment name anywhere in the app itself.
+
+| | Development | Demo | Production |
+|---|---|---|---|
+| Purpose | Private development against the real organization's data | Public demonstrations (recruiters, clients, portfolio) | A real customer's own deployment |
+| Data | The real imported employee/department data (`References/Database`) | ~200 entirely fictional employees, deterministically seeded — see [`docs/DEMO.md`](docs/DEMO.md) | The customer's own data |
+| Database | `pms` on port 5445 (`docker-compose.yml`, `postgres` service) | `pms_demo` on port 5446 (`postgres-demo` service), completely separate volume | Customer-supplied `ConnectionStrings:Pm` |
+| Branding | Generic "Performance Management System" unless a `CompanyName` has been set via Settings | "Apex Corporation" (`appsettings.Demo.json`) | The customer's own name/logo/colors, set once via Settings or config |
+| Transport security | Relaxed for local `http://localhost` (`isDevelopment` gate in `Program.cs`) | **Production-like** — HSTS, Secure cookies, strict antiforgery. Requires real HTTPS (a trusted local dev cert for local testing, a reverse proxy for the real VPS) | Same as Demo |
+| How to run | `dotnet run --project src/PerformanceManagement.Web` (default profile) | `ASPNETCORE_ENVIRONMENT=Demo dotnet run --project src/PerformanceManagement.Web --no-launch-profile --urls https://localhost:5275` | `ASPNETCORE_ENVIRONMENT=Production` + the environment variables below |
+
+`--no-launch-profile` matters for Demo/Production when using `dotnet run` locally:
+`Properties/launchSettings.json`'s default profile hardcodes
+`ASPNETCORE_ENVIRONMENT=Development`, which otherwise silently overrides whatever you set.
+
+### Deploying your own Production instance
+
+No `appsettings.Production.json` is checked in on purpose — a committed "production"
+config file with placeholder secrets is a footgun waiting to happen. Instead, supply these
+as environment variables (or your platform's secret manager); `Program.cs` refuses to
+start in Production if any of the credential-related ones are still at their development
+defaults:
+
+- `PM_CONNECTION` — your PostgreSQL connection string.
+- `PM_ADMIN_USERNAME` / `PM_ADMIN_PASSWORD` — the initial HR Administrator account.
+- `Security__LoginAsVerificationPassword`, `Security__DefaultUserPassword` — must differ
+  from the checked-in defaults.
+- `General__CompanyName`, `General__CompanyAddress`, `General__ContactEmail`,
+  `General__ApplicationBaseUrl` — your organization's own branding text.
+- `Branding__CompanyLogoPath`, `Branding__PrimaryColorHex`, `Branding__SecondaryColorHex`,
+  `Branding__FooterText` — your own logo/colors (or upload a logo later via the Branding
+  tab on the Settings page instead).
+- `Email__SenderName`, `Email__SenderEmail`, plus your real SMTP host/credentials —
+  configurable via environment variables or directly on the Settings page after first boot.
+
+(`__` is the standard ASP.NET Core convention for nested configuration keys via
+environment variables — equivalent to the `:`-separated keys shown in
+`appsettings.Demo.json`.)
+
 ## Local dev accounts
 
 A single administrator account is seeded on startup: username/password come from the

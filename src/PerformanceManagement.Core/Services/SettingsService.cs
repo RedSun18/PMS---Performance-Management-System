@@ -85,14 +85,27 @@ public class SettingsService
         var row = await _db.SystemSettings.FirstOrDefaultAsync(x => x.Id == 1);
         if (row is not null) return row;
 
-        // First run: seed from configuration (Email:*/General:* sections) so a dev machine
-        // with User Secrets/appsettings configured works immediately, with no manual DB step.
+        // First run: seed from configuration (Email:*/General:*/Branding:*/Dashboard:*
+        // sections) so a dev machine with User Secrets/appsettings configured works
+        // immediately, with no manual DB step. None of the General/Branding/Dashboard keys
+        // below exist in appsettings.json/appsettings.Development.json today, so for
+        // Development this seeds exactly the same nulls it always has — only an environment
+        // that supplies these keys (e.g. appsettings.Demo.json) gets non-null values.
         var section = _config.GetSection("Email");
         row = new Domain.SystemSettings
         {
             Id = 1,
-            ApplicationName = "Performance Management System",
+            ApplicationName = _config["General:ApplicationName"] ?? "Performance Management System",
             ApplicationBaseUrl = _config["General:ApplicationBaseUrl"],
+            CompanyName = _config["General:CompanyName"],
+            CompanyAddress = _config["General:CompanyAddress"],
+            ContactEmail = _config["General:ContactEmail"],
+            CompanyLogoPath = _config["Branding:CompanyLogoPath"],
+            PrimaryColorHex = _config["Branding:PrimaryColorHex"],
+            SecondaryColorHex = _config["Branding:SecondaryColorHex"],
+            FooterText = _config["Branding:FooterText"],
+            WelcomeMessage = _config["Dashboard:WelcomeMessage"],
+            AnnouncementBanner = _config["Dashboard:AnnouncementBanner"],
             SmtpHost = section["SmtpHost"],
             SmtpPort = int.TryParse(section["SmtpPort"], out var p) ? p : 587,
             SmtpUsername = section["SmtpUsername"],

@@ -6,7 +6,12 @@
 @{
     var branding = await Settings.GetBrandingSettingsAsync();
     var general = await Settings.GetGeneralSettingsAsync();
-    var appName = string.IsNullOrWhiteSpace(general.ApplicationName) ? "Performance Management System" : general.ApplicationName;
+    // The environment's own company name (e.g. a Demo/customer deployment) takes precedence
+    // over the generic product name — same fallback chain used by report/email headers and
+    // the login page, so the brand shown is consistent everywhere in the app.
+    var appName = !string.IsNullOrWhiteSpace(general.CompanyName) ? general.CompanyName
+        : !string.IsNullOrWhiteSpace(general.ApplicationName) ? general.ApplicationName
+        : "Performance Management System";
 
     // Global Language Selector (Phase 10 Part 8) — current UI culture drives both which link
     // is highlighted and the page's text direction (Part 9: RTL support).
@@ -39,6 +44,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(ViewData["Title"] is null ? appName : $"{ViewData["Title"]} — {appName}")</title>
+    <link rel="icon" type="image/svg+xml" href="@(string.IsNullOrEmpty(branding.CompanyLogoPath) ? "/favicon.svg" : branding.CompanyLogoPath)" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @if (branding.PrimaryColorHex is not null || branding.SecondaryColorHex is not null)
     {

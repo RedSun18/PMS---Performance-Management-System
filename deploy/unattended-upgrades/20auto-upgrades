@@ -1,0 +1,4 @@
+// Installed to /etc/apt/apt.conf.d/20auto-upgrades by deploy/bootstrap-server.sh.
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";

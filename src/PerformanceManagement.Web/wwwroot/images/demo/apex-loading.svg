@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Loading">
+  <style>
+    .apex-spin { transform-origin: 32px 32px; animation: apex-rotate 1.1s linear infinite; }
+    .apex-pulse { animation: apex-pulse 1.1s ease-in-out infinite; }
+    @keyframes apex-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes apex-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  </style>
+  <circle class="apex-spin" cx="32" cy="32" r="26" fill="none" stroke="#e3e7ee" stroke-width="6"/>
+  <circle class="apex-spin" cx="32" cy="32" r="26" fill="none" stroke="#2f5fd6" stroke-width="6"
+          stroke-linecap="round" stroke-dasharray="40 123"/>
+  <path class="apex-pulse" d="M 20 40 L 32 18 L 44 40 Z" fill="#0f2b5c"/>
+</svg>

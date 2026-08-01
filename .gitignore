@@ -380,3 +380,16 @@ References/*.xlsx
 References/*.json
 !References/*.md
 !References/*.txt
+
+# ============================================
+# Deployment secrets (Phase 17) — never commit real values, only *.example templates
+# ============================================
+deploy/postgres-demo.env
+deploy/*.env
+!deploy/*.env.example
+# Personal document — see deploy/sites/aryanb.dev/RESUME_PLACEHOLDER.md (uploaded straight
+# to the server's shared/ dir instead, never through git).
+deploy/sites/aryanb.dev/resume.pdf
+
+# Local backup copy (not tracked; see conversation for why)
+bkp/

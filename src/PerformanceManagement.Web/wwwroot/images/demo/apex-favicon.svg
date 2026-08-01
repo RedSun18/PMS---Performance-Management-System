@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Apex Corporation">
+  <rect width="64" height="64" rx="14" fill="#0f2b5c"/>
+  <!-- Simplified, bolder peak pair for legibility at 16–32px -->
+  <path d="M 33 44 L 45 18 L 57 44 Z" fill="#2f5fd6"/>
+  <path d="M 7 46 L 24 14 L 41 46 Z" fill="#ffffff"/>
+</svg>

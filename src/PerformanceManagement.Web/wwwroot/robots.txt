@@ -1,0 +1,4 @@
+# Everything in this app is behind a login wall (see Program.cs FallbackPolicy) except
+# /Account/Login itself, so there is nothing meaningful for a crawler to index either way.
+User-agent: *
+Disallow: /

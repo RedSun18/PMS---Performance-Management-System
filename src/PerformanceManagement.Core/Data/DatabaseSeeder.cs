@@ -25,26 +25,20 @@ public static class DatabaseSeeder
 
     private static readonly PasswordHasher<AppUser> Hasher = new();
 
+    /// <summary>
+    /// <paramref name="seedLegacyReferenceData"/> defaults to <c>true</c> so every existing
+    /// caller (Program.cs for Development/Production, TestHost, the Importer) keeps today's
+    /// exact behavior with no change. Pass <c>false</c> only for the Demo environment, where
+    /// the real company's department/manager/exception reference data from
+    /// <see cref="SeedData"/> must never be seeded — that environment supplies its own
+    /// fictional equivalents instead (see PerformanceManagement.DemoSeeder).
+    /// </summary>
     public static async Task SeedCoreAsync(PmDbContext db,
-        string adminUsername = DefaultAdminUsername, string adminPassword = DefaultAdminPassword)
+        string adminUsername = DefaultAdminUsername, string adminPassword = DefaultAdminPassword,
+        bool seedLegacyReferenceData = true)
     {
-        foreach (var (code, name) in SeedData.Departments)
-            if (await db.Departments.FindAsync(code) is null)
-                db.Departments.Add(new Department { Code = code, NameEn = name });
-
-        foreach (var (emp, mgr) in SeedData.DirectManagerMap)
-            if (await db.ManagerAssignments.FindAsync(emp) is null)
-                db.ManagerAssignments.Add(new ManagerAssignment
-                {
-                    EmpCode = emp,
-                    ManagerEmpCode = mgr,
-                    Source = "HR_LIST",
-                    Note = "KPI_Direct_Managers_List_DEPT.xlsx via legacy KPIForm.aspx.vb"
-                });
-
-        foreach (var (emp, rule, reason) in SeedData.Exceptions)
-            if (!await db.EmployeeExceptions.AnyAsync(x => x.EmpCode == emp && x.RuleCode == rule))
-                db.EmployeeExceptions.Add(new EmployeeException { EmpCode = emp, RuleCode = rule, Reason = reason });
+        if (seedLegacyReferenceData)
+            await SeedLegacyCompanyReferenceDataAsync(db);
 
         // Single configurable administrator account — the standalone rebuild does not seed
         // the legacy adm22/adm12/... accounts (see SeedData.cs note). Override the
@@ -77,18 +71,50 @@ public static class DatabaseSeeder
         await db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Real company reference data (department codes/names, direct-manager map, rule
+    /// exceptions) transcribed from the legacy system — see <see cref="SeedData"/>.
+    /// Development-only; never seeded for the Demo environment.
+    /// </summary>
+    private static async Task SeedLegacyCompanyReferenceDataAsync(PmDbContext db)
+    {
+        foreach (var (code, name) in SeedData.Departments)
+            if (await db.Departments.FindAsync(code) is null)
+                db.Departments.Add(new Department { Code = code, NameEn = name });
+
+        foreach (var (emp, mgr) in SeedData.DirectManagerMap)
+            if (await db.ManagerAssignments.FindAsync(emp) is null)
+                db.ManagerAssignments.Add(new ManagerAssignment
+                {
+                    EmpCode = emp,
+                    ManagerEmpCode = mgr,
+                    Source = "HR_LIST",
+                    Note = "KPI_Direct_Managers_List_DEPT.xlsx via legacy KPIForm.aspx.vb"
+                });
+
+        foreach (var (emp, rule, reason) in SeedData.Exceptions)
+            if (!await db.EmployeeExceptions.AnyAsync(x => x.EmpCode == emp && x.RuleCode == rule))
+                db.EmployeeExceptions.Add(new EmployeeException { EmpCode = emp, RuleCode = rule, Reason = reason });
+    }
+
     /// <summary>One dev login per employee: username = 4-digit padded employee code.</summary>
     public static async Task<int> SeedUsersForEmployeesAsync(PmDbContext db)
     {
         var n = 0;
         var employees = await db.Employees.AsNoTracking().ToListAsync();
-        var existing = (await db.AppUsers.AsNoTracking().Select(u => u.UserName).ToListAsync())
+        // Key on EmpCode, not UserName: an employee may already have an account under a
+        // different username (e.g. a named alias like "manager"/"employee"), and AppUser.EmpCode
+        // is otherwise assumed unique (Employees/Index.cshtml.cs dictionary-keys on it).
+        var existingEmpCodes = (await db.AppUsers.AsNoTracking()
+                .Where(u => u.EmpCode != null)
+                .Select(u => u.EmpCode!)
+                .ToListAsync())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         foreach (var e in employees)
         {
+            if (existingEmpCodes.Contains(e.EmpCode)) continue;
             var username = e.EmpCode.Trim().PadLeft(4, '0');
-            if (existing.Contains(username)) continue;
             var user = new AppUser
             {
                 UserName = username,

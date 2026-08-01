@@ -1,0 +1,13 @@
+# Installed to /etc/fail2ban/jail.local by deploy/bootstrap-server.sh.
+# sshd jail only — Nginx isn't fronting anything with a login form of its own (the PMS app's
+# own login attempt limiting is handled in-app via Security:MaxLoginAttempts/AccountLockout,
+# see SettingsService), so brute-force protection at this layer is specifically for SSH.
+
+[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+backend  = systemd
+
+[sshd]
+enabled = true

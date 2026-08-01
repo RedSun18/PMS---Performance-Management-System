@@ -1,6 +1,12 @@
 # Local development database for the Performance Management System.
-#   docker compose up -d
+#   docker compose up -d postgres        (Development — real data, do not touch)
+#   docker compose up -d postgres-demo   (Demo — fictional Apex Insurance Group data)
 # Port 5445 avoids clashing with any locally-installed PostgreSQL.
+#
+# Both ports are bound to 127.0.0.1 only, not 0.0.0.0 — the app on the same host connects
+# via `localhost` either way, but on the production VPS this means Postgres is unreachable
+# from outside even if Docker's own iptables rules end up bypassing UFW (a known Docker/UFW
+# interaction gotcha) — UFW itself only allows 22/80/443 in anyway, see deploy/RUNBOOK.md.
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,7 +16,7 @@ services:
       POSTGRES_USER: pms
       POSTGRES_PASSWORD: pms_dev
     ports:
-      - "5445:5432"
+      - "127.0.0.1:5445:5432"
     volumes:
       - pms-pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,5 +25,30 @@ services:
       timeout: 3s
       retries: 20
 
+  # Completely separate database for the Demo environment (fictional data only — see
+  # docs/DEMO.md). Different container name, different volume, different port: this can
+  # never be confused with or accidentally point at the real `postgres` service above.
+  #
+  # POSTGRES_DEMO_PASSWORD is unset for local dev (falls back to the checked-in default,
+  # same as before) — production supplies a real value via `--env-file deploy/postgres-demo.env`
+  # (gitignored, see deploy/postgres-demo.env.example), never by editing this file.
+  postgres-demo:
+    image: postgres:16-alpine
+    container_name: pms-demo-postgres
+    environment:
+      POSTGRES_DB: pms_demo
+      POSTGRES_USER: pms_demo
+      POSTGRES_PASSWORD: ${POSTGRES_DEMO_PASSWORD:-pms_demo_dev}
+    ports:
+      - "127.0.0.1:5446:5432"
+    volumes:
+      - pms-demo-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pms_demo -d pms_demo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
 volumes:
   pms-pgdata:
+  pms-demo-pgdata:

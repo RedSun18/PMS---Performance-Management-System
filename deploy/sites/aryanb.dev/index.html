@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aryan Bhandary — Software Engineer</title>
+<meta name="description" content="Aryan Bhandary is a software engineer specializing in ASP.NET Core, C#, and PostgreSQL — currently building the Performance Management System, a production HR performance-review platform." />
+<link rel="canonical" href="https://aryanb.dev/" />
+
+<!-- Favicons / PWA -->
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#0f2b5c" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Aryan Bhandary" />
+<meta property="og:title" content="Aryan Bhandary — Software Engineer" />
+<meta property="og:description" content="ASP.NET Core developer building production web applications — currently shipping the Performance Management System." />
+<meta property="og:url" content="https://aryanb.dev/" />
+<meta property="og:image" content="https://aryanb.dev/assets/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Aryan Bhandary — Software Engineer" />
+<meta name="twitter:description" content="ASP.NET Core developer building production web applications — currently shipping the Performance Management System." />
+<meta name="twitter:image" content="https://aryanb.dev/assets/og-image.png" />
+
+<!-- JSON-LD structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Aryan Bhandary",
+  "jobTitle": "Software Engineer",
+  "url": "https://aryanb.dev/",
+  "email": "mailto:hello@aryanb.dev",
+  "sameAs": [
+    "https://github.com/RedSun18",
+    "https://www.linkedin.com/in/aryan-bhandary-0812b8217/"
+  ],
+  "knowsAbout": ["ASP.NET Core", "C#", "PostgreSQL", "SQL Server", "Docker", "Nginx"]
+}
+</script>
+
+<!--
+  Cloudflare Web Analytics — placeholder only, no token committed. Populate CF_BEACON_TOKEN
+  in deploy/postgres-demo.env (or a dedicated deploy/analytics.env) and publish.sh will
+  substitute it in; left blank/disabled otherwise. See deploy/RUNBOOK.md "Analytics".
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'></script>
+-->
+
+<style>
+  :root {
+    --navy: #0f2b5c;
+    --navy2: #1e3a8a;
+    --blue: #2f5fd6;
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1a2333;
+    --muted: #5b6478;
+    --border: #e3e7ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1120;
+      --card: #121a2e;
+      --text: #eef1f8;
+      --muted: #9aa5bd;
+      --border: #23304d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  a { color: var(--blue); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  header.hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+    color: #fff;
+    padding: 96px 0 88px;
+  }
+  .hero-inner { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+  .avatar {
+    width: 132px; height: 132px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 3px solid rgba(255,255,255,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 700; letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .hero-text h1 { margin: 0 0 6px; font-size: 40px; font-weight: 800; }
+  .hero-titles { margin: 0 0 18px; color: #cfd9f2; font-size: 17px; font-weight: 500; }
+  .hero-titles span:not(:last-child)::after { content: " · "; color: rgba(255,255,255,0.4); }
+  .hero-summary { max-width: 560px; color: #dbe3f7; font-size: 16px; margin: 0 0 26px; }
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 26px; border-radius: 8px; font-weight: 700; font-size: 15px;
+    text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: #fff; color: var(--navy); }
+  .btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,0.55); }
+
+  section { padding: 64px 0; }
+  h2 { font-size: 26px; margin: 0 0 22px; }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600;
+  }
+
+  .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 26px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .card h3 { margin: 0; font-size: 19px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; flex-grow: 1; }
+  .tag { align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+  .tag-live { background: #dcfce7; color: #166534; }
+  .tag-soon { background: #fef3c7; color: #92400e; }
+  @media (prefers-color-scheme: dark) {
+    .tag-live { background: #103621; color: #4ade80; }
+    .tag-soon { background: #3a2e0a; color: #fbbf24; }
+  }
+  .card a.btn { align-self: flex-start; padding: 9px 18px; font-size: 14px; }
+  .card .btn-primary { background: var(--blue); color: #fff; }
+
+  .contact-row { display: flex; flex-wrap: wrap; gap: 14px; }
+  .contact-row a {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 18px; text-decoration: none; color: var(--text); font-weight: 600; font-size: 14.5px;
+  }
+
+  .note {
+    margin-top: 30px; padding: 16px 18px; border-radius: 10px;
+    background: var(--card); border: 1px dashed var(--border); color: var(--muted); font-size: 14px;
+  }
+
+  footer {
+    border-top: 1px solid var(--border); padding: 28px 0 40px;
+    color: var(--muted); font-size: 12.5px;
+  }
+  footer .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  footer code { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="avatar">AB</div>
+    <div class="hero-text">
+      <h1>Aryan Bhandary</h1>
+      <p class="hero-titles">
+        <span>Assistant Programmer</span><span>Software Engineer</span><span>ASP.NET Core Developer</span>
+      </p>
+      <p class="hero-summary">
+        I build production web applications end to end — from database schema to deployment
+        pipeline. Most recently, a full HR performance-review platform (ASP.NET Core 8,
+        PostgreSQL, background jobs, PDF/Excel reporting, English/Arabic localization) taken
+        from an internal tool to a publicly deployable product.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://pms.aryanb.dev" target="_blank" rel="noopener">View PMS Demo</a>
+        <a class="btn btn-outline" href="/resume.pdf" target="_blank" rel="noopener">Download Resume</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="stack">
+    <h2>Technology Stack</h2>
+    <div class="badge-row">
+      <span class="badge">C#</span>
+      <span class="badge">ASP.NET Core</span>
+      <span class="badge">.NET 8</span>
+      <span class="badge">VB.NET</span>
+      <span class="badge">PostgreSQL</span>
+      <span class="badge">SQL Server</span>
+      <span class="badge">Docker</span>
+      <span class="badge">Nginx</span>
+      <span class="badge">Cloudflare</span>
+      <span class="badge">GitHub Actions</span>
+      <span class="badge">DevExpress</span>
+      <span class="badge">JavaScript</span>
+      <span class="badge">HTML</span>
+      <span class="badge">CSS</span>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2>Featured Projects</h2>
+    <div class="projects">
+      <div class="card">
+        <span class="tag tag-live">Live Demo</span>
+        <h3>Performance Management System</h3>
+        <p>
+          A complete employee performance-review platform: KPI &amp; competency scoring,
+          multi-stage manager/HR workflow, PDF/Excel export, email notifications, audit
+          logging, and full English/Arabic localization. Deployed with Docker, Nginx, and
+          Let's Encrypt on a hardened Ubuntu VPS.
+        </p>
+        <a class="btn btn-primary" href="https://pms.aryanb.dev" target="_blank" rel="noopener">Open Live Demo →</a>
+      </div>
+      <div class="card">
+        <span class="tag tag-soon">Coming Soon</span>
+        <h3>RenewalFlow</h3>
+        <p>
+          A CRM focused on subscription and policy renewal tracking. In active development —
+          details and a live preview will land here soon.
+        </p>
+        <a class="btn btn-outline" style="color:var(--blue); border-color:var(--blue);" href="https://renewalflow.aryanb.dev" target="_blank" rel="noopener">renewalflow.aryanb.dev →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <div class="contact-row">
+      <a href="mailto:hello@aryanb.dev">✉️ hello@aryanb.dev</a>
+      <a href="https://github.com/RedSun18" target="_blank" rel="noopener">GitHub — RedSun18</a>
+      <a href="https://www.linkedin.com/in/aryan-bhandary-0812b8217/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <p class="note">
+      The complete portfolio site — full project write-ups, case studies, and blog — is
+      currently being built. This page will be replaced as that work lands.
+    </p>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="meta">
+    <span>Deployed <code>{{DEPLOY_TIMESTAMP}}</code></span>
+    <span>Commit <code>{{GIT_COMMIT}}</code></span>
+    <span>Version <code>{{APP_VERSION}}</code></span>
+    <span>Environment <code>{{ENVIRONMENT}}</code></span>
+  </div>
+</footer>
+
+</body>
+</html>

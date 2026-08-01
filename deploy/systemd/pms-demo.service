@@ -1,0 +1,56 @@
+# PMS Demo — Performance Management System, ASPNETCORE_ENVIRONMENT=Demo (Apex Corporation
+# fictional data only — this unit must never point at the real Development database, see
+# deploy/RUNBOOK.md and docs/DEMO.md).
+#
+# Install: sudo cp deploy/systemd/pms-demo.service /etc/systemd/system/
+#          sudo systemctl daemon-reload && sudo systemctl enable --now pms-demo
+#
+# deploy/publish.sh flips /var/www/pms-demo/current to point at the latest release and
+# restarts this unit; it never edits this file.
+
+[Unit]
+Description=PMS Demo (Performance Management System, Demo environment)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=pms-demo
+Group=pms-demo
+
+WorkingDirectory=/var/www/pms-demo/current
+ExecStart=/usr/bin/dotnet /var/www/pms-demo/current/PerformanceManagement.Web.dll
+
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# HOME set explicitly (not just via the pms-demo passwd entry) so ASP.NET Core's Data
+# Protection key ring reliably persists to $HOME/.aspnet/DataProtection-Keys across restarts
+# and redeploys — otherwise the SMTP password (Settings > Email) and signed /OpenForm links
+# would silently break on every restart. Same directory doubles as PuppeteerSharp's Chromium
+# cache location.
+Environment=HOME=/var/www/pms-demo
+Environment=DOTNET_ENVIRONMENT=Demo
+Environment=ASPNETCORE_ENVIRONMENT=Demo
+Environment=ASPNETCORE_URLS=http://127.0.0.1:8090
+# Not a secret — the app's own public URL, used to build signed /OpenForm links in emails.
+Environment=General__ApplicationBaseUrl=https://pms.aryanb.dev
+
+# PM_CONNECTION (the Demo Postgres connection string/password) lives here, never in git —
+# see deploy/postgres-demo.env.example and deploy/RUNBOOK.md.
+EnvironmentFile=/var/www/pms-demo/shared/pms-demo.env
+
+# Hardening: the app only ever needs to read its own release tree and write under its own
+# home (uploads, Data Protection keys, the Chromium cache) — nothing else on the box.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/www/pms-demo
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target

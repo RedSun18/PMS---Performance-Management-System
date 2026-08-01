@@ -1,2 +1,22 @@
 @page
 @model PerformanceManagement.Web.Pages.IndexModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_Layout";
+}
+<div class="landing-hero">
+    <div class="landing-hero-inner">
+        <div class="landing-kicker">@Localizer["Kicker"]</div>
+        <h1>@Model.BrandName</h1>
+        <p class="landing-tagline">@Localizer["Tagline"]</p>
+        <div class="landing-actions">
+            <a class="btn btn-primary landing-cta" asp-page="/Account/Login">@Localizer["LiveDemoButton"]</a>
+        </div>
+    </div>
+</div>
+<div class="landing-links">
+    <span class="landing-link-disabled" title="@Localizer["ComingSoonHint"]">@Localizer["DocumentationLink"]</span>
+    <span class="landing-link-disabled" title="@Localizer["ComingSoonHint"]">@Localizer["ArchitectureLink"]</span>
+    <span class="landing-link-disabled" title="@Localizer["ComingSoonHint"]">@Localizer["GitHubLink"]</span>
+</div>

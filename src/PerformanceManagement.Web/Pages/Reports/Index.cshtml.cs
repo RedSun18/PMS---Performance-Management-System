@@ -21,12 +21,23 @@ public class IndexModel : AppPageModel
     private readonly IClock _clock;
     private readonly ReportDataService _reports;
     private readonly NotificationService _notifications;
+    private readonly SettingsService _settings;
     private readonly IStringLocalizer<IndexModel> _localizer;
 
     public IndexModel(PmDbContext db, IClock clock, ReportDataService reports, NotificationService notifications,
-        IStringLocalizer<IndexModel> localizer)
+        SettingsService settings, IStringLocalizer<IndexModel> localizer)
     {
-        _db = db; _clock = clock; _reports = reports; _notifications = notifications; _localizer = localizer;
+        _db = db; _clock = clock; _reports = reports; _notifications = notifications;
+        _settings = settings; _localizer = localizer;
+    }
+
+    /// <summary>Report/Excel header brand text — the environment's own company name if set
+    /// (e.g. a Demo/customer deployment), else the generic product name.</summary>
+    private async Task<string> GetBrandNameAsync()
+    {
+        var general = await _settings.GetGeneralSettingsAsync();
+        return string.IsNullOrWhiteSpace(general.CompanyName)
+            ? await _settings.GetApplicationNameAsync() : general.CompanyName;
     }
 
     public List<(string Code, string Label)> EmployeeOptions { get; set; } = new();
@@ -45,7 +56,7 @@ public class IndexModel : AppPageModel
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["EmployeeReportNotifLabel", empcd!, year]);
-        return PdfFile(await ReportExportService.EmployeeReportToPdfAsync(report), $"EmployeePerformanceReport_{empcd}_{year}");
+        return PdfFile(await ReportExportService.EmployeeReportToPdfAsync(report, await GetBrandNameAsync()), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
     public async Task<IActionResult> OnGetEmployeeExcelAsync(string? empcd, int year)
@@ -53,7 +64,7 @@ public class IndexModel : AppPageModel
         var report = await RequireEmployeeReportAsync(empcd, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["EmployeeReportNotifLabel", empcd!, year]);
-        return ExcelFile(ReportExportService.EmployeeReportToExcel(report), $"EmployeePerformanceReport_{empcd}_{year}");
+        return ExcelFile(ReportExportService.EmployeeReportToExcel(report, await GetBrandNameAsync()), $"EmployeePerformanceReport_{empcd}_{year}");
     }
 
     // ---- Department Summary --------------------------------------------------
@@ -62,7 +73,7 @@ public class IndexModel : AppPageModel
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["DepartmentSummaryNotifLabel", dept!, year]);
-        return PdfFile(await ReportExportService.DepartmentReportToPdfAsync(report), $"DepartmentSummary_{dept}_{year}");
+        return PdfFile(await ReportExportService.DepartmentReportToPdfAsync(report, await GetBrandNameAsync()), $"DepartmentSummary_{dept}_{year}");
     }
 
     public async Task<IActionResult> OnGetDepartmentExcelAsync(string? dept, int year)
@@ -70,7 +81,7 @@ public class IndexModel : AppPageModel
         var report = await RequireDepartmentReportAsync(dept, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["DepartmentSummaryNotifLabel", dept!, year]);
-        return ExcelFile(ReportExportService.DepartmentReportToExcel(report), $"DepartmentSummary_{dept}_{year}");
+        return ExcelFile(ReportExportService.DepartmentReportToExcel(report, await GetBrandNameAsync()), $"DepartmentSummary_{dept}_{year}");
     }
 
     // ---- Manager Summary --------------------------------------------------
@@ -79,7 +90,7 @@ public class IndexModel : AppPageModel
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["ManagerSummaryNotifLabel", manager!, year]);
-        return PdfFile(await ReportExportService.ManagerReportToPdfAsync(report), $"ManagerSummary_{manager}_{year}");
+        return PdfFile(await ReportExportService.ManagerReportToPdfAsync(report, await GetBrandNameAsync()), $"ManagerSummary_{manager}_{year}");
     }
 
     public async Task<IActionResult> OnGetManagerExcelAsync(string? manager, int year)
@@ -87,7 +98,7 @@ public class IndexModel : AppPageModel
         var report = await RequireManagerReportAsync(manager, year);
         if (report is null) return RedirectToPage();
         await NotifyReportGeneratedAsync(_localizer["ManagerSummaryNotifLabel", manager!, year]);
-        return ExcelFile(ReportExportService.ManagerReportToExcel(report), $"ManagerSummary_{manager}_{year}");
+        return ExcelFile(ReportExportService.ManagerReportToExcel(report, await GetBrandNameAsync()), $"ManagerSummary_{manager}_{year}");
     }
 
     // ---- Overall Organization Summary ----------------------------------------
@@ -95,14 +106,14 @@ public class IndexModel : AppPageModel
     {
         var report = await _reports.GetOverallReportAsync(year);
         await NotifyReportGeneratedAsync(_localizer["OverallSummaryNotifLabel", year]);
-        return PdfFile(await ReportExportService.OverallReportToPdfAsync(report), $"OverallOrganizationSummary_{year}");
+        return PdfFile(await ReportExportService.OverallReportToPdfAsync(report, await GetBrandNameAsync()), $"OverallOrganizationSummary_{year}");
     }
 
     public async Task<IActionResult> OnGetOverallExcelAsync(int year)
     {
         var report = await _reports.GetOverallReportAsync(year);
         await NotifyReportGeneratedAsync(_localizer["OverallSummaryNotifLabel", year]);
-        return ExcelFile(ReportExportService.OverallReportToExcel(report), $"OverallOrganizationSummary_{year}");
+        return ExcelFile(ReportExportService.OverallReportToExcel(report, await GetBrandNameAsync()), $"OverallOrganizationSummary_{year}");
     }
 
     private Task NotifyReportGeneratedAsync(string reportLabel) =>

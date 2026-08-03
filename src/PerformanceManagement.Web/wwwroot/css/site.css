@@ -75,7 +75,7 @@ body {
 
 .sidebar {
   width: 260px; background: linear-gradient(180deg, var(--navy) 0%, var(--navy-mid) 100%);
-  box-shadow: var(--shadow-md); position: fixed; inset-inline-start: 0; top: 56px; bottom: 0; z-index: 30;
+  box-shadow: var(--shadow-md); position: fixed; inset-inline-start: 0; top: 0; bottom: 0; z-index: 30;
   overflow-y: auto; transition: transform .25s var(--ease), width .25s var(--ease);
   padding-top: 0;
 }
@@ -84,7 +84,15 @@ body {
 :root { --sidebar-collapsed-x: -260px; }
 [dir="rtl"] { --sidebar-collapsed-x: 260px; }
 .sidebar.collapsed { transform: translateX(var(--sidebar-collapsed-x)); }
-.sidebar-nav { display: flex; flex-direction: column; gap: 0; padding: 12px 0; }
+/* The sidebar spans the full viewport height (top: 0 above), including the row the topnav
+   header occupies at x:[260px, viewport-right] — .topnav lives inside .main-area, so it never
+   extends behind the sidebar's own column, and without this the sidebar's nav links would sit
+   flush against the very top edge instead of visually starting below where the header row is.
+   68px = the topnav's 56px height + the same 12px breathing room .sidebar-nav already gives
+   its own bottom edge. Net effect: one unbroken navy bar spans the full page width at the top
+   (sidebar column + topnav, seamlessly meeting at x:260px) instead of the topnav starting only
+   to the right of the sidebar and leaving its top-left corner uncovered. */
+.sidebar-nav { display: flex; flex-direction: column; gap: 0; padding: 68px 0 12px; }
 .sidebar-link {
   display: block; color: rgba(255,255,255,.85); text-decoration: none; font-size: 13.5px;
   font-weight: 500; padding: 12px 16px; transition: background .15s var(--ease), color .15s var(--ease);

@@ -1,3 +1,4 @@
+using System.Linq;
 using PerformanceManagement.Core.Domain;
 
 namespace PerformanceManagement.DemoSeeder;
@@ -44,14 +45,33 @@ public static class DemoReferenceData
         ("ASO", "Associate"),
     };
 
+    /// <summary>Two topical sections per department (e.g. IT → Software Development /
+    /// Infrastructure &amp; Support) so a seeded employee's Department/Section/Designation read as
+    /// a coherent, realistic org structure — without an actual Department→Section foreign key
+    /// (Section stays the same flat, standalone reference table it always was; this mapping is
+    /// seeder-only, used purely to pick a sensible section per employee).</summary>
+    public static readonly IReadOnlyDictionary<string, (string Code, string Description)[]> SectionsByDept =
+        new Dictionary<string, (string, string)[]>
+        {
+            ["CLM"] = new[] { ("CLP", "Claims Processing"), ("CLI", "Claims Investigation") },
+            ["UWR"] = new[] { ("CUW", "Commercial Underwriting"), ("PUW", "Personal Lines Underwriting") },
+            ["SLS"] = new[] { ("DSL", "Direct Sales"), ("BKR", "Broker Relations") },
+            ["MKT"] = new[] { ("DMK", "Digital Marketing"), ("BRC", "Brand & Communications") },
+            ["FIN"] = new[] { ("APY", "Accounts Payable"), ("FPA", "Financial Planning & Analysis") },
+            ["HRD"] = new[] { ("TAC", "Talent Acquisition"), ("ERL", "Employee Relations") },
+            ["ITD"] = new[] { ("SWD", "Software Development"), ("INF", "Infrastructure & Support") },
+            ["LGL"] = new[] { ("CLG", "Corporate Legal"), ("RGC", "Regulatory Compliance") },
+            ["RSK"] = new[] { ("ERM", "Enterprise Risk"), ("CDR", "Credit Risk") },
+            ["ACT"] = new[] { ("PRA", "Pricing Actuarial"), ("RSA", "Reserving Actuarial") },
+            ["CSR"] = new[] { ("CTC", "Contact Center"), ("CLS", "Client Support") },
+            ["OPS"] = new[] { ("PEX", "Process Excellence"), ("OSP", "Operations Support") },
+            ["AUD"] = new[] { ("FAU", "Financial Audit"), ("OAU", "Operational Audit") },
+            ["STR"] = new[] { ("STP", "Strategic Planning"), ("BDV", "Business Development") },
+            ["INV"] = new[] { ("PTM", "Portfolio Management"), ("TRO", "Treasury Operations") },
+        };
+
     public static readonly (string Code, string Description)[] Sections =
-    {
-        ("RPT", "Reporting"),
-        ("OPS", "Operations Support"),
-        ("CLR", "Client Relations"),
-        ("TSP", "Technical Support"),
-        ("ADM", "Administration"),
-    };
+        SectionsByDept.Values.SelectMany(s => s).ToArray();
 
     /// <summary>Grade "1" = most senior, "8" = entry level — mirrors the shape (numeric grade
     /// string, comma-separated grade lists on job families) of the real system without reusing

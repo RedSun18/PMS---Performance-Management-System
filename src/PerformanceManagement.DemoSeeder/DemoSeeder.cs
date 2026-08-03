@@ -200,8 +200,9 @@ public sealed class DemoSeeder
 
     // ================================================================ Employees & org structure
 
-    /// <summary>~200 employees: 5 executives (grade 1, no manager), 30 department managers
-    /// (grade 2, 2 per department), 165 staff (grades 3–8) spread across departments.</summary>
+    /// <summary>~50 employees: 5 executives (grade 1, no manager), 16 department managers
+    /// (grade 2 — 1 per department, 2 for HR), ~29 staff (grades 3–8) spread across
+    /// departments.</summary>
     private async Task<List<Employee>> SeedEmployeesAsync()
     {
         var employees = new List<Employee>();
@@ -231,16 +232,27 @@ public sealed class DemoSeeder
             return new DateOnly(year, month, day);
         }
 
+        // Round-robins each department's own 2 topical sections (DemoReferenceData.SectionsByDept)
+        // across its employees, so Department/Section/Designation read as a coherent, realistic
+        // structure (e.g. IT staff land in Software Development or Infrastructure & Support)
+        // without an actual Department→Section foreign key — Section stays the flat, standalone
+        // reference table it always was.
+        var sectionIndexByDept = new Dictionary<string, int>();
+
         Employee MakeEmployee(string grade, string deptCode, string designationCode)
         {
             var (first, last) = NextName();
             var code = (empCodeSeq++).ToString();
+            var sections = DemoReferenceData.SectionsByDept[deptCode];
+            var sIdx = sectionIndexByDept.TryGetValue(deptCode, out var n) ? n : 0;
+            sectionIndexByDept[deptCode] = sIdx + 1;
             var emp = new Employee
             {
                 EmpCode = code,
                 LatinName = $"{first} {last}",
                 DesignationCode = designationCode,
                 DeptCode = deptCode,
+                SectionCode = sections[sIdx % sections.Length].Code,
                 Grade = grade,
                 JoinDate = JoinDateFor(empCodeSeq),
                 Email = $"{first.ToLowerInvariant()}.{last.ToLowerInvariant()}@apexcorp.demo",
@@ -256,17 +268,20 @@ public sealed class DemoSeeder
         foreach (var dept in execDepts)
             MakeEmployee(grade: "1", deptCode: dept, designationCode: "CO");
 
-        // 2 managers per department (30 total), grade 2.
+        // 1 manager per department, except HR which gets 2 — HR needs two independent grade-2
+        // employees so the two HR-Reviewer roles (segregation of duties) are genuinely different
+        // people, exactly like a real company's HR team would have more than one reviewer.
         foreach (var (deptCode, _) in DemoReferenceData.Departments)
         {
             MakeEmployee(grade: "2", deptCode, designationCode: "SMGR");
-            MakeEmployee(grade: "2", deptCode, designationCode: "MGR");
+            if (deptCode == "HRD")
+                MakeEmployee(grade: "2", deptCode, designationCode: "MGR");
         }
 
-        // Remaining staff up to ~200 total, grades 3–8, spread across departments.
+        // Remaining staff up to ~50 total, grades 3–8, spread across departments.
         var staffDesignations = new[] { "SAN", "AN", "CRD", "ASO" };
         var staffGrades = new[] { "3", "4", "5", "6", "6", "7", "8" };
-        var targetTotal = 200;
+        var targetTotal = 50;
         var i2 = 0;
         while (employees.Count < targetTotal)
         {

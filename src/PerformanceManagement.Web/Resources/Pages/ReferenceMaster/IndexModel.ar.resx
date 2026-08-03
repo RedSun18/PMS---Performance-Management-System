@@ -63,4 +63,33 @@
   <data name="JobFamilyNotFoundError" xml:space="preserve"><value>الفئة الوظيفية {0} غير موجودة.</value></data>
   <data name="JobFamilyWeightError" xml:space="preserve"><value>يجب أن يكون مجموع وزن مؤشر الأداء ووزن الكفاءة 100.</value></data>
   <data name="JobFamilyUpdatedMessage" xml:space="preserve"><value>تم تحديث الفئة الوظيفية {0}.</value></data>
+  <data name="JobFamilyRequiredFieldsError" xml:space="preserve"><value>الرمز والاسم والدرجات مطلوبة.</value></data>
+  <data name="JobFamilyCodeInUseError" xml:space="preserve"><value>رمز الفئة الوظيفية {0} مستخدم بالفعل.</value></data>
+  <data name="JobFamilyCreatedMessage" xml:space="preserve"><value>تم إنشاء الفئة الوظيفية {0}.</value></data>
+  <data name="JobFamilyInUseError" xml:space="preserve"><value>الفئة الوظيفية {0} تغطي درجة موظف حالي واحد أو أكثر ولا يمكن حذفها.</value></data>
+  <data name="JobFamilyDeletedMessage" xml:space="preserve"><value>تم حذف الفئة الوظيفية {0}.</value></data>
+
+  <data name="RatingScaleRequiredFieldsError" xml:space="preserve"><value>الرمز والاسم مطلوبان، ولا يجوز أن يتجاوز الحد الأدنى للدرجة الحد الأقصى.</value></data>
+  <data name="RatingScaleCodeInUseError" xml:space="preserve"><value>رمز مقياس التقييم {0} مستخدم بالفعل.</value></data>
+  <data name="RatingScaleNotFoundError" xml:space="preserve"><value>مقياس التقييم {0} غير موجود.</value></data>
+  <data name="RatingScaleCreatedMessage" xml:space="preserve"><value>تم إنشاء مقياس التقييم {0}.</value></data>
+  <data name="RatingScaleUpdatedMessage" xml:space="preserve"><value>تم تحديث مقياس التقييم {0}.</value></data>
+  <data name="RatingScaleInUseError" xml:space="preserve"><value>مقياس التقييم {0} مستخدم في نموذج تقييم أداء واحد أو أكثر ولا يمكن حذفه.</value></data>
+  <data name="RatingScaleDeletedMessage" xml:space="preserve"><value>تم حذف مقياس التقييم {0}.</value></data>
+
+  <data name="SectionRequiredFieldsError" xml:space="preserve"><value>الرمز (بحد أقصى 5 أحرف) والعنوان مطلوبان.</value></data>
+  <data name="SectionCodeInUseError" xml:space="preserve"><value>رمز القسم الفرعي {0} مستخدم بالفعل.</value></data>
+  <data name="SectionNotFoundError" xml:space="preserve"><value>القسم الفرعي {0} غير موجود.</value></data>
+  <data name="SectionCreatedMessage" xml:space="preserve"><value>تم إنشاء القسم الفرعي {0}.</value></data>
+  <data name="SectionUpdatedMessage" xml:space="preserve"><value>تم تحديث القسم الفرعي {0}.</value></data>
+  <data name="SectionInUseError" xml:space="preserve"><value>القسم الفرعي {0} مسند إلى موظف واحد أو أكثر ولا يمكن حذفه.</value></data>
+  <data name="SectionDeletedMessage" xml:space="preserve"><value>تم حذف القسم الفرعي {0}.</value></data>
+
+  <data name="DesigRequiredFieldsError" xml:space="preserve"><value>الرمز (بحد أقصى 5 أحرف) والعنوان مطلوبان.</value></data>
+  <data name="DesigCodeInUseError" xml:space="preserve"><value>رمز المسمى الوظيفي {0} مستخدم بالفعل.</value></data>
+  <data name="DesigNotFoundError" xml:space="preserve"><value>المسمى الوظيفي {0} غير موجود.</value></data>
+  <data name="DesigCreatedMessage" xml:space="preserve"><value>تم إنشاء المسمى الوظيفي {0}.</value></data>
+  <data name="DesigUpdatedMessage" xml:space="preserve"><value>تم تحديث المسمى الوظيفي {0}.</value></data>
+  <data name="DesigInUseError" xml:space="preserve"><value>المسمى الوظيفي {0} مسند إلى موظف واحد أو أكثر ولا يمكن حذفه.</value></data>
+  <data name="DesigDeletedMessage" xml:space="preserve"><value>تم حذف المسمى الوظيفي {0}.</value></data>
 </root>

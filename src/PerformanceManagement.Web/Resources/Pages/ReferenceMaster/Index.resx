@@ -48,7 +48,13 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageHeader" xml:space="preserve"><value>Reference Master — KPI &amp; Competency Masters, KPI Reference Codes</value></data>
   <data name="TabDepartments" xml:space="preserve"><value>Departments</value></data>
+  <data name="TabSections" xml:space="preserve"><value>Sections</value></data>
+  <data name="TabDesignations" xml:space="preserve"><value>Designations</value></data>
   <data name="TabJobFamiliesRatingScales" xml:space="preserve"><value>Job Families &amp; Rating Scales</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete {0}? This cannot be undone.</value></data>
+  <data name="ColTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ColTitleAr" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="SearchCodeOrTitleLabel" xml:space="preserve"><value>Search (code or title)</value></data>
 
   <data name="AddKpiHeader" xml:space="preserve"><value>Add KPI ({0})</value></data>
   <data name="EditKpiHeader" xml:space="preserve"><value>Edit KPI {0}</value></data>
@@ -106,7 +112,31 @@
   <data name="EnableConfirm" xml:space="preserve"><value>Re-enable {0}?</value></data>
   <data name="DepartmentsFooterNote" xml:space="preserve"><value>{0} departments. Departments are never deleted — disable them instead to preserve history for existing employees.</value></data>
 
+  <data name="AddSectionHeader" xml:space="preserve"><value>Add Section</value></data>
+  <data name="EditSectionHeader" xml:space="preserve"><value>Edit Section {0}</value></data>
+  <data name="SectionCodeLabel" xml:space="preserve"><value>Code (max 5 characters)</value></data>
+  <data name="SectionTitleLabel" xml:space="preserve"><value>Title</value></data>
+  <data name="SectionTitleArLabel" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="CreateSectionButton" xml:space="preserve"><value>Create Section</value></data>
+  <data name="SectionSearchPlaceholder" xml:space="preserve"><value>e.g. MKT or Marketing</value></data>
+  <data name="NoSectionsFoundMessage" xml:space="preserve"><value>No sections match your search.</value></data>
+  <data name="SectionsFooterNote" xml:space="preserve"><value>{0} sections.</value></data>
+
+  <data name="AddDesigHeader" xml:space="preserve"><value>Add Designation</value></data>
+  <data name="EditDesigHeader" xml:space="preserve"><value>Edit Designation {0}</value></data>
+  <data name="DesigCodeLabel" xml:space="preserve"><value>Code (max 5 characters)</value></data>
+  <data name="DesigTitleLabel" xml:space="preserve"><value>Title</value></data>
+  <data name="DesigTitleArLabel" xml:space="preserve"><value>Title (Arabic)</value></data>
+  <data name="CreateDesigButton" xml:space="preserve"><value>Create Designation</value></data>
+  <data name="DesigSearchPlaceholder" xml:space="preserve"><value>e.g. MGR or Manager</value></data>
+  <data name="NoDesigFoundMessage" xml:space="preserve"><value>No designations match your search.</value></data>
+  <data name="DesigFooterNote" xml:space="preserve"><value>{0} designations.</value></data>
+
   <data name="JobFamiliesHeader" xml:space="preserve"><value>Job Families (grade → KPI/Competency weight split)</value></data>
+  <data name="AddJobFamilyHeader" xml:space="preserve"><value>Add Job Family</value></data>
+  <data name="JobFamilyCodeLabel" xml:space="preserve"><value>Code</value></data>
+  <data name="GradesPlaceholder" xml:space="preserve"><value>e.g. 3,4</value></data>
+  <data name="CreateJobFamilyButton" xml:space="preserve"><value>Create Job Family</value></data>
   <data name="ColGrades" xml:space="preserve"><value>Grades</value></data>
   <data name="ColKpiWeightPercent" xml:space="preserve"><value>KPI Weight %</value></data>
   <data name="ColCompWeightPercent" xml:space="preserve"><value>Competency Weight %</value></data>
@@ -119,4 +149,14 @@
   <data name="ColRatingAr" xml:space="preserve"><value>Rating (AR)</value></data>
   <data name="ColScoreRange" xml:space="preserve"><value>Score Range</value></data>
   <data name="RatingScalesFooterNote" xml:space="preserve"><value>Rating bands are reference data imported from the legacy system; edit via the importer or database if HR policy changes.</value></data>
+  <data name="AddRatingScaleHeader" xml:space="preserve"><value>Add Rating Scale</value></data>
+  <data name="RatingCodeLabel" xml:space="preserve"><value>Code</value></data>
+  <data name="MinScoreLabel" xml:space="preserve"><value>Min Score</value></data>
+  <data name="MaxScoreLabel" xml:space="preserve"><value>Max Score</value></data>
+  <data name="CreateRatingScaleButton" xml:space="preserve"><value>Create Rating Scale</value></data>
+  <data name="RatingEnForScaleAriaLabel" xml:space="preserve"><value>Rating (English) for scale {0}</value></data>
+  <data name="RatingArForScaleAriaLabel" xml:space="preserve"><value>Rating (Arabic) for scale {0}</value></data>
+  <data name="MinScoreForScaleAriaLabel" xml:space="preserve"><value>Minimum score for scale {0}</value></data>
+  <data name="MaxScoreForScaleAriaLabel" xml:space="preserve"><value>Maximum score for scale {0}</value></data>
+  <data name="RemarksForScaleAriaLabel" xml:space="preserve"><value>Remarks for scale {0}</value></data>
 </root>

@@ -30,14 +30,14 @@ if [ -f "$ROOT_DIR/.env" ]; then
 fi
 
 echo "1) Stopping the demo Postgres container (if running)..."
-docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" stop postgres-demo 2>/dev/null || true
-docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" rm -f postgres-demo 2>/dev/null || true
+docker compose "${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"}" -f "$COMPOSE_FILE" stop postgres-demo 2>/dev/null || true
+docker compose "${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"}" -f "$COMPOSE_FILE" rm -f postgres-demo 2>/dev/null || true
 
 echo "2) Removing the demo database volume (full fresh database, not just a table wipe)..."
 docker volume rm pms_pms-demo-pgdata 2>/dev/null || true
 
 echo "3) Starting a fresh demo Postgres container (--wait blocks until its healthcheck passes)..."
-docker compose "${ENV_FILE_ARGS[@]}" -f "$COMPOSE_FILE" up -d --wait postgres-demo
+docker compose "${ENV_FILE_ARGS[@]+"${ENV_FILE_ARGS[@]}"}" -f "$COMPOSE_FILE" up -d --wait postgres-demo
 
 echo "4) Applying migrations and seeding deterministic demo data..."
 dotnet run --project "$ROOT_DIR/src/PerformanceManagement.DemoSeeder"

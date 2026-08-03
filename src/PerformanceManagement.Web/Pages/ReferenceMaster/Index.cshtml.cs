@@ -36,6 +36,10 @@ public class IndexModel : AppPageModel
     [BindProperty(SupportsGet = true)] public string? CompQuery { get; set; }
     [BindProperty(SupportsGet = true)] public string? DeptQuery { get; set; }
     [BindProperty(SupportsGet = true)] public string? DeptEditCode { get; set; }
+    [BindProperty(SupportsGet = true)] public string? SectionQuery { get; set; }
+    [BindProperty(SupportsGet = true)] public string? SectionEditCode { get; set; }
+    [BindProperty(SupportsGet = true)] public string? DesigQuery { get; set; }
+    [BindProperty(SupportsGet = true)] public string? DesigEditCode { get; set; }
 
     public List<KpiMaster> Kpis { get; set; } = new();
     public List<CompetencyMaster> Comps { get; set; } = new();
@@ -43,9 +47,13 @@ public class IndexModel : AppPageModel
     public List<RatingScale> RatingScales { get; set; } = new();
     public List<Department> Departments { get; set; } = new();
     public List<Department> DeptRows { get; set; } = new();
+    public List<Section> SectionRows { get; set; } = new();
+    public List<Designation> DesigRows { get; set; } = new();
     public KpiMaster? KpiEdit { get; set; }
     public CompetencyMaster? CompEdit { get; set; }
     public Department? DeptEdit { get; set; }
+    public Section? SectionEdit { get; set; }
+    public Designation? DesigEdit { get; set; }
     public string NextKpiId { get; set; } = "";
     public string NextCompId { get; set; } = "";
 
@@ -93,6 +101,26 @@ public class IndexModel : AppPageModel
                 }
                 DeptRows = await dq.OrderBy(d => d.NameEn).ToListAsync();
                 DeptEdit = DeptEditCode is null ? null : await _db.Departments.AsNoTracking().FirstOrDefaultAsync(d => d.Code == DeptEditCode);
+                break;
+            case "sections":
+                var secq = _db.Sections.AsNoTracking().AsQueryable();
+                if (!string.IsNullOrWhiteSpace(SectionQuery))
+                {
+                    var term = SectionQuery.Trim().ToLower();
+                    secq = secq.Where(s => s.Code.ToLower().Contains(term) || s.Description.ToLower().Contains(term));
+                }
+                SectionRows = await secq.OrderBy(s => s.Description).ToListAsync();
+                SectionEdit = SectionEditCode is null ? null : await _db.Sections.AsNoTracking().FirstOrDefaultAsync(s => s.Code == SectionEditCode);
+                break;
+            case "designations":
+                var desq = _db.Designations.AsNoTracking().AsQueryable();
+                if (!string.IsNullOrWhiteSpace(DesigQuery))
+                {
+                    var term = DesigQuery.Trim().ToLower();
+                    desq = desq.Where(d => d.Code.ToLower().Contains(term) || d.Description.ToLower().Contains(term));
+                }
+                DesigRows = await desq.OrderBy(d => d.Description).ToListAsync();
+                DesigEdit = DesigEditCode is null ? null : await _db.Designations.AsNoTracking().FirstOrDefaultAsync(d => d.Code == DesigEditCode);
                 break;
             default:
                 JobFamilies = await _db.JobFamilies.AsNoTracking().OrderBy(j => j.Code).ToListAsync();
@@ -276,5 +304,216 @@ public class IndexModel : AppPageModel
         await _db.SaveChangesAsync();
         Message = _localizer["JobFamilyUpdatedMessage", code];
         return RedirectToPage(new { Tab = "ref" });
+    }
+
+    public async Task<IActionResult> OnPostCreateJobFamilyAsync(string code, string nameEn, string gradesCsv, int kpiWeight, int compWeight)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        code = (code ?? "").Trim().ToUpperInvariant();
+        if (code.Length == 0 || string.IsNullOrWhiteSpace(nameEn) || string.IsNullOrWhiteSpace(gradesCsv))
+        {
+            ErrorMessage = _localizer["JobFamilyRequiredFieldsError"];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+        if (kpiWeight + compWeight != 100)
+        {
+            ErrorMessage = _localizer["JobFamilyWeightError"];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+        if (await _db.JobFamilies.FindAsync(code) is not null)
+        {
+            ErrorMessage = _localizer["JobFamilyCodeInUseError", code];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+
+        _db.JobFamilies.Add(new JobFamily
+        {
+            Code = code, NameEn = nameEn.Trim(), GradesCsv = gradesCsv.Trim(),
+            KpiWeight = kpiWeight, CompWeight = compWeight, Status = "A"
+        });
+        await _db.SaveChangesAsync();
+        Message = _localizer["JobFamilyCreatedMessage", code];
+        return RedirectToPage(new { Tab = "ref" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteJobFamilyAsync(string code)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        var family = await _db.JobFamilies.FindAsync(code);
+        if (family is null) { ErrorMessage = _localizer["JobFamilyNotFoundError", code]; return RedirectToPage(new { Tab = "ref" }); }
+
+        var grades = family.Grades.ToHashSet();
+        var inUse = await _db.Employees.AnyAsync(e => e.Grade != null && grades.Contains(e.Grade));
+        if (inUse)
+        {
+            ErrorMessage = _localizer["JobFamilyInUseError", code];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+
+        _db.JobFamilies.Remove(family);
+        await _db.SaveChangesAsync();
+        Message = _localizer["JobFamilyDeletedMessage", code];
+        return RedirectToPage(new { Tab = "ref" });
+    }
+
+    public async Task<IActionResult> OnPostSaveRatingScaleAsync(string code, string nameEn, string? nameAr, int minScore, int maxScore, string? remarks, bool isNew)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        code = (code ?? "").Trim();
+        if (code.Length == 0 || string.IsNullOrWhiteSpace(nameEn) || minScore > maxScore)
+        {
+            ErrorMessage = _localizer["RatingScaleRequiredFieldsError"];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+
+        var row = await _db.RatingScales.FindAsync(code);
+        if (isNew)
+        {
+            if (row is not null)
+            {
+                ErrorMessage = _localizer["RatingScaleCodeInUseError", code];
+                return RedirectToPage(new { Tab = "ref" });
+            }
+            row = new RatingScale { Code = code, Status = "A" };
+            _db.RatingScales.Add(row);
+        }
+        else if (row is null)
+        {
+            ErrorMessage = _localizer["RatingScaleNotFoundError", code];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+
+        row.NameEn = nameEn.Trim();
+        row.NameAr = string.IsNullOrWhiteSpace(nameAr) ? null : nameAr.Trim();
+        row.MinScore = minScore;
+        row.MaxScore = maxScore;
+        row.Remarks = string.IsNullOrWhiteSpace(remarks) ? null : remarks.Trim();
+        await _db.SaveChangesAsync();
+        Message = isNew ? _localizer["RatingScaleCreatedMessage", code] : _localizer["RatingScaleUpdatedMessage", code];
+        return RedirectToPage(new { Tab = "ref" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteRatingScaleAsync(string code)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        var inUse = await _db.PmForms.AnyAsync(f => f.OverallRatingCode == code);
+        if (inUse)
+        {
+            ErrorMessage = _localizer["RatingScaleInUseError", code];
+            return RedirectToPage(new { Tab = "ref" });
+        }
+
+        var row = await _db.RatingScales.FindAsync(code);
+        if (row is not null) { _db.RatingScales.Remove(row); await _db.SaveChangesAsync(); }
+        Message = _localizer["RatingScaleDeletedMessage", code];
+        return RedirectToPage(new { Tab = "ref" });
+    }
+
+    public async Task<IActionResult> OnPostSaveSectionAsync(string code, string description, string? descriptionAr, bool isNew)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        code = (code ?? "").Trim().ToUpperInvariant();
+        if (code.Length == 0 || code.Length > 5 || string.IsNullOrWhiteSpace(description))
+        {
+            ErrorMessage = _localizer["SectionRequiredFieldsError"];
+            return RedirectToPage(new { Tab = "sections" });
+        }
+
+        var row = await _db.Sections.FindAsync(code);
+        if (isNew)
+        {
+            if (row is not null)
+            {
+                ErrorMessage = _localizer["SectionCodeInUseError", code];
+                return RedirectToPage(new { Tab = "sections" });
+            }
+            row = new Section { Code = code };
+            _db.Sections.Add(row);
+        }
+        else if (row is null)
+        {
+            ErrorMessage = _localizer["SectionNotFoundError", code];
+            return RedirectToPage(new { Tab = "sections" });
+        }
+
+        row.Description = description.Trim();
+        row.DescriptionAr = string.IsNullOrWhiteSpace(descriptionAr) ? null : descriptionAr.Trim();
+        await _db.SaveChangesAsync();
+        Message = isNew ? _localizer["SectionCreatedMessage", code] : _localizer["SectionUpdatedMessage", code];
+        return RedirectToPage(new { Tab = "sections" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteSectionAsync(string code)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        var inUse = await _db.Employees.AnyAsync(e => e.SectionCode == code);
+        if (inUse)
+        {
+            ErrorMessage = _localizer["SectionInUseError", code];
+            return RedirectToPage(new { Tab = "sections" });
+        }
+
+        var row = await _db.Sections.FindAsync(code);
+        if (row is not null) { _db.Sections.Remove(row); await _db.SaveChangesAsync(); }
+        Message = _localizer["SectionDeletedMessage", code];
+        return RedirectToPage(new { Tab = "sections" });
+    }
+
+    public async Task<IActionResult> OnPostSaveDesignationAsync(string code, string description, string? descriptionAr, bool isNew)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        code = (code ?? "").Trim().ToUpperInvariant();
+        if (code.Length == 0 || code.Length > 5 || string.IsNullOrWhiteSpace(description))
+        {
+            ErrorMessage = _localizer["DesigRequiredFieldsError"];
+            return RedirectToPage(new { Tab = "designations" });
+        }
+
+        var row = await _db.Designations.FindAsync(code);
+        if (isNew)
+        {
+            if (row is not null)
+            {
+                ErrorMessage = _localizer["DesigCodeInUseError", code];
+                return RedirectToPage(new { Tab = "designations" });
+            }
+            row = new Designation { Code = code };
+            _db.Designations.Add(row);
+        }
+        else if (row is null)
+        {
+            ErrorMessage = _localizer["DesigNotFoundError", code];
+            return RedirectToPage(new { Tab = "designations" });
+        }
+
+        row.Description = description.Trim();
+        row.DescriptionAr = string.IsNullOrWhiteSpace(descriptionAr) ? null : descriptionAr.Trim();
+        await _db.SaveChangesAsync();
+        Message = isNew ? _localizer["DesigCreatedMessage", code] : _localizer["DesigUpdatedMessage", code];
+        return RedirectToPage(new { Tab = "designations" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteDesignationAsync(string code)
+    {
+        if (RequireHrAdmin() is { } denied) return denied;
+
+        var inUse = await _db.Employees.AnyAsync(e => e.DesignationCode == code);
+        if (inUse)
+        {
+            ErrorMessage = _localizer["DesigInUseError", code];
+            return RedirectToPage(new { Tab = "designations" });
+        }
+
+        var row = await _db.Designations.FindAsync(code);
+        if (row is not null) { _db.Designations.Remove(row); await _db.SaveChangesAsync(); }
+        Message = _localizer["DesigDeletedMessage", code];
+        return RedirectToPage(new { Tab = "designations" });
     }
 }

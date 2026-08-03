@@ -48,7 +48,13 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageHeader" xml:space="preserve"><value>البيانات المرجعية — مؤشرات الأداء الرئيسية والكفاءات، ورموز مؤشرات الأداء المرجعية</value></data>
   <data name="TabDepartments" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="TabSections" xml:space="preserve"><value>الأقسام الفرعية</value></data>
+  <data name="TabDesignations" xml:space="preserve"><value>المسميات الوظيفية</value></data>
   <data name="TabJobFamiliesRatingScales" xml:space="preserve"><value>الفئات الوظيفية ومقاييس التقييم</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>حذف {0}؟ لا يمكن التراجع عن هذا الإجراء.</value></data>
+  <data name="ColTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="ColTitleAr" xml:space="preserve"><value>العنوان (عربي)</value></data>
+  <data name="SearchCodeOrTitleLabel" xml:space="preserve"><value>البحث (بالرمز أو العنوان)</value></data>
 
   <data name="AddKpiHeader" xml:space="preserve"><value>إضافة مؤشر أداء ({0})</value></data>
   <data name="EditKpiHeader" xml:space="preserve"><value>تعديل مؤشر الأداء {0}</value></data>
@@ -106,7 +112,31 @@
   <data name="EnableConfirm" xml:space="preserve"><value>إعادة تفعيل {0}؟</value></data>
   <data name="DepartmentsFooterNote" xml:space="preserve"><value>{0} قسم. لا يتم حذف الأقسام نهائيًا — بل يتم تعطيلها للحفاظ على السجل التاريخي للموظفين الحاليين.</value></data>
 
+  <data name="AddSectionHeader" xml:space="preserve"><value>إضافة قسم فرعي</value></data>
+  <data name="EditSectionHeader" xml:space="preserve"><value>تعديل القسم الفرعي {0}</value></data>
+  <data name="SectionCodeLabel" xml:space="preserve"><value>الرمز (بحد أقصى 5 أحرف)</value></data>
+  <data name="SectionTitleLabel" xml:space="preserve"><value>العنوان</value></data>
+  <data name="SectionTitleArLabel" xml:space="preserve"><value>العنوان (عربي)</value></data>
+  <data name="CreateSectionButton" xml:space="preserve"><value>إنشاء قسم فرعي</value></data>
+  <data name="SectionSearchPlaceholder" xml:space="preserve"><value>مثال: MKT أو Marketing</value></data>
+  <data name="NoSectionsFoundMessage" xml:space="preserve"><value>لا توجد أقسام فرعية مطابقة لبحثك.</value></data>
+  <data name="SectionsFooterNote" xml:space="preserve"><value>{0} قسم فرعي.</value></data>
+
+  <data name="AddDesigHeader" xml:space="preserve"><value>إضافة مسمى وظيفي</value></data>
+  <data name="EditDesigHeader" xml:space="preserve"><value>تعديل المسمى الوظيفي {0}</value></data>
+  <data name="DesigCodeLabel" xml:space="preserve"><value>الرمز (بحد أقصى 5 أحرف)</value></data>
+  <data name="DesigTitleLabel" xml:space="preserve"><value>العنوان</value></data>
+  <data name="DesigTitleArLabel" xml:space="preserve"><value>العنوان (عربي)</value></data>
+  <data name="CreateDesigButton" xml:space="preserve"><value>إنشاء مسمى وظيفي</value></data>
+  <data name="DesigSearchPlaceholder" xml:space="preserve"><value>مثال: MGR أو Manager</value></data>
+  <data name="NoDesigFoundMessage" xml:space="preserve"><value>لا توجد مسميات وظيفية مطابقة لبحثك.</value></data>
+  <data name="DesigFooterNote" xml:space="preserve"><value>{0} مسمى وظيفي.</value></data>
+
   <data name="JobFamiliesHeader" xml:space="preserve"><value>الفئات الوظيفية (الدرجة ← توزيع وزن مؤشرات الأداء / الكفاءات)</value></data>
+  <data name="AddJobFamilyHeader" xml:space="preserve"><value>إضافة فئة وظيفية</value></data>
+  <data name="JobFamilyCodeLabel" xml:space="preserve"><value>الرمز</value></data>
+  <data name="GradesPlaceholder" xml:space="preserve"><value>مثال: 3,4</value></data>
+  <data name="CreateJobFamilyButton" xml:space="preserve"><value>إنشاء فئة وظيفية</value></data>
   <data name="ColGrades" xml:space="preserve"><value>الدرجات</value></data>
   <data name="ColKpiWeightPercent" xml:space="preserve"><value>وزن مؤشرات الأداء %</value></data>
   <data name="ColCompWeightPercent" xml:space="preserve"><value>وزن الكفاءات %</value></data>
@@ -119,4 +149,14 @@
   <data name="ColRatingAr" xml:space="preserve"><value>التقييم (عربي)</value></data>
   <data name="ColScoreRange" xml:space="preserve"><value>نطاق الدرجات</value></data>
   <data name="RatingScalesFooterNote" xml:space="preserve"><value>نطاقات التقييم بيانات مرجعية مستوردة من النظام القديم؛ يتم تعديلها عبر أداة الاستيراد أو قاعدة البيانات في حال تغيّرت سياسة الموارد البشرية.</value></data>
+  <data name="AddRatingScaleHeader" xml:space="preserve"><value>إضافة مقياس تقييم</value></data>
+  <data name="RatingCodeLabel" xml:space="preserve"><value>الرمز</value></data>
+  <data name="MinScoreLabel" xml:space="preserve"><value>الحد الأدنى للدرجة</value></data>
+  <data name="MaxScoreLabel" xml:space="preserve"><value>الحد الأقصى للدرجة</value></data>
+  <data name="CreateRatingScaleButton" xml:space="preserve"><value>إنشاء مقياس تقييم</value></data>
+  <data name="RatingEnForScaleAriaLabel" xml:space="preserve"><value>التقييم (إنجليزي) للمقياس {0}</value></data>
+  <data name="RatingArForScaleAriaLabel" xml:space="preserve"><value>التقييم (عربي) للمقياس {0}</value></data>
+  <data name="MinScoreForScaleAriaLabel" xml:space="preserve"><value>الحد الأدنى للدرجة للمقياس {0}</value></data>
+  <data name="MaxScoreForScaleAriaLabel" xml:space="preserve"><value>الحد الأقصى للدرجة للمقياس {0}</value></data>
+  <data name="RemarksForScaleAriaLabel" xml:space="preserve"><value>ملاحظات للمقياس {0}</value></data>
 </root>

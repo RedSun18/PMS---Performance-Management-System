@@ -216,15 +216,43 @@
             setTimeout(remove, 5000);
         }
 
+        // Mobile (<=640px, matching site.css's overlay-mode breakpoint) gets its own sidebar
+        // behavior: always starts collapsed (never restored from desktop's saved preference),
+        // closes on an outside tap, and closes after picking a nav link — none of which apply
+        // above that breakpoint, where the existing desktop behavior (open by default, state
+        // remembered across visits) is untouched.
+        var isMobileViewport = function () { return window.matchMedia('(max-width: 640px)').matches; };
+        var sidebarEl = document.getElementById('sidebar');
+
         document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', document.getElementById('sidebar').classList.contains('collapsed'));
+            sidebarEl.classList.toggle('collapsed');
+            if (!isMobileViewport()) {
+                localStorage.setItem('sidebarCollapsed', sidebarEl.classList.contains('collapsed'));
+            }
         });
 
-        // Restore sidebar state from localStorage
-        if (localStorage.getItem('sidebarCollapsed') === 'true') {
-            document.getElementById('sidebar')?.classList.add('collapsed');
+        // Initial state: mobile always starts collapsed; desktop restores its last preference.
+        if (isMobileViewport()) {
+            sidebarEl?.classList.add('collapsed');
+        } else if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebarEl?.classList.add('collapsed');
         }
+
+        // Mobile: tapping anywhere outside the open sidebar (and its toggle button) closes it.
+        document.addEventListener('click', function(e) {
+            if (!isMobileViewport() || !sidebarEl || sidebarEl.classList.contains('collapsed')) return;
+            var toggleBtn = document.getElementById('sidebarToggle');
+            if (sidebarEl.contains(e.target) || toggleBtn?.contains(e.target)) return;
+            sidebarEl.classList.add('collapsed');
+        });
+
+        // Mobile: selecting a nav link closes the sidebar instead of leaving it open over the
+        // page that link just navigated to.
+        sidebarEl?.querySelectorAll('.sidebar-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (isMobileViewport()) sidebarEl.classList.add('collapsed');
+            });
+        });
 
         document.getElementById('notifBellBtn')?.addEventListener('click', function(e) {
             e.stopPropagation();

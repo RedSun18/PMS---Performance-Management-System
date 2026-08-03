@@ -67,6 +67,21 @@ for f in pms.aryanb.dev aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev; do
     echo "-- Skipping $f: no certificate yet (run deploy/bootstrap-server.sh first)."
   fi
 done
+
+# deploy/ensure-certs.sh may have created a standalone www.aryanb.dev.conf ACME stub while
+# aryanb.dev's certificate was still missing (each name in that request gets its own stub —
+# see its comment). Once the real aryanb.dev.conf is installed above, it already handles
+# www.aryanb.dev itself (server_name aryanb.dev www.aryanb.dev in its own :80 block), so a
+# leftover stub file becomes a duplicate server_name Nginx has to arbitrarily pick between
+# ("conflicting server name ... ignored") rather than a real problem — but it's still cruft
+# that should be cleaned up, not left in place.
+if [ -d "/etc/letsencrypt/live/aryanb.dev" ]; then
+  if [ -f /etc/nginx/sites-available/www.aryanb.dev.conf ]; then
+    rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/www.aryanb.dev.conf
+    echo "-- Removed the now-redundant www.aryanb.dev.conf ACME stub"
+    CHANGED=1
+  fi
+fi
 rm -f /etc/nginx/sites-enabled/default
 
 if [ "$CHANGED" -eq 1 ]; then

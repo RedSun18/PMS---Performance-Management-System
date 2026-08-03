@@ -13,6 +13,10 @@
         <tr><th>@Localizer["ColJob"]</th><th>@SharedLocalizer["Status"]</th><th>@Localizer["ColNextRun"]</th><th>@Localizer["ColPreviousRun"]</th><th>@Localizer["ColDuration"]</th><th>@Localizer["ColResult"]</th><th></th></tr>
     </thead>
     <tbody>
+    @if (Model.Jobs.Count == 0)
+    {
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">@Localizer["NoJobsRegisteredMessage"]</td></tr>
+    }
     @foreach (var j in Model.Jobs)
     {
         <tr>
@@ -44,21 +48,21 @@
             <td style="max-width:280px;">@(j.LastRun?.ErrorMessage ?? j.LastRun?.ResultSummary ?? "—")</td>
             <td style="white-space:nowrap;">
                 <form method="post" asp-page-handler="RunNow" asp-route-name="@j.Name" class="inline-form">
-                    <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["RunNow"]</button>
+                    <button type="submit" class="btn btn-secondary btn-sm">@SharedLocalizer["RunNow"]</button>
                 </form>
                 @if (j.IsPaused)
                 {
                     <form method="post" asp-page-handler="Resume" asp-route-name="@j.Name" class="inline-form">
-                        <button type="submit" class="btn btn-success" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["EnableAction"]</button>
+                        <button type="submit" class="btn btn-success btn-sm">@SharedLocalizer["EnableAction"]</button>
                     </form>
                 }
                 else
                 {
                     <form method="post" asp-page-handler="Pause" asp-route-name="@j.Name" class="inline-form">
-                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["Disable"]</button>
+                        <button type="submit" class="btn btn-utility btn-sm">@SharedLocalizer["Disable"]</button>
                     </form>
                 }
-                <a class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" asp-page="Index" asp-route-ViewLog="@j.Name">@SharedLocalizer["ViewLog"]</a>
+                <a class="btn btn-secondary btn-sm" asp-page="Index" asp-route-ViewLog="@j.Name">@SharedLocalizer["ViewLog"]</a>
             </td>
         </tr>
     }

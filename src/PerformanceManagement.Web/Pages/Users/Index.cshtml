@@ -36,6 +36,10 @@
         <tr><th>@SharedLocalizer["Username"]</th><th>@Localizer["ColFullName"]</th><th>@SharedLocalizer["Email"]</th><th>@Localizer["ColUserType"]</th><th>@Localizer["ColLinkedEmployee"]</th><th>@SharedLocalizer["Status"]</th><th></th></tr>
     </thead>
     <tbody>
+    @if (Model.Rows.Count == 0)
+    {
+        <tr><td colspan="7" class="muted" style="text-align:center;padding:24px;">@Localizer["NoUsersMatch"]</td></tr>
+    }
     @foreach (var r in Model.Rows)
     {
         <tr>
@@ -48,7 +52,7 @@
                 @(r.IsActive ? SharedLocalizer["Active"] : SharedLocalizer["Disabled"])
                 @if (r.MustChangePassword) { <span class="muted">@Localizer["MustChangePasswordNote"]</span> }
             </td>
-            <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-id="@r.Id">@SharedLocalizer["Edit"]</a></td>
+            <td><a class="btn btn-secondary btn-sm" asp-page="Edit" asp-route-id="@r.Id">@SharedLocalizer["Edit"]</a></td>
         </tr>
     }
     </tbody>

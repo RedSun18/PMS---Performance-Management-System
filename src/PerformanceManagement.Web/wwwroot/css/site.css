@@ -194,6 +194,9 @@ body {
 .notif-item:last-of-type { border-bottom: none; }
 .notif-item:hover { background: var(--surface); }
 .notif-item.unread { background: #eef3ff; }
+/* Same unread tint, reused on the full Notification Centre table row (Notifications/Index.cshtml)
+   instead of that page re-typing the hex value in an inline style. */
+table.grid tbody tr.unread { background: #eef3ff; }
 .notif-item-title { font-size: 13px; font-weight: 700; color: var(--navy); }
 .notif-item-message { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .notif-item-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
@@ -311,6 +314,22 @@ main:focus-visible { outline: none; }
 .btn-utility { background: #475569; color: #fff; }
 .btn-utility:hover { background: #3c4a5e; }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+/* Small variant for row-level table actions (Edit/Delete/Save) — replaces what used to be
+   ad-hoc `style="padding:4px 10px;font-size:12px;"` repeated with slightly different values
+   on almost every page that has a table. */
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+/* Paired with `_Layout.cshtml`'s global double-submit guard, which disables the submit
+   button and adds this class the instant a form is submitted. Uses `currentColor` so the
+   same spinner works unmodified on every button variant (white text on primary/danger/
+   success/utility, dark text on secondary) without hardcoding a color here. */
+.is-submitting::after {
+  content: "";
+  width: 13px; height: 13px;
+  border: 2px solid currentColor; border-top-color: transparent;
+  border-radius: 50%; display: inline-block;
+  animation: btn-spin .6s linear infinite;
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
 
 /* ── Tables ────────────────────────────────────────────────────────── */
 /* table.grid previously set `display: block` directly (paired with overflow-x: auto) to get

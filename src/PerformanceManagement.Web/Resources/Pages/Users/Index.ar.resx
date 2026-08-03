@@ -52,6 +52,7 @@
   <data name="ColUserType" xml:space="preserve"><value>نوع المستخدم</value></data>
   <data name="ColLinkedEmployee" xml:space="preserve"><value>الموظف المرتبط</value></data>
   <data name="MustChangePasswordNote" xml:space="preserve"><value>· يجب تغيير كلمة المرور</value></data>
+  <data name="NoUsersMatch" xml:space="preserve"><value>لا يوجد مستخدمون مطابقون لبحثك.</value></data>
   <data name="UserCountSummary" xml:space="preserve"><value>{0} مستخدم.</value></data>
   <data name="UserTypeAdministrator" xml:space="preserve"><value>مسؤول النظام</value></data>
   <data name="UserTypeViewer" xml:space="preserve"><value>مشاهد (قراءة فقط)</value></data>

@@ -23,15 +23,15 @@
         <div class="card">
             <div class="card-header">@Localizer["TabGeneral"]</div>
             <div class="card-body">
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="companyName">@Localizer["CompanyNameLabel"]</label><input type="text" id="companyName" name="General.CompanyName" value="@Model.General.CompanyName" /></div>
                     <div><label for="applicationName">@Localizer["ApplicationNameLabel"]</label><input type="text" id="applicationName" name="General.ApplicationName" value="@Model.General.ApplicationName" placeholder="@Localizer["ApplicationNamePlaceholder"]" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="companyAddress">@Localizer["CompanyAddressLabel"]</label><input type="text" id="companyAddress" name="General.CompanyAddress" value="@Model.General.CompanyAddress" /></div>
                     <div><label for="contactEmail">@Localizer["ContactEmailLabel"]</label><input type="text" id="contactEmail" name="General.ContactEmail" value="@Model.General.ContactEmail" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div>
                         <label for="appBaseUrl">@Localizer["AppBaseUrlLabel"]</label>
                         <input type="text" id="appBaseUrl" name="General.ApplicationBaseUrl" value="@Model.General.ApplicationBaseUrl" placeholder="https://pms.company.com" />
@@ -56,7 +56,7 @@ else if (Model.Tab == "review")
         <div class="card">
             <div class="card-header">@Localizer["TabReview"]</div>
             <div class="card-body">
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div>
                         <label for="currentReviewYear">@Localizer["CurrentReviewYearLabel"]</label>
                         <input type="number" id="currentReviewYear" name="Review.CurrentReviewYear" value="@Model.Review.CurrentReviewYear" />
@@ -104,11 +104,11 @@ else if (Model.Tab == "email")
         <div class="card">
             <div class="card-header">@Localizer["EmailSettingsHeader"]</div>
             <div class="card-body">
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="smtpHost">@Localizer["SmtpHostLabel"]</label><input type="text" id="smtpHost" name="Email.SmtpHost" value="@Model.Email.SmtpHost" placeholder="smtp.gmail.com" /></div>
                     <div><label for="smtpPort">@Localizer["SmtpPortLabel"]</label><input type="number" id="smtpPort" name="Email.SmtpPort" value="@Model.Email.SmtpPort" placeholder="587" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="smtpUsername">@SharedLocalizer["Username"]</label><input type="text" id="smtpUsername" name="Email.SmtpUsername" value="@Model.Email.SmtpUsername" placeholder="user@example.com" /></div>
                     <div>
                         <label for="smtpPassword">@SharedLocalizer["Password"]</label>
@@ -116,11 +116,11 @@ else if (Model.Tab == "email")
                                placeholder="@(Model.HasEmailPassword ? Localizer["PasswordKeepCurrentPlaceholder"].Value : Localizer["NotSetPlaceholder"].Value)" />
                     </div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="senderName">@Localizer["SenderNameLabel"]</label><input type="text" id="senderName" name="Email.SenderName" value="@Model.Email.SenderName" placeholder="@Localizer["ApplicationNamePlaceholder"]" /></div>
                     <div><label for="senderEmail">@Localizer["SenderEmailLabel"]</label><input type="text" id="senderEmail" name="Email.SenderEmail" value="@Model.Email.SenderEmail" placeholder="user@example.com" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableSsl" value="true" style="width:auto;" checked="@Model.Email.EnableSsl" /><input type="hidden" name="Email.EnableSsl" value="false" /> @Localizer["EnableSslLabel"]</label></div>
                     <div><label style="text-transform:none;"><input type="checkbox" name="Email.EnableEmailNotifications" value="true" style="width:auto;" checked="@Model.Email.EnableEmailNotifications" /><input type="hidden" name="Email.EnableEmailNotifications" value="false" /> @Localizer["EnableEmailNotificationsLabel"]</label></div>
                 </div>
@@ -149,15 +149,15 @@ else if (Model.Tab == "auth")
         <div class="card">
             <div class="card-header">@Localizer["TabAuth"]</div>
             <div class="card-body">
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="defaultPassword">@Localizer["DefaultPasswordLabel"]</label><input type="text" id="defaultPassword" name="Auth.DefaultUserPassword" value="@Model.Auth.DefaultUserPassword" /></div>
                     <div><label for="minPasswordLength">@Localizer["MinPasswordLengthLabel"]</label><input type="number" id="minPasswordLength" name="Auth.MinimumPasswordLength" value="@Model.Auth.MinimumPasswordLength" min="4" max="64" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label style="text-transform:none;"><input type="checkbox" name="Auth.PasswordComplexityRequired" value="true" style="width:auto;" checked="@Model.Auth.PasswordComplexityRequired" /><input type="hidden" name="Auth.PasswordComplexityRequired" value="false" /> @Localizer["PasswordComplexityLabel"]</label></div>
                     <div><label for="maxLoginAttempts">@Localizer["MaxLoginAttemptsLabel"]</label><input type="number" id="maxLoginAttempts" name="Auth.MaxLoginAttempts" value="@Model.Auth.MaxLoginAttempts" min="0" /></div>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div>
                         <label for="sessionTimeout">@Localizer["SessionTimeoutLabel"]</label>
                         <input type="number" id="sessionTimeout" name="Auth.SessionTimeoutMinutes" value="@Model.Auth.SessionTimeoutMinutes" min="5" />
@@ -180,7 +180,7 @@ else if (Model.Tab == "security")
         <div class="card">
             <div class="card-header">@Localizer["TabSecurity"]</div>
             <div class="card-body">
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label style="text-transform:none;"><input type="checkbox" name="Security.EnableAuditLogging" value="true" style="width:auto;" checked="@Model.Security.EnableAuditLogging" /><input type="hidden" name="Security.EnableAuditLogging" value="false" /> @Localizer["EnableAuditLoggingLabel"]</label></div>
                     <div><label for="lockoutMinutes">@Localizer["AccountLockoutLabel"]</label><input type="number" id="lockoutMinutes" name="Security.AccountLockoutMinutes" value="@Model.Security.AccountLockoutMinutes" min="1" /></div>
                 </div>
@@ -203,7 +203,7 @@ else if (Model.Tab == "dashboard")
         <div class="card">
             <div class="card-header">@SharedLocalizer["Dashboard"]</div>
             <div class="card-body">
-                <div style="margin-bottom:14px;"><label for="welcomeMessage">@Localizer["WelcomeMessageLabel"]</label><input type="text" id="welcomeMessage" name="DashboardSettings.WelcomeMessage" value="@Model.DashboardSettings.WelcomeMessage" placeholder="@Localizer["WelcomeMessagePlaceholder"]" /></div>
+                <div style="margin-bottom:12px;"><label for="welcomeMessage">@Localizer["WelcomeMessageLabel"]</label><input type="text" id="welcomeMessage" name="DashboardSettings.WelcomeMessage" value="@Model.DashboardSettings.WelcomeMessage" placeholder="@Localizer["WelcomeMessagePlaceholder"]" /></div>
                 <div><label for="announcementBanner">@Localizer["AnnouncementBannerLabel"]</label><textarea id="announcementBanner" name="DashboardSettings.AnnouncementBanner" rows="2" placeholder="@Localizer["AnnouncementBannerPlaceholder"]">@Model.DashboardSettings.AnnouncementBanner</textarea></div>
             </div>
         </div>
@@ -216,7 +216,7 @@ else if (Model.Tab == "branding")
         <div class="card">
             <div class="card-header">@Localizer["TabBranding"]</div>
             <div class="card-body">
-                <div style="margin-bottom:14px;">
+                <div style="margin-bottom:12px;">
                     <label for="logoFile">@Localizer["CompanyLogoLabel"]</label>
                     @if (!string.IsNullOrEmpty(Model.Branding.CompanyLogoPath))
                     {
@@ -225,7 +225,7 @@ else if (Model.Tab == "branding")
                     <input type="file" id="logoFile" name="LogoFile" accept=".png,.jpg,.jpeg,.gif" />
                     <p class="muted" style="margin:4px 0 0;font-size:12px;">@Localizer["LogoHint"]</p>
                 </div>
-                <div class="grid-2" style="margin-bottom:14px;">
+                <div class="grid-2" style="margin-bottom:12px;">
                     <div><label for="primaryColor">@Localizer["PrimaryColorLabel"]</label><input type="color" id="primaryColor" name="Branding.PrimaryColorHex" value="@(Model.Branding.PrimaryColorHex ?? "#0f2b5c")" style="height:42px;padding:4px;" /></div>
                     <div><label for="secondaryColor">@Localizer["SecondaryColorLabel"]</label><input type="color" id="secondaryColor" name="Branding.SecondaryColorHex" value="@(Model.Branding.SecondaryColorHex ?? "#2f5fd6")" style="height:42px;padding:4px;" /></div>
                 </div>

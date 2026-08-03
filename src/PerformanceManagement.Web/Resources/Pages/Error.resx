@@ -51,4 +51,8 @@
   <data name="TryAgainExplanation" xml:space="preserve"><value>Please try again. If the problem continues, contact your system administrator with the request ID below.</value></data>
   <data name="RequestIdLabel" xml:space="preserve"><value>Request ID</value></data>
   <data name="BackToDashboardButton" xml:space="preserve"><value>Back to Dashboard</value></data>
+  <data name="NotFoundTitle" xml:space="preserve"><value>Page Not Found</value></data>
+  <data name="NotFoundMessage" xml:space="preserve"><value>The page you're looking for doesn't exist, or may have been moved.</value></data>
+  <data name="ForbiddenTitle" xml:space="preserve"><value>Access Denied</value></data>
+  <data name="ForbiddenMessage" xml:space="preserve"><value>You don't have permission to view this page.</value></data>
 </root>

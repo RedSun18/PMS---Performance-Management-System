@@ -77,7 +77,7 @@
             <td class="muted">@r.E.Source</td>
             @if (Model.IsHrAdmin)
             {
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">@SharedLocalizer["Edit"]</a></td>
+                <td><a class="btn btn-secondary btn-sm" asp-page="Edit" asp-route-empcd="@r.E.EmpCode">@SharedLocalizer["Edit"]</a></td>
             }
         </tr>
     }

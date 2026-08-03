@@ -51,4 +51,8 @@
   <data name="TryAgainExplanation" xml:space="preserve"><value>يرجى المحاولة مرة أخرى. إذا استمرت المشكلة، تواصل مع مسؤول النظام مع ذكر رقم الطلب أدناه.</value></data>
   <data name="RequestIdLabel" xml:space="preserve"><value>رقم الطلب</value></data>
   <data name="BackToDashboardButton" xml:space="preserve"><value>العودة إلى لوحة التحكم</value></data>
+  <data name="NotFoundTitle" xml:space="preserve"><value>الصفحة غير موجودة</value></data>
+  <data name="NotFoundMessage" xml:space="preserve"><value>الصفحة التي تبحث عنها غير موجودة، أو ربما تم نقلها.</value></data>
+  <data name="ForbiddenTitle" xml:space="preserve"><value>الوصول مرفوض</value></data>
+  <data name="ForbiddenMessage" xml:space="preserve"><value>ليس لديك صلاحية لعرض هذه الصفحة.</value></data>
 </root>

@@ -52,6 +52,7 @@
   <data name="ColUserType" xml:space="preserve"><value>User Type</value></data>
   <data name="ColLinkedEmployee" xml:space="preserve"><value>Linked Employee</value></data>
   <data name="MustChangePasswordNote" xml:space="preserve"><value>· must change password</value></data>
+  <data name="NoUsersMatch" xml:space="preserve"><value>No users match your search.</value></data>
   <data name="UserCountSummary" xml:space="preserve"><value>{0} users.</value></data>
   <data name="UserTypeAdministrator" xml:space="preserve"><value>Administrator</value></data>
   <data name="UserTypeViewer" xml:space="preserve"><value>Viewer (read-only)</value></data>

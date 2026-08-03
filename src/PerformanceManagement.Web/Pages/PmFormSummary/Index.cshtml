@@ -96,13 +96,13 @@ else
                 <td>@r.Designation</td>
                 <td>@r.KpiScore.ToString("0.00")</td>
                 <td>@r.CompScore.ToString("0.00")</td>
-                <td style="font-weight:700;color:@(r.OverallScore >= 90 ? "#15803d" : r.OverallScore >= 70 ? "#d97706" : "#dc2626");">@r.OverallScore.ToString("0.00")</td>
+                <td style="font-weight:700;color:@(r.OverallScore >= 90 ? "var(--green)" : r.OverallScore >= 70 ? "var(--amber-soft)" : "var(--red)");">@r.OverallScore.ToString("0.00")</td>
                 <td>@r.RatingScore</td>
                 <td><span class="rating-pill">@r.Rating</span></td>
                 <td>@r.Status</td>
                 <td>@r.RefNo</td>
                 <td>@r.LastUpdated</td>
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" target="_blank"
+                <td><a class="btn btn-secondary btn-sm" target="_blank"
                        asp-page="/PmForm/Index" asp-route-empcd="@r.EmpCode">@SharedLocalizer["View"]</a></td>
             </tr>
         }

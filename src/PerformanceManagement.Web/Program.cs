@@ -215,6 +215,13 @@ else
     app.UseHttpsRedirection();
 }
 
+// A mistyped URL, a stale bookmark, or a link into a page the current user can't access
+// otherwise falls straight through as a bare, unbranded status code with an empty body (no
+// stack trace to leak, but also nothing telling the visitor what happened) — re-executes the
+// pipeline against /Error/{statusCode} so 404/403/etc. get the same branded shell as the
+// exception-handler page above, just with a status-appropriate title and message.
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
 // Trusts X-Forwarded-For/X-Forwarded-Proto from any upstream proxy so Request.IsHttps and
 // RemoteIpAddress (used for audit-log IP capture, e.g. WorkflowAdmin/Details.cshtml.cs and
 // Admin/LoginAs.cshtml.cs) reflect the real client, not the proxy, once deployed behind a

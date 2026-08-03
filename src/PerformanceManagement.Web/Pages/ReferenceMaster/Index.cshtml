@@ -74,7 +74,7 @@
                     <div><label for="kpiFormulaEn">@Localizer["FormulaMetricEnLabel"]</label><textarea id="kpiFormulaEn" name="input.Formula" rows="2">@k?.Formula</textarea></div>
                     <div><label for="kpiFormulaAr">@Localizer["FormulaMetricArLabel"]</label><textarea id="kpiFormulaAr" name="input.FormulaAr" rows="2" dir="rtl">@k?.FormulaAr</textarea></div>
                 </div>
-                <div class="grid-4" style="margin-bottom:14px;">
+                <div class="grid-4" style="margin-bottom:12px;">
                     <div><label for="kpiMinWeight">@Localizer["MinWeightPercentLabel"]</label><input type="number" id="kpiMinWeight" name="input.MinWeight" value="@(k?.MinWeight ?? 10)" min="0" max="100" /></div>
                     <div><label for="kpiMaxWeight">@Localizer["MaxWeightPercentLabel"]</label><input type="number" id="kpiMaxWeight" name="input.MaxWeight" value="@(k?.MaxWeight ?? 25)" min="0" max="100" /></div>
                     <div style="grid-column:span 2;"><label for="kpiRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="kpiRemarks" name="input.Remarks" value="@k?.Remarks" /></div>
@@ -137,7 +137,7 @@
                 <td>@row.MinWeight–@row.MaxWeight%</td>
                 <td>@(row.Status == "A" ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</td>
                 <td>@row.ModifiedDate?.ToString("dd/MM/yyyy") @row.ModifiedBy</td>
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=kpi&editId=@row.KpiId">@SharedLocalizer["Edit"]</a></td>
+                <td><a class="btn btn-secondary btn-sm" href="?tab=kpi&editId=@row.KpiId">@SharedLocalizer["Edit"]</a></td>
             </tr>
         }
         </tbody>
@@ -182,7 +182,7 @@ else if (Model.Tab == "comp")
                     <div><label for="compDescEn">@Localizer["DescriptionEnLabel"]</label><textarea id="compDescEn" name="input.Description" rows="2">@c?.Description</textarea></div>
                     <div><label for="compDescAr">@Localizer["DescriptionArLabel"]</label><textarea id="compDescAr" name="input.DescriptionAr" rows="2" dir="rtl">@c?.DescriptionAr</textarea></div>
                 </div>
-                <div class="grid-4" style="margin-bottom:14px;">
+                <div class="grid-4" style="margin-bottom:12px;">
                     <div><label for="compMinWeight">@Localizer["MinWeightPercentLabel"]</label><input type="number" id="compMinWeight" name="input.MinWeight" value="@(c?.MinWeight ?? 10)" min="0" max="100" /></div>
                     <div><label for="compMaxWeight">@Localizer["MaxWeightPercentLabel"]</label><input type="number" id="compMaxWeight" name="input.MaxWeight" value="@(c?.MaxWeight ?? 20)" min="0" max="100" /></div>
                     <div style="grid-column:span 2;"><label for="compRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="compRemarks" name="input.Remarks" value="@c?.Remarks" /></div>
@@ -232,7 +232,7 @@ else if (Model.Tab == "comp")
                 <td>@row.Description</td>
                 <td>@row.MinWeight–@row.MaxWeight%</td>
                 <td>@(row.Status == "A" ? SharedLocalizer["Active"] : SharedLocalizer["Inactive"])</td>
-                <td><a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=comp&editId=@row.CompId">@SharedLocalizer["Edit"]</a></td>
+                <td><a class="btn btn-secondary btn-sm" href="?tab=comp&editId=@row.CompId">@SharedLocalizer["Edit"]</a></td>
             </tr>
         }
         </tbody>
@@ -263,7 +263,7 @@ else if (Model.Tab == "dept")
                         </label>
                     </div>
                 </div>
-                <div style="margin-bottom:14px;">
+                <div style="margin-bottom:12px;">
                     <label for="deptDescription">@SharedLocalizer["Description"]</label><textarea id="deptDescription" name="description" rows="2">@d?.Description</textarea>
                 </div>
                 <div class="form-actions">
@@ -307,10 +307,10 @@ else if (Model.Tab == "dept")
                     </span>
                 </td>
                 <td style="display:flex;gap:6px;">
-                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=dept&deptEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
+                    <a class="btn btn-secondary btn-sm" href="?tab=dept&deptEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
                     <form method="post" asp-page-handler="ToggleDepartment" class="inline-form">
                         <input type="hidden" name="code" value="@row.Code" />
-                        <button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                        <button type="submit" class="btn btn-secondary btn-sm"
                                 onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(row.IsActive ? string.Format(Localizer["DisableConfirm"].Value, row.NameEn) : string.Format(Localizer["EnableConfirm"].Value, row.NameEn))));">
                             @(row.IsActive ? SharedLocalizer["Disable"] : SharedLocalizer["Enable"])
                         </button>
@@ -380,10 +380,10 @@ else if (Model.Tab == "sections")
                 <td><strong>@row.Description</strong></td>
                 <td dir="rtl">@row.DescriptionAr</td>
                 <td style="display:flex;gap:6px;">
-                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=sections&sectionEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
+                    <a class="btn btn-secondary btn-sm" href="?tab=sections&sectionEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
                     <form method="post" asp-page-handler="DeleteSection" class="inline-form">
                         <input type="hidden" name="code" value="@row.Code" />
-                        <button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                        <button type="submit" class="btn btn-danger btn-sm"
                                 onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(string.Format(Localizer["DeleteConfirm"].Value, row.Description))));">
                             @SharedLocalizer["Delete"]
                         </button>
@@ -453,10 +453,10 @@ else if (Model.Tab == "designations")
                 <td><strong>@row.Description</strong></td>
                 <td dir="rtl">@row.DescriptionAr</td>
                 <td style="display:flex;gap:6px;">
-                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;" href="?tab=designations&desigEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
+                    <a class="btn btn-secondary btn-sm" href="?tab=designations&desigEditCode=@row.Code">@SharedLocalizer["Edit"]</a>
                     <form method="post" asp-page-handler="DeleteDesignation" class="inline-form">
                         <input type="hidden" name="code" value="@row.Code" />
-                        <button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                        <button type="submit" class="btn btn-danger btn-sm"
                                 onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(string.Format(Localizer["DeleteConfirm"].Value, row.Description))));">
                             @SharedLocalizer["Delete"]
                         </button>
@@ -507,11 +507,11 @@ else
                             <td><input type="text" name="gradesCsv" aria-label="@Localizer["GradesForJobFamilyAriaLabel", j.Code]" value="@j.GradesCsv" style="max-width:120px;" /></td>
                             <td><input type="number" name="kpiWeight" aria-label="@Localizer["KpiWeightForJobFamilyAriaLabel", j.Code]" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
                             <td><input type="number" name="compWeight" aria-label="@Localizer["CompWeightForJobFamilyAriaLabel", j.Code]" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>
-                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">@SharedLocalizer["Save"]</button></td>
+                            <td><button type="submit" class="btn btn-secondary btn-sm">@SharedLocalizer["Save"]</button></td>
                         </form>
                         <form method="post" asp-page-handler="DeleteJobFamily" class="inline-form">
                             <input type="hidden" name="code" value="@j.Code" />
-                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                            <td><button type="submit" class="btn btn-danger btn-sm"
                                     onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(string.Format(Localizer["DeleteConfirm"].Value, j.NameEn))));">
                                 @SharedLocalizer["Delete"]
                             </button></td>
@@ -538,7 +538,7 @@ else
                         <div><label for="newRsMax">@Localizer["MaxScoreLabel"]</label><input type="number" id="newRsMax" name="maxScore" min="0" max="100" value="100" /></div>
                     </div>
                 </div>
-                <div style="margin-bottom:14px;"><label for="newRsRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="newRsRemarks" name="remarks" /></div>
+                <div style="margin-bottom:12px;"><label for="newRsRemarks">@SharedLocalizer["Remarks"]</label><input type="text" id="newRsRemarks" name="remarks" /></div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">@Localizer["CreateRatingScaleButton"]</button>
                 </div>
@@ -566,11 +566,11 @@ else
                                 <input type="number" name="maxScore" aria-label="@Localizer["MaxScoreForScaleAriaLabel", r.Code]" value="@r.MaxScore" min="0" max="100" style="max-width:70px;" />
                             </td>
                             <td><input type="text" name="remarks" aria-label="@Localizer["RemarksForScaleAriaLabel", r.Code]" value="@r.Remarks" /></td>
-                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">@SharedLocalizer["Save"]</button></td>
+                            <td><button type="submit" class="btn btn-secondary btn-sm">@SharedLocalizer["Save"]</button></td>
                         </form>
                         <form method="post" asp-page-handler="DeleteRatingScale" class="inline-form">
                             <input type="hidden" name="code" value="@r.Code" />
-                            <td><button type="submit" class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                            <td><button type="submit" class="btn btn-danger btn-sm"
                                     onclick="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(string.Format(Localizer["DeleteConfirm"].Value, r.NameEn))));">
                                 @SharedLocalizer["Delete"]
                             </button></td>

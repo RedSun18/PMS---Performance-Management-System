@@ -25,7 +25,7 @@ else
         <tbody>
         @foreach (var n in Model.Items)
         {
-            <tr style="@(n.IsRead ? "" : "background:#eef3ff;")">
+            <tr class="@(n.IsRead ? "" : "unread")">
                 <td>@(n.IsRead ? "" : "●")</td>
                 <td>
                     @if (!string.IsNullOrEmpty(n.Link))
@@ -43,11 +43,11 @@ else
                     @if (!n.IsRead)
                     {
                         <form method="post" asp-page-handler="MarkRead" asp-route-id="@n.Id" class="inline-form">
-                            <button type="submit" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["MarkRead"]</button>
+                            <button type="submit" class="btn btn-secondary btn-sm">@SharedLocalizer["MarkRead"]</button>
                         </form>
                     }
                     <form method="post" asp-page-handler="Delete" asp-route-id="@n.Id" class="inline-form">
-                        <button type="submit" class="btn btn-utility" style="padding:4px 10px;font-size:12px;">@SharedLocalizer["Delete"]</button>
+                        <button type="submit" class="btn btn-danger btn-sm">@SharedLocalizer["Delete"]</button>
                     </form>
                 </td>
             </tr>

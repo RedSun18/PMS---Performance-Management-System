@@ -97,7 +97,7 @@ else
                 <td>@(r.LastUpdated?.ToString("dd/MM/yyyy HH:mm") ?? "")</td>
                 <td>@PmFormStatus.DisplayName(r.Status)</td>
                 <td>
-                    <a class="btn btn-secondary" style="padding:4px 12px;font-size:12px;"
+                    <a class="btn btn-secondary btn-sm"
                        asp-page="/WorkflowAdmin/Details" asp-route-empcd="@r.EmpCode" asp-route-year="@r.EvalYear">@Localizer["ViewWorkflowButton"]</a>
                 </td>
             </tr>

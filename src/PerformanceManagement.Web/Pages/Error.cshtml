@@ -1,19 +1,28 @@
-@page
+@page "{statusCode:int?}"
 @model PerformanceManagement.Web.Pages.ErrorModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @{
-    ViewData["Title"] = Localizer["PageTitle"].Value;
+    var (title, message) = Model.ResponseStatusCode switch
+    {
+        404 => (Localizer["NotFoundTitle"].Value, Localizer["NotFoundMessage"].Value),
+        403 => (Localizer["ForbiddenTitle"].Value, Localizer["ForbiddenMessage"].Value),
+        _ => (Localizer["PageTitle"].Value, Localizer["UnexpectedErrorMessage"].Value),
+    };
+    ViewData["Title"] = title;
 }
-<div class="page-header danger">@Localizer["PageTitle"]</div>
+<div class="page-header danger">@title</div>
 <div class="card">
     <div class="card-body">
         <div class="alert alert-error">
-            @Localizer["UnexpectedErrorMessage"]
+            @message
         </div>
-        <p class="muted">@Localizer["TryAgainExplanation"]</p>
-        @if (!string.IsNullOrEmpty(Model.RequestId))
+        @if (Model.ResponseStatusCode >= 500)
         {
-            <p class="muted">@Localizer["RequestIdLabel"]: <code>@Model.RequestId</code></p>
+            <p class="muted">@Localizer["TryAgainExplanation"]</p>
+            @if (!string.IsNullOrEmpty(Model.RequestId))
+            {
+                <p class="muted">@Localizer["RequestIdLabel"]: <code>@Model.RequestId</code></p>
+            }
         }
         <a class="btn btn-primary" asp-page="/Dashboard">@Localizer["BackToDashboardButton"]</a>
     </div>

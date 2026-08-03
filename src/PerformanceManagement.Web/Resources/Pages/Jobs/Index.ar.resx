@@ -57,6 +57,7 @@
   <data name="NeverRunLabel" xml:space="preserve"><value>لم يتم التشغيل بعد</value></data>
   <data name="RecentRunsHeader" xml:space="preserve"><value>عمليات التشغيل الأخيرة — {0}</value></data>
   <data name="NoRunsRecordedMessage" xml:space="preserve"><value>لا توجد عمليات تشغيل مسجلة بعد.</value></data>
+  <data name="NoJobsRegisteredMessage" xml:space="preserve"><value>لا توجد مهام مجدولة مسجلة.</value></data>
   <data name="ColStarted" xml:space="preserve"><value>بدأ في</value></data>
   <data name="ColCompleted" xml:space="preserve"><value>اكتمل في</value></data>
   <data name="ColResultError" xml:space="preserve"><value>النتيجة / الخطأ</value></data>

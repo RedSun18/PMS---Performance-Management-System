@@ -57,6 +57,7 @@
   <data name="NeverRunLabel" xml:space="preserve"><value>Never run</value></data>
   <data name="RecentRunsHeader" xml:space="preserve"><value>Recent Runs — {0}</value></data>
   <data name="NoRunsRecordedMessage" xml:space="preserve"><value>No runs recorded yet.</value></data>
+  <data name="NoJobsRegisteredMessage" xml:space="preserve"><value>No scheduled jobs are registered.</value></data>
   <data name="ColStarted" xml:space="preserve"><value>Started</value></data>
   <data name="ColCompleted" xml:space="preserve"><value>Completed</value></data>
   <data name="ColResultError" xml:space="preserve"><value>Result / Error</value></data>

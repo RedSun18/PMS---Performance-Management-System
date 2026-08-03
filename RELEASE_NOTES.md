@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-03 — `774e034`
+
+- Live QA pass: fix notification localhost links, PM Form leave-warning, dept auto-sync, Employee Master auto-numbering, Reference Master layout
+
 ## 2026-08-03 — `825a39e`
 
 - Fix aryanb.dev serving docs.aryanb.dev's content: Nginx config never re-synced on deploy

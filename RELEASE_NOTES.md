@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-03 — `5ca8a79`
+
+- Always reload Nginx in sync-nginx.sh instead of tracking a CHANGED flag
+
 ## 2026-08-03 — `1e04521`
 
 - Fix Nginx snippets never triggering a reload when only they change

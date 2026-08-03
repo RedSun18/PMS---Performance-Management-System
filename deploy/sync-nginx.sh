@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Re-syncs Nginx config (snippets + the 4 per-domain site configs) from this repo to the
-# live server, validates with `nginx -t`, and reloads only if something actually changed.
+# live server, validates with `nginx -t`, and reloads unconditionally.
 #
 # WHY THIS EXISTS: bootstrap-server.sh used to be the ONLY thing that ever wrote Nginx
 # config to disk. deploy/update.sh and deploy/publish.sh — the routine, repeated deploy
@@ -12,6 +12,17 @@ set -euo pipefail
 # does for a routine content/code update. This is exactly how aryanb.dev ended up serving
 # docs.aryanb.dev's content in production: the origin's nginx config had drifted from the
 # repo, and nothing in the normal deploy path would ever have corrected it.
+#
+# WHY UNCONDITIONAL RELOAD (not "only if changed"): an earlier version of this script only
+# reloaded when a cmp against the on-disk file showed a difference. That silently broke the
+# very first time a *snippet* changed on its own (e.g. a CSP fix in security-headers-static.conf
+# with no per-domain conf edit) — the new content was copied to disk, but since nothing else
+# differed, CHANGED stayed 0 and nginx kept serving the OLD config from memory. The next
+# deploy's cmp then saw disk already matching the repo and skipped the reload *again*, so the
+# fix silently never went live even though every file on disk was correct. `nginx -t` is cheap
+# and `systemctl reload nginx` is graceful (no dropped connections), so there is no real cost
+# to just always doing both — it removes an entire class of "file matches repo but nginx
+# hasn't actually loaded it" bugs instead of trying to track that state correctly.
 #
 # Idempotent, safe to run every time. A domain still missing a certificate is requested via
 # deploy/ensure-certs.sh first (self-healing — see that script's comment for the exact
@@ -24,20 +35,10 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-CHANGED=0
-
-# Snippets are `include`d by every per-domain site config, so a change here (e.g. a fixed
-# CSP directive) must also trigger a reload below — copying the file to disk is not enough,
-# Nginx keeps serving whatever it already has loaded in memory until reloaded. Each copy is
-# therefore change-detected the same way as the per-domain configs, not done unconditionally.
 mkdir -p /etc/nginx/snippets
-for snippet in acme-challenge.conf cloudflare-realip.conf security-headers-static.conf; do
-  if ! cmp -s "$REPO_DIR/deploy/nginx/$snippet" "/etc/nginx/snippets/$snippet" 2>/dev/null; then
-    cp "$REPO_DIR/deploy/nginx/$snippet" "/etc/nginx/snippets/$snippet"
-    echo "-- Updated /etc/nginx/snippets/$snippet"
-    CHANGED=1
-  fi
-done
+cp "$REPO_DIR/deploy/nginx/acme-challenge.conf" /etc/nginx/snippets/acme-challenge.conf
+cp "$REPO_DIR/deploy/nginx/cloudflare-realip.conf" /etc/nginx/snippets/cloudflare-realip.conf
+cp "$REPO_DIR/deploy/nginx/security-headers-static.conf" /etc/nginx/snippets/security-headers-static.conf
 
 mkdir -p /etc/letsencrypt
 if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
@@ -54,20 +55,12 @@ chmod +x "$REPO_DIR/deploy/ensure-certs.sh"
 # Installed unconditionally (no certificate dependency — see default-catchall.conf) so a
 # domain missing its certificate can never silently inherit another real domain's content
 # via Nginx's default-server fallback, only a closed connection for itself.
-if ! cmp -s "$REPO_DIR/deploy/nginx/default-catchall.conf" "/etc/nginx/sites-available/default-catchall.conf" 2>/dev/null; then
-  cp "$REPO_DIR/deploy/nginx/default-catchall.conf" "/etc/nginx/sites-available/default-catchall.conf"
-  echo "-- Updated /etc/nginx/sites-available/default-catchall.conf"
-  CHANGED=1
-fi
+cp "$REPO_DIR/deploy/nginx/default-catchall.conf" "/etc/nginx/sites-available/default-catchall.conf"
 ln -sf "/etc/nginx/sites-available/default-catchall.conf" "/etc/nginx/sites-enabled/default-catchall.conf"
 
 for f in pms.aryanb.dev aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev; do
   if [ -d "/etc/letsencrypt/live/$f" ]; then
-    if ! cmp -s "$REPO_DIR/deploy/nginx/$f.conf" "/etc/nginx/sites-available/$f.conf" 2>/dev/null; then
-      cp "$REPO_DIR/deploy/nginx/$f.conf" "/etc/nginx/sites-available/$f.conf"
-      echo "-- Updated /etc/nginx/sites-available/$f.conf"
-      CHANGED=1
-    fi
+    cp "$REPO_DIR/deploy/nginx/$f.conf" "/etc/nginx/sites-available/$f.conf"
     # Unconditional even when the file content is unchanged: self-heals a missing or
     # wrong symlink in sites-enabled too, not just wrong file content.
     ln -sf "/etc/nginx/sites-available/$f.conf" "/etc/nginx/sites-enabled/$f.conf"
@@ -83,19 +76,12 @@ done
 # leftover stub file becomes a duplicate server_name Nginx has to arbitrarily pick between
 # ("conflicting server name ... ignored") rather than a real problem — but it's still cruft
 # that should be cleaned up, not left in place.
-if [ -d "/etc/letsencrypt/live/aryanb.dev" ]; then
-  if [ -f /etc/nginx/sites-available/www.aryanb.dev.conf ]; then
-    rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/www.aryanb.dev.conf
-    echo "-- Removed the now-redundant www.aryanb.dev.conf ACME stub"
-    CHANGED=1
-  fi
+if [ -d "/etc/letsencrypt/live/aryanb.dev" ] && [ -f /etc/nginx/sites-available/www.aryanb.dev.conf ]; then
+  rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/www.aryanb.dev.conf
+  echo "-- Removed the now-redundant www.aryanb.dev.conf ACME stub"
 fi
 rm -f /etc/nginx/sites-enabled/default
 
-if [ "$CHANGED" -eq 1 ]; then
-  echo "-- Nginx config changed — validating and reloading"
-  nginx -t
-  systemctl reload nginx
-else
-  echo "-- Nginx config already matches the repo, nothing to reload"
-fi
+echo "-- Validating and reloading Nginx"
+nginx -t
+systemctl reload nginx

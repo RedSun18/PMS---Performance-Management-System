@@ -42,21 +42,19 @@ sudo git pull
 sudo deploy/bootstrap-server.sh
 ```
 
-What this does on a server that's already partway deployed, step by step:
-- Step 11 (certificate issuance) sees `/etc/letsencrypt/live/<domain>` already exists for
-  each domain and does nothing, **except** `aryanb.dev`: the corrected script now requests
-  that certificate with `www.aryanb.dev` included (`--expand`), so it reissues once to add
-  that name — one extra, harmless certificate operation, not a rate-limit concern.
-- Step 12 creates `/etc/letsencrypt/options-ssl-nginx.conf` (copied from
-  `deploy/nginx/options-ssl-nginx.conf`, only if that path is empty — it will be, in your
-  case) and generates `/etc/letsencrypt/ssl-dhparam.pem` via `openssl dhparam` (takes up to
-  ~a minute; skipped on any future re-run since it already exists).
-- Step 13 reinstalls the (now `http2`-syntax-fixed) final Nginx configs from
-  `deploy/nginx/*.conf` and reloads.
+What this does on a server that's already partway deployed: step 10 (which now covers
+everything Nginx/TLS-related — certificate issuance via `deploy/ensure-certs.sh`, the SSL
+support files, and installing the final configs via `deploy/sync-nginx.sh`) sees
+`/etc/letsencrypt/live/<domain>` already exists for each domain and requests nothing new,
+**except** `aryanb.dev`: the corrected script now requests that certificate with
+`www.aryanb.dev` included (`--expand`), so it reissues once to add that name — one extra,
+harmless certificate operation, not a rate-limit concern. It then generates
+`/etc/letsencrypt/options-ssl-nginx.conf`/`ssl-dhparam.pem` (skipped on any future re-run
+since they already exist) and reinstalls the (now `http2`-syntax-fixed) final Nginx configs.
 
-Nginx briefly serves the plain-HTTP bootstrap stub for each domain partway through this
-run (step 10, unconditionally re-applied) before step 13 puts the real HTTPS config back —
-a few seconds of flapping is expected and not a sign anything went wrong. Verify afterward:
+Nginx briefly serves the plain-HTTP bootstrap stub for each domain partway through this run
+before the real HTTPS config goes back in — a few seconds of flapping is expected and not a
+sign anything went wrong. Verify afterward:
 
 ```bash
 sudo nginx -t
@@ -67,6 +65,34 @@ curl -I https://www.aryanb.dev   # should now present a valid cert too, not a mi
 
 If you hadn't reached `sudo deploy/publish.sh` yet before hitting this error, continue from
 §5 below now that Nginx is healthy.
+
+---
+
+## Recovering from one domain silently serving another domain's content
+
+**If e.g. `https://aryanb.dev` renders `docs.aryanb.dev`'s page** (or any other domain
+showing the wrong site) — **root cause**: that domain's Let's Encrypt certificate request
+failed at some point (Certbot logs a warning and moves on rather than aborting the whole
+run — a transient Cloudflare/DNS hiccup for one domain shouldn't block the other three).
+With no certificate, `deploy/sync-nginx.sh` correctly refuses to install that domain's final
+config (installing one that points at a nonexistent cert file would break `nginx -t` for
+everyone) — but with no config of its own at all, Nginx fell back to treating another real
+domain's config as the default for that unmatched hostname, silently serving its content
+under the wrong name instead of failing visibly.
+
+**Fixed two ways**, both already in this repo as of the commit that added this section:
+1. `deploy/ensure-certs.sh` now runs on every `deploy/publish.sh`/`update.sh`, not just
+   `bootstrap-server.sh` — a missing certificate retries on every routine deploy until it
+   succeeds, instead of only being attempted once during initial setup.
+2. `deploy/nginx/default-catchall.conf` (`ssl_reject_handshake`) is installed as the
+   explicit `default_server` for unmatched SNI — so even if a certificate is missing for
+   some other reason in the future, the failure mode is "that one domain doesn't load"
+   instead of "silently serves a different real site's content."
+
+**Fix**: `sudo deploy/update.sh` — the self-healing described above runs automatically. If a
+certificate request keeps failing, check the specific error in the deploy log (GitHub
+Actions run log, or `sudo journalctl` if run manually) — it's almost always the Cloudflare
+HTTP-01 fallback described above ("If it fails behind Cloudflare...").
 
 ---
 
@@ -231,7 +257,8 @@ retrying it):
 - SSL/TLS mode is **Full** (not Flexible, not yet Full Strict — flip to Full Strict only
   after confirming HTTPS works end-to-end in §9).
 
-Certbot's HTTP-01 challenge (`certbot certonly --webroot`, step 11 of bootstrap) needs plain
+Certbot's HTTP-01 challenge (`certbot certonly --webroot`, step 10 of bootstrap, via
+`deploy/ensure-certs.sh`) needs plain
 HTTP on port 80 for `/.well-known/acme-challenge/` to reach this server through Cloudflare.
 This normally works fine proxied. **If it fails** (common cause: an "Always Use HTTPS" page
 rule or redirect rule catching the challenge path):

@@ -42,8 +42,6 @@ export NEEDRESTART_MODE=a
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REQUIRED_REPO_DIR="/opt/pms-demo/repo"
-DOMAINS=(pms.aryanb.dev aryanb.dev www.aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev)
-CERTBOT_EMAIL="hello@aryanb.dev"
 ENV_FILE="$REPO_DIR/.env"
 
 # This path isn't just a convention — deploy/systemd/pms-demo-backup.service and
@@ -302,95 +300,26 @@ chown pms-demo:pms-demo /var/www/pms-demo/shared/pms-demo.env
 chmod 600 /var/www/pms-demo/shared/pms-demo.env
 
 echo "############################################################"
-echo "# 10) Nginx — temporary HTTP-only bootstrap config for ACME"
+echo "# 10) Nginx, Let's Encrypt certificates, and final site configs"
 echo "############################################################"
 # Explicit rather than relying on the nginx apt package's default-enabled postinst behavior
-# (true today, but not a contract) — every `reload` below requires nginx to already be
-# active, and `enable` guarantees it comes back on its own after a reboot too.
+# (true today, but not a contract) — nginx must already be active for anything below to work,
+# and `enable` guarantees it comes back on its own after a reboot too.
 systemctl enable --now nginx
-mkdir -p /etc/nginx/snippets
-cp "$REPO_DIR/deploy/nginx/acme-challenge.conf" /etc/nginx/snippets/acme-challenge.conf
-cp "$REPO_DIR/deploy/nginx/cloudflare-realip.conf" /etc/nginx/snippets/cloudflare-realip.conf
-cp "$REPO_DIR/deploy/nginx/security-headers-static.conf" /etc/nginx/snippets/security-headers-static.conf
-
-for d in "${DOMAINS[@]}"; do
-  cat > "/etc/nginx/sites-available/$d.conf" <<EOF
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $d;
-    include /etc/nginx/snippets/acme-challenge.conf;
-    location / { return 200 "bootstrap: $d\n"; add_header Content-Type text/plain; }
-}
-EOF
-  ln -sf "/etc/nginx/sites-available/$d.conf" "/etc/nginx/sites-enabled/$d.conf"
-done
 rm -f /etc/nginx/sites-enabled/default
-nginx -t && systemctl reload nginx
-
-echo "############################################################"
-echo "# 11) Let's Encrypt certificates (HTTP-01 via shared webroot)"
-echo "############################################################"
-echo "If this fails behind Cloudflare, see deploy/RUNBOOK.md 'HTTPS via Let's Encrypt' for"
-echo "the DNS-only fallback before retrying."
-# --expand makes each of these safe to re-run: if a cert already covers exactly these names,
-# Certbot just reports "not yet due for renewal" and does nothing; if the name list has
-# changed since it was issued (e.g. adding www.aryanb.dev to an existing aryanb.dev-only
-# cert on a server that already ran an older version of this script), it reissues to cover
-# the full set instead of erroring. aryanb.dev and www.aryanb.dev deliberately share ONE
-# certificate (aryanb.dev.conf serves both from the same cert) rather than getting separate
-# ones.
-request_cert() {
-  certbot certonly --webroot -w /var/www/certbot "$@" \
-    --non-interactive --agree-tos --expand -m "$CERTBOT_EMAIL" || \
-    echo "!! Certbot failed for: $* — see message above, fix, and re-run this step manually."
-}
-request_cert -d pms.aryanb.dev
-request_cert -d aryanb.dev -d www.aryanb.dev
-request_cert -d docs.aryanb.dev
-request_cert -d renewalflow.aryanb.dev
-
-echo "############################################################"
-echo "# 12) Certbot's Nginx SSL support files"
-echo "############################################################"
-# /etc/letsencrypt/ssl-dhparam.pem is normally created as a SIDE EFFECT of Certbot's nginx
-# *plugin* running (`certbot --nginx`) — but step 11 deliberately uses `certonly --webroot`
-# instead, specifically so Certbot never rewrites our git-tracked Nginx configs itself. That
-# means the plugin's prepare() step that would normally drop this file never runs, and
-# `nginx -t` fails on a fresh box ("cannot load certificate ... ssl-dhparam.pem: No such
-# file or directory") regardless of whether Certbot came from the Ubuntu apt package or Snap
-# — not a packaging difference, specifically a webroot-vs-nginx-plugin one.
-#
-# No meaningful "checked-in" version of this file exists (it's meant to be host-specific,
-# and hand-embedding a long DH parameter blob in git is exactly the kind of thing a single
-# typo would silently make cryptographically weak rather than obviously broken) — generated
-# once with openssl instead; skipped on re-runs since it's slow (up to ~a minute) and never
-# needs to change. (options-ssl-nginx.conf, the other file Certbot's plugin would normally
-# drop, is handled by deploy/sync-nginx.sh below, since it — unlike this one — does have a
-# checked-in version.)
-mkdir -p /etc/letsencrypt
-if [ ! -f /etc/letsencrypt/ssl-dhparam.pem ]; then
-  echo "-- Generating a 2048-bit DH parameter file (one-time, can take up to ~a minute)..."
-  openssl dhparam -out /etc/letsencrypt/ssl-dhparam.pem 2048
-fi
-
-echo "############################################################"
-echo "# 13) Nginx — final TLS-enabled site configs"
-echo "############################################################"
-# The www.aryanb.dev bootstrap stub (step 10) is superseded by aryanb.dev.conf (which
-# handles the www -> apex redirect itself), so remove it before sync-nginx.sh installs the
-# real configs.
-rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/www.aryanb.dev.conf
-# Shared with deploy/publish.sh (every routine deploy re-runs this too) specifically so a
-# Nginx config fix committed to the repo can never again silently fail to reach the live
-# server just because the operator used the normal update/publish path instead of
-# re-running this full bootstrap script — see deploy/sync-nginx.sh's own comment for the
-# incident (aryanb.dev serving docs.aryanb.dev's content in production) this closes.
-chmod +x "$REPO_DIR/deploy/sync-nginx.sh"
+# deploy/sync-nginx.sh handles everything from here: installing ACME-challenge stubs and
+# requesting any missing certificates (deploy/ensure-certs.sh), generating ssl-dhparam.pem,
+# and installing the final TLS-enabled config for every domain that now has a cert. It's the
+# SAME script deploy/publish.sh calls on every routine deploy — see its own comment for why
+# that matters (a Let's Encrypt or Nginx-config problem here should never require re-running
+# this whole bootstrap script again; deploy/update.sh alone can now self-heal it).
+echo "If certificate requests fail behind Cloudflare, see deploy/RUNBOOK.md 'HTTPS via"
+echo "Let's Encrypt' for the DNS-only fallback, then re-run this step."
+chmod +x "$REPO_DIR/deploy/ensure-certs.sh" "$REPO_DIR/deploy/sync-nginx.sh"
 "$REPO_DIR/deploy/sync-nginx.sh"
 
 echo "############################################################"
-echo "# 14) Certbot auto-renewal deploy-hook (reload Nginx after renewal)"
+echo "# 11) Certbot auto-renewal deploy-hook (reload Nginx after renewal)"
 echo "############################################################"
 mkdir -p /etc/letsencrypt/renewal-hooks/deploy
 cat > /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh <<'EOF'
@@ -401,13 +330,14 @@ chmod +x /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
 systemctl enable --now certbot.timer 2>/dev/null || true
 
 echo "############################################################"
-echo "# 15) systemd units: app + nightly backup"
+echo "# 12) systemd units: app + nightly backup"
 echo "############################################################"
 cp "$REPO_DIR/deploy/systemd/pms-demo.service" /etc/systemd/system/pms-demo.service
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.service" /etc/systemd/system/pms-demo-backup.service
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.timer" /etc/systemd/system/pms-demo-backup.timer
 chmod +x "$REPO_DIR/deploy/backup-demo-db.sh" "$REPO_DIR/deploy/publish.sh" "$REPO_DIR/deploy/update.sh" \
-  "$REPO_DIR/deploy/publish-static-sites.sh" "$REPO_DIR/deploy/healthcheck.sh" "$REPO_DIR/deploy/sync-nginx.sh"
+  "$REPO_DIR/deploy/publish-static-sites.sh" "$REPO_DIR/deploy/healthcheck.sh" "$REPO_DIR/deploy/sync-nginx.sh" \
+  "$REPO_DIR/deploy/ensure-certs.sh"
 systemctl daemon-reload
 # `enable` (no --now): registers pms-demo to start on every future boot, without starting it
 # now — there's no release under /var/www/pms-demo/current yet at this point in a fresh

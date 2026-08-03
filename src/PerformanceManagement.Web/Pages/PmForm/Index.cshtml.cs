@@ -116,6 +116,13 @@ public class IndexModel : AppPageModel
             return Page();
         }
 
+        // Keep the Department selector in sync with whoever is actually selected — most visible
+        // when Dept starts as "(All)" (empty) and an HR admin/branch viewer picks an employee
+        // directly from the unfiltered Employee dropdown: without this, Dept would keep showing
+        // "(All)" instead of that employee's real department.
+        if (CanChangeDept && !string.IsNullOrEmpty(SelectedEmployee.DeptCode))
+            Dept = SelectedEmployee.DeptCode;
+
         await LoadFormViewAsync(keep);
         return Page();
     }

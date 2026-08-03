@@ -322,10 +322,17 @@
         // change is treated as an intentional save, not a loss, so the flag clears first.
         var formsDirty = false;
         document.querySelectorAll('form').forEach(function(form) {
+            // Clearing the dirty flag applies to EVERY form submission, including ones exempt
+            // from dirty-TRACKING below (data-no-dirty-check, e.g. PM Form's Department/
+            // Employee/Year selector) — submitting any form is always a deliberate, intentional
+            // navigation. Without this, typing into an unrelated tracked form (say, an
+            // achievement-score field) earlier on the same page would leave formsDirty stuck
+            // true, and the later, perfectly legitimate selector submission would still trigger
+            // a false "Leave site?" warning purely because nothing ever reset the flag for it.
+            form.addEventListener('submit', function() { formsDirty = false; });
             if (form.method.toLowerCase() !== 'post' || form.dataset.noDirtyCheck) return;
             form.addEventListener('input', function() { formsDirty = true; });
             form.addEventListener('change', function() { formsDirty = true; });
-            form.addEventListener('submit', function() { formsDirty = false; });
         });
         window.addEventListener('beforeunload', function(e) {
             if (!formsDirty) return;

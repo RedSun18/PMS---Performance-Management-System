@@ -115,7 +115,12 @@ public sealed class DemoSeeder
             CompanyName = "Apex Corporation",
             CompanyAddress = "1 Summit Plaza, Springfield, ST 00000",
             ContactEmail = "hr@apexcorp.demo",
-            ApplicationBaseUrl = "http://localhost:5274",
+            // The real public Demo URL, not a local dev placeholder — this value is baked into
+            // every notification/email deep-link generated from it (FormLinkService), so a wrong
+            // value here means every one of those links is broken on the live site. Local testing
+            // of a freshly-seeded Demo database can still override this via Settings > General
+            // if link-following matters for that session.
+            ApplicationBaseUrl = "https://pms.aryanb.dev",
             CompanyLogoPath = "/images/demo/apex-logo.svg",
             PrimaryColorHex = "#0f2b5c",
             SecondaryColorHex = "#1e3a8a",

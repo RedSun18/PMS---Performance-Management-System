@@ -496,7 +496,7 @@ else
         <div class="card-body">
             <div class="table-scroll">
             <table class="grid">
-                <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@Localizer["ColGrades"]</th><th>@Localizer["ColKpiWeightPercent"]</th><th>@Localizer["ColCompWeightPercent"]</th><th></th></tr></thead>
+                <thead><tr><th>@Localizer["ColCode"]</th><th>@SharedLocalizer["Name"]</th><th>@Localizer["ColGrades"]</th><th>@Localizer["ColKpiWeightPercent"]</th><th>@Localizer["ColCompWeightPercent"]</th><th></th><th></th></tr></thead>
                 <tbody>
                 @foreach (var j in Model.JobFamilies)
                 {
@@ -551,7 +551,7 @@ else
         <div class="card-body">
             <div class="table-scroll">
             <table class="grid">
-                <thead><tr><th>@Localizer["ColCode"]</th><th>@Localizer["ColRatingEn"]</th><th>@Localizer["ColRatingAr"]</th><th>@Localizer["ColScoreRange"]</th><th>@SharedLocalizer["Remarks"]</th><th></th></tr></thead>
+                <thead><tr><th>@Localizer["ColCode"]</th><th>@Localizer["ColRatingEn"]</th><th>@Localizer["ColRatingAr"]</th><th>@Localizer["ColScoreRange"]</th><th>@SharedLocalizer["Remarks"]</th><th></th><th></th></tr></thead>
                 <tbody>
                 @foreach (var r in Model.RatingScales)
                 {
@@ -559,8 +559,8 @@ else
                         <form method="post" asp-page-handler="SaveRatingScale">
                             <input type="hidden" name="isNew" value="false" />
                             <td>@r.Code<input type="hidden" name="code" value="@r.Code" /></td>
-                            <td><input type="text" name="nameEn" aria-label="@Localizer["RatingEnForScaleAriaLabel", r.Code]" value="@r.NameEn" style="max-width:130px;" /></td>
-                            <td><input type="text" name="nameAr" aria-label="@Localizer["RatingArForScaleAriaLabel", r.Code]" value="@r.NameAr" dir="rtl" style="max-width:130px;" /></td>
+                            <td><input type="text" name="nameEn" aria-label="@Localizer["RatingEnForScaleAriaLabel", r.Code]" value="@r.NameEn" style="min-width:170px;" /></td>
+                            <td><input type="text" name="nameAr" aria-label="@Localizer["RatingArForScaleAriaLabel", r.Code]" value="@r.NameAr" dir="rtl" style="min-width:170px;" /></td>
                             <td style="display:flex;gap:4px;align-items:center;">
                                 <input type="number" name="minScore" aria-label="@Localizer["MinScoreForScaleAriaLabel", r.Code]" value="@r.MinScore" min="0" max="100" style="max-width:70px;" />–
                                 <input type="number" name="maxScore" aria-label="@Localizer["MaxScoreForScaleAriaLabel", r.Code]" value="@r.MaxScore" min="0" max="100" style="max-width:70px;" />

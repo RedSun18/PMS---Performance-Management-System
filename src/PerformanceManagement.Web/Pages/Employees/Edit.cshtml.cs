@@ -58,8 +58,26 @@ public class EditModel : AppPageModel
             };
             currentDeptCode = e.DeptCode;
         }
+        else
+        {
+            // Pre-fill with the next available code (last numeric code + 1) purely as a
+            // convenience default — the field stays fully editable, and OnPostAsync's own
+            // duplicate check is what actually enforces uniqueness, not this suggestion.
+            Form.EmpCode = await NextEmployeeCodeAsync();
+        }
         await LoadListsAsync(currentDeptCode);
         return Page();
+    }
+
+    private async Task<string> NextEmployeeCodeAsync()
+    {
+        var codes = await _db.Employees.AsNoTracking().Select(e => e.EmpCode).ToListAsync();
+        var maxNumeric = codes
+            .Where(c => int.TryParse(c, out _))
+            .Select(int.Parse)
+            .DefaultIfEmpty(1000)
+            .Max();
+        return (maxNumeric + 1).ToString();
     }
 
     public async Task<IActionResult> OnPostAsync()

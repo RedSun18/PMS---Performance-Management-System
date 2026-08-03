@@ -62,4 +62,5 @@
   <data name="CardHeader" xml:space="preserve"><value>تسجيل الدخول — {0}</value></data>
   <data name="RememberMe" xml:space="preserve"><value>تذكرني على هذا الجهاز</value></data>
   <data name="DevAccountsHint" xml:space="preserve"><value>حسابات التطوير: admin (مسؤول) وحساب واحد لكل موظف (رمز الموظف المكون من 4 أرقام). راجع ملف README لمعرفة كلمات المرور الأولية.</value></data>
+  <data name="DemoAccountsHint" xml:space="preserve"><value>حسابات تجريبية: admin / Admin@123 (مسؤول موارد بشرية)، manager / Demo@123، employee / Demo@123 — أو أي رمز موظف مكوّن من 4 أرقام مع Demo@123.</value></data>
 </root>

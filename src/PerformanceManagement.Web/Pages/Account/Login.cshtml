@@ -42,7 +42,7 @@
             <button type="submit" class="btn btn-primary" style="width:100%;">@SharedLocalizer["SignIn"]</button>
         </form>
         <p class="muted" style="margin-top:14px;">
-            @Localizer["DevAccountsHint"]
+            @(string.IsNullOrWhiteSpace(general.CompanyName) ? Localizer["DevAccountsHint"] : Localizer["DemoAccountsHint"])
         </p>
     </div>
 </div>

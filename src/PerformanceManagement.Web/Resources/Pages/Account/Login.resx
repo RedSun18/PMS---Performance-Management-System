@@ -62,4 +62,5 @@
   <data name="CardHeader" xml:space="preserve"><value>Sign in — {0}</value></data>
   <data name="RememberMe" xml:space="preserve"><value>Remember me on this device</value></data>
   <data name="DevAccountsHint" xml:space="preserve"><value>Development accounts: admin (administrator) and one account per employee (4-digit employee code). See the README for initial passwords.</value></data>
+  <data name="DemoAccountsHint" xml:space="preserve"><value>Demo accounts: admin / Admin@123 (HR Administrator), manager / Demo@123, employee / Demo@123 — or any 4-digit employee code with Demo@123.</value></data>
 </root>

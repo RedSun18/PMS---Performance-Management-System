@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-03 — `b6d20fa`
+
+- Deepen PDF export diagnostics: reproduce the Chrome download failure directly
+
 ## 2026-08-03 — `a7172d7`
 
 - Add PDF export (Chromium) diagnostics to healthcheck.sh

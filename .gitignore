@@ -277,9 +277,11 @@ azw/
 # GitHub Specific
 # ============================================
 
-# GitHub Actions artifacts
+# NOTE: *.github was deliberately removed from here (RC1 readiness review) — as a glob
+# pattern it matches the literal path ".github", which silently excluded the entire
+# .github/workflows/ directory (ci.yml AND deploy.yml) from version control since this
+# file's very first commit. Neither workflow has ever actually been on GitHub or run.
 *.workflow
-*.github
 
 # ============================================
 # Security & SSL

@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      # tests/PerformanceManagement.Tests uses an in-memory SQLite fixture (TestHost.cs) —
+      # no database service container needed here.
+      - name: Test
+        run: dotnet test tests/PerformanceManagement.Tests --no-build --configuration Release --logger "console;verbosity=normal"

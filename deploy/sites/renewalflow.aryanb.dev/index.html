@@ -1,67 +1,798 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RenewalFlow — Coming Soon</title>
-<meta name="description" content="RenewalFlow is a CRM for subscription and policy renewal tracking, currently in development by Aryan Bhandary." />
-<link rel="canonical" href="https://renewalflow.aryanb.dev/" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png" />
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
-<meta name="theme-color" content="#0f2b5c" />
+<title>RenewalFlow — Insurance CRM SaaS</title>
+<meta name="description" content="RenewalFlow is an insurance CRM SaaS that automates policy renewals, reminders, and client communications — purpose-built for insurance workflows." />
+<meta name="author" content="Aryan Bhandary" />
+<meta name="theme-color" content="#07070b" />
 
+<!-- Open Graph -->
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="RenewalFlow" />
-<meta property="og:title" content="RenewalFlow — Coming Soon" />
-<meta property="og:description" content="A CRM for subscription and policy renewal tracking. In development." />
-<meta property="og:url" content="https://renewalflow.aryanb.dev/" />
-<meta property="og:image" content="https://renewalflow.aryanb.dev/assets/og-image.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:title" content="RenewalFlow — Insurance CRM SaaS" />
+<meta property="og:description" content="Insurance CRM SaaS that automates policy renewals, reminders, and client communications. Coming soon." />
+<meta property="og:url" content="https://renewalflow.aryanb.dev" />
+<meta property="og:site_name" content="Aryan Bhandary — Software Engineer" />
+<meta property="og:locale" content="en_US" />
 
+<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="RenewalFlow — Coming Soon" />
-<meta name="twitter:description" content="A CRM for subscription and policy renewal tracking. In development." />
-<meta name="twitter:image" content="https://renewalflow.aryanb.dev/assets/og-image.png" />
+<meta name="twitter:title" content="RenewalFlow — Insurance CRM SaaS" />
+<meta name="twitter:description" content="Insurance CRM SaaS that automates policy renewals, reminders, and client communications. Coming soon." />
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "RenewalFlow",
-  "url": "https://renewalflow.aryanb.dev/",
-  "publisher": { "@type": "Person", "name": "Aryan Bhandary", "url": "https://aryanb.dev/" }
-}
-</script>
+<!-- Favicon (matches homepage) -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%2307070b'/%3E%3Ctext x='50' y='72' font-family='Inter,sans-serif' font-size='62' font-weight='800' text-anchor='middle' fill='%23ffffff'%3EA%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%2307070b'/%3E%3Ctext x='50' y='72' font-family='Inter,sans-serif' font-size='62' font-weight='800' text-anchor='middle' fill='%23ffffff'%3EA%3C/text%3E%3C/svg%3E" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
 <style>
-  :root { --navy: #0f2b5c; --navy2: #1e3a8a; --blue: #2f5fd6; }
-  * { box-sizing: border-box; }
+  /* ===== Reset ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  :root {
+    --bg: #07070b;
+    --bg-alt: #0a0a10;
+    --surface: rgba(255, 255, 255, 0.035);
+    --surface-2: rgba(255, 255, 255, 0.06);
+    --surface-hover: rgba(255, 255, 255, 0.075);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f4f4f6;
+    --text-muted: #9a9aa6;
+    --text-dim: #5f5f6b;
+    --accent: #6366f1;
+    --accent-2: #a855f7;
+    --accent-glow: rgba(99, 102, 241, 0.35);
+    --accent-2-glow: rgba(168, 85, 247, 0.28);
+    --radius: 18px;
+    --radius-sm: 10px;
+    --radius-lg: 28px;
+    --max-width: 1180px;
+  }
+
   body {
-    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
-    color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: center; padding: 24px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
   }
-  .mark {
-    width: 72px; height: 72px; border-radius: 16px; margin: 0 auto 28px;
-    background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.35);
-    display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800;
+
+  /* ===== Background accents (matches homepage) ===== */
+  .bg-accent {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
   }
-  h1 { font-size: 40px; margin: 0 0 12px; }
-  p { color: #cfd9f2; font-size: 17px; max-width: 460px; margin: 0 auto 28px; }
-  a.back { color: #fff; text-decoration: underline; font-weight: 600; }
+  .bg-accent::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.10), transparent 45%),
+      radial-gradient(circle at 85% 35%, rgba(168, 85, 247, 0.08), transparent 50%),
+      radial-gradient(circle at 50% 95%, rgba(56, 189, 248, 0.05), transparent 55%);
+  }
+  .bg-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.4;
+    animation: float 22s ease-in-out infinite;
+  }
+  .blob-1 { top: -12%; left: -8%; width: 520px; height: 520px; background: #4f46e5; }
+  .blob-2 { top: 28%; right: -12%; width: 460px; height: 460px; background: #7c3aed; animation-delay: -7s; }
+  .blob-3 { bottom: -10%; left: 32%; width: 540px; height: 540px; background: #0ea5e9; animation-delay: -14s; opacity: 0.22; }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.06); }
+    66% { transform: translate(-30px, 25px) scale(0.96); }
+  }
+
+  /* ===== Layout ===== */
+  .container { width: 100%; max-width: var(--max-width); margin: 0 auto; padding: 0 28px; }
+
+  /* ===== Nav (matches homepage) ===== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 0;
+    transition: background-color 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease;
+    border-bottom: 1px solid transparent;
+  }
+  .nav.scrolled {
+    background: rgba(7, 7, 11, 0.72);
+    backdrop-filter: saturate(160%) blur(20px);
+    -webkit-backdrop-filter: saturate(160%) blur(20px);
+    border-bottom-color: var(--border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    transition: opacity 0.2s ease;
+  }
+  .brand:hover { opacity: 0.85; }
+  .brand-mark {
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-weight: 900;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .brand-active {
+    color: var(--text) !important;
+    background: var(--surface-2) !important;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+  }
+  .nav-links a {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+  .nav-links a:hover { color: var(--text); background: var(--surface); }
+
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .nav-cta:hover {
+    transform: translateY(-1px);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+  }
+
+  .menu-btn {
+    display: none;
+    width: 40px; height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .menu-btn:hover { background: var(--surface-hover); }
+  .menu-btn svg { width: 18px; height: 18px; }
+
+  /* ===== Buttons (matches homepage) ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 22px;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .btn-primary {
+    background: linear-gradient(180deg, #ffffff, #e8e8ee);
+    color: #0a0a10;
+    border-color: rgba(255,255,255,0.16);
+    box-shadow: 0 10px 28px -10px rgba(255,255,255,0.22), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -12px rgba(255,255,255,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .btn-secondary {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+    backdrop-filter: blur(10px);
+  }
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border);
+    padding: 9px 14px;
+    font-size: 13.5px;
+  }
+  .btn-ghost:hover {
+    background: var(--surface);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+  }
+  .btn-block { width: 100%; }
+
+  /* ===== Section ===== */
+  section { padding: 100px 0; position: relative; }
+  .section-head { max-width: 640px; margin-bottom: 56px; }
+  .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    margin-bottom: 18px;
+    letter-spacing: 0.02em;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+  }
+  .section-title {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.028em;
+    line-height: 1.1;
+    margin-bottom: 14px;
+  }
+  .section-sub {
+    font-size: 16px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 56ch;
+  }
+  .section-head.center .section-sub { margin: 0 auto; }
+
+  /* ===== Hero (matches homepage) ===== */
+  .hero { padding: 160px 0 80px; position: relative; }
+  .hero-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px 7px 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    backdrop-filter: blur(10px);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.05s ease forwards;
+  }
+  .hero-eyebrow .pulse {
+    position: relative;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #f59e0b; /* Amber for "coming soon" */
+    margin-left: 4px;
+  }
+  .hero-eyebrow .pulse::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: #f59e0b;
+    opacity: 0.35;
+    animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;
+  }
+  @keyframes ping {
+    0% { transform: scale(1); opacity: 0.5; }
+    80%, 100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  .hero h1 {
+    font-size: clamp(46px, 8.5vw, 96px);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    margin-bottom: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #c9c9d4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.12s ease forwards;
+  }
+  .hero-subtitle {
+    font-size: clamp(18px, 2.4vw, 24px);
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+  .hero-desc {
+    font-size: clamp(16px, 1.5vw, 18px);
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto 40px;
+    line-height: 1.65;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.26s ease forwards;
+  }
+  .hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.34s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Waitlist Form ===== */
+  .waitlist {
+    max-width: 480px;
+    margin: 40px auto 0;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.42s ease forwards;
+  }
+  .waitlist-form {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .waitlist-form:focus-within {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+  .waitlist-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+  }
+  .waitlist-input::placeholder { color: var(--text-dim); }
+  .waitlist-success {
+    display: none;
+    padding: 14px 18px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    color: #10b981;
+    font-size: 14.5px;
+    font-weight: 500;
+    align-items: center;
+    gap: 10px;
+  }
+  .waitlist-success.show { display: flex; animation: fadeIn 0.4s ease forwards; }
+  .waitlist-success svg { width: 18px; height: 18px; flex-shrink: 0; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ===== Feature Cards ===== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 18px;
+  }
+  @media (min-width: 680px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 980px) { .features-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .feature-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+    backdrop-filter: blur(8px);
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(500px circle at var(--mx, 50%) var(--my, 50%), rgba(99, 102, 241, 0.10), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+    background: var(--surface-2);
+  }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(168,85,247,0.12));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    margin-bottom: 20px;
+    transition: transform 0.25s ease;
+  }
+  .feature-card:hover .feature-icon { transform: scale(1.05); }
+  .feature-icon svg { width: 20px; height: 20px; }
+
+  .feature-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin-bottom: 8px;
+  }
+  .feature-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ===== Footer (matches homepage) ===== */
+  footer {
+    padding: 48px 0 36px;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+  .footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .footer-inner p { color: var(--text-dim); font-size: 13.5px; }
+  .footer-links {
+    display: flex;
+    gap: 18px;
+    list-style: none;
+  }
+  .footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13.5px;
+    transition: color 0.2s ease;
+  }
+  .footer-links a:hover { color: var(--text); }
+
+  /* ===== Scroll reveal ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 820px) {
+    .nav-links { display: none; }
+    .nav-cta { display: none; }
+    .menu-btn { display: inline-flex; }
+    .nav-links.open {
+      display: flex;
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 16px;
+      right: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 2px;
+      padding: 10px;
+      background: rgba(10, 10, 16, 0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5);
+    }
+    .nav-links.open a { padding: 12px 14px; border-radius: 8px; }
+  }
+  @media (max-width: 600px) {
+    section { padding: 72px 0; }
+    .hero { padding: 130px 0 60px; }
+    .container { padding: 0 20px; }
+    .waitlist-form { flex-direction: column; gap: 8px; padding: 12px; }
+    .waitlist-form .btn { width: 100%; }
+    .feature-card { padding: 24px; }
+  }
 </style>
 </head>
 <body>
-  <div>
-    <div class="mark">RF</div>
-    <h1>RenewalFlow</h1>
-    <p>A CRM for subscription and policy renewal tracking — currently in development. Check back soon.</p>
-    <a class="back" href="https://aryanb.dev">← aryanb.dev</a>
+
+<!-- Background -->
+<div class="bg-accent" aria-hidden="true">
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+</div>
+
+<!-- Nav -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="https://aryanb.dev" class="brand" aria-label="Aryan Bhandary — Home">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span>Aryan Bhandary</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="https://aryanb.dev">Home</a></li>
+        <li><a href="https://docs.aryanb.dev">Documentation</a></li>
+        <li><a href="https://pms.aryanb.dev">PMS Demo</a></li>
+        <li><a href="https://github.com/RedSun18">GitHub</a></li>
+      </ul>
+    </nav>
+    <a href="https://aryanb.dev#contact" class="nav-cta">
+      Get in touch
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h7v7"/><path d="M13 3 3 13"/></svg>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+      <svg id="menuIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+    </button>
   </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <span class="hero-eyebrow">
+          <span class="pulse" aria-hidden="true"></span>
+          Coming Soon
+        </span>
+        <h1>RenewalFlow</h1>
+        <p class="hero-subtitle">Insurance CRM SaaS</p>
+        <p class="hero-desc">
+          Insurance CRM SaaS that automates policy renewals, reminders, and client communications — purpose-built for modern insurance workflows.
+        </p>
+        <div class="hero-cta">
+          <a href="#features" class="btn btn-primary">
+            Explore Features
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </a>
+          <a href="https://github.com/RedSun18" class="btn btn-secondary" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:15px;height:15px"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+            View GitHub
+          </a>
+        </div>
+
+        <!-- Waitlist Form -->
+        <div class="waitlist">
+          <form class="waitlist-form" id="waitlistForm">
+            <input type="email" class="waitlist-input" placeholder="Enter your email for early access" required aria-label="Email address" />
+            <button type="submit" class="btn btn-primary">Join Waitlist</button>
+          </form>
+          <div class="waitlist-success" id="waitlistSuccess" role="status">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            You're on the list! We'll be in touch soon.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="reveal">
+    <div class="container">
+      <div class="section-head center">
+        <span class="eyebrow"><span class="dot"></span> Capabilities</span>
+        <h2 class="section-title">Built for insurance workflows</h2>
+        <p class="section-sub">RenewalFlow centralizes policies, clients, and communications — automating the busywork so your team can focus on relationships.</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 4v5h-5"/></svg>
+          </div>
+          <h3 class="feature-title">Automated Renewals</h3>
+          <p class="feature-desc"> Automatically track expiration dates and trigger renewal workflows 30, 60, or 90 days in advance.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3 class="feature-title">Client CRM</h3>
+          <p class="feature-desc">A unified view of every client, their policies, history, and documents—all in one organized dashboard.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="feature-title">Automated Reminders</h3>
+          <p class="feature-desc">Send automated email and SMS reminders to clients for upcoming payments and document sign-offs.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          </div>
+          <h3 class="feature-title">Workflow Automation</h3>
+          <p class="feature-desc">Design custom pipelines and trigger actions based on policy status, client responses, or agent input.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+          </div>
+          <h3 class="feature-title">Secure & Compliant</h3>
+          <p class="feature-desc">Built with data security and privacy at the core, ensuring sensitive client information remains protected.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card" data-tilt>
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>
+          </div>
+          <h3 class="feature-title">Analytics & Reporting</h3>
+          <p class="feature-desc">Track renewal rates, agent performance, and revenue forecasts with real-time, customizable dashboards.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer (matches homepage) -->
+<footer>
+  <div class="container footer-inner">
+    <p>© <span id="year"></span> Aryan Bhandary. All rights reserved.</p>
+    <ul class="footer-links">
+      <li><a href="https://github.com/RedSun18" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/aryan-bhandary-0812b8217/" target="_blank" rel="noopener">LinkedIn</a></li>
+      <li><a href="mailto:hello@aryanb.dev">Email</a></li>
+      <li><a href="https://aryanb.dev/resume.pdf">Resume</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Nav scroll state
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 12) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Mobile menu
+  const menuBtn = document.getElementById('menuBtn');
+  const navLinks = document.getElementById('navLinks');
+  const menuIcon = document.getElementById('menuIcon');
+  let menuOpen = false;
+
+  function setMenu(open) {
+    menuOpen = open;
+    navLinks.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuIcon.innerHTML = open
+      ? '<path d="M3 3l10 10M13 3 3 13"/>'
+      : '<path d="M2 4h12M2 8h12M2 12h12"/>';
+  }
+  menuBtn.addEventListener('click', () => setMenu(!menuOpen));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && menuOpen) setMenu(false); });
+
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  revealEls.forEach(el => io.observe(el));
+
+  // Feature card mouse-tracked glow
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    });
+  });
+
+  // Waitlist form
+  const form = document.getElementById('waitlistForm');
+  const success = document.getElementById('waitlistSuccess');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    form.style.display = 'none';
+    success.classList.add('show');
+  });
+</script>
 </body>
 </html>

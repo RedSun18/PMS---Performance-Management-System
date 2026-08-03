@@ -1,0 +1,106 @@
+name: Deploy
+
+# Continuous deployment for the PMS Demo + static sites. Runs the same build/test steps as
+# ci.yml, and only deploys to the VPS if they pass. Only ever touches the Demo environment —
+# there is nothing in this workflow, or anything it calls on the server (deploy/update.sh ->
+# deploy/publish.sh), that can reach the Development database.
+#
+# Required repository secrets (Settings > Secrets and variables > Actions), set by you —
+# see deploy/RUNBOOK.md "GitHub Actions CD setup" for how to generate a deploy-only key:
+#   DEPLOY_HOST     — the VPS hostname/IP
+#   DEPLOY_USER     — SSH user for deployment (a restricted, deploy-only key — see RUNBOOK)
+#   DEPLOY_SSH_KEY  — private key for that user (PEM, no passphrase)
+#   DEPLOY_PORT     — SSH port (optional, defaults to 22)
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test tests/PerformanceManagement.Tests --no-build --configuration Release --logger "console;verbosity=normal"
+
+  release-notes:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Append release entry
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          DATE="$(date -u +%Y-%m-%d)"
+          SUBJECT="$(git log -1 --pretty=%s)"
+          ENTRY="## ${DATE} — \`${SHORT_SHA}\`\n\n- ${SUBJECT}\n"
+          # Insert right after the top-level "# Release Notes" heading and its intro line,
+          # so newest entries stay at the top.
+          awk -v entry="$ENTRY" '
+            NR==1 {print; next}
+            found==0 && /^## / {print entry; found=1}
+            {print}
+            END {if (found==0) print entry}
+          ' RELEASE_NOTES.md > RELEASE_NOTES.md.tmp
+          mv RELEASE_NOTES.md.tmp RELEASE_NOTES.md
+
+      - name: Commit and push
+        run: |
+          git config user.name "pms-deploy-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add RELEASE_NOTES.md
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: release notes for $(git rev-parse --short HEAD) [skip ci]"
+            git push
+          else
+            echo "No changes to RELEASE_NOTES.md"
+          fi
+
+  deploy:
+    needs: [build-and-test, release-notes]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${DEPLOY_PORT:-22}" "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy via SSH (runs the server's restricted deploy key -> deploy/update.sh)
+        env:
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          # The command below is irrelevant if DEPLOY_SSH_KEY's authorized_keys entry uses a
+          # forced `command=` (as deploy/RUNBOOK.md sets up) — that always wins. It's kept
+          # explicit here so a plain (non-restricted) key still does the right thing.
+          ssh -i ~/.ssh/deploy_key -p "${DEPLOY_PORT:-22}" -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "sudo /opt/pms-demo/repo/deploy/update.sh origin/main"

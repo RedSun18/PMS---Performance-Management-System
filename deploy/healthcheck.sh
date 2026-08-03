@@ -49,6 +49,32 @@ echo "== Application (Kestrel, local — also covers migrations: Program.cs runs
 echo "   before /health is reachable at all, so a migration failure fails this check) =="
 check_url "Kestrel /health" "http://127.0.0.1:8090/health"
 
+# Diagnostic only (never sets FAILED) — same reasoning as bootstrap-server.sh's Chromium apt
+# packages: PDF export is one optional feature, not core app health, so a problem here must
+# never fail the whole deploy. This exists because PDF export failures produce nothing more
+# specific than a generic 500 (Error.cshtml deliberately shows no exception detail — see
+# Pages/Error.cshtml.cs), and there's no interactive SSH access to this box (the GitHub
+# Actions deploy key runs update.sh only), so `ldd` against the actual downloaded Chromium
+# binary is the only way to see whether required shared libraries are missing without direct
+# server access — its output lands in the routine GitHub Actions deploy log.
+echo "== PDF export (PuppeteerSharp/headless Chromium) =="
+CHROME_BIN="$(find /var/www/pms-demo -path '*/puppeteer/*' -type f \( -name chrome -o -name headless_shell \) -perm -u+x 2>/dev/null | head -1)"
+if [ -z "$CHROME_BIN" ]; then
+  echo "  FAIL  No downloaded Chromium binary found under /var/www/pms-demo/.cache/puppeteer"
+  echo "        -- PuppeteerSharp's BrowserFetcher.DownloadAsync() has not completed successfully."
+else
+  echo "  OK    Chromium binary found: $CHROME_BIN"
+  MISSING="$(ldd "$CHROME_BIN" 2>&1 | grep 'not found' || true)"
+  if [ -n "$MISSING" ]; then
+    echo "  FAIL  Missing shared libraries required to launch Chromium:"
+    echo "$MISSING" | sed 's/^/        /'
+  else
+    echo "  OK    All shared libraries resolved (ldd reports none missing)"
+  fi
+fi
+echo "  -- Recent PDF/Chromium-related lines from journalctl -u pms-demo (if any):"
+journalctl -u pms-demo --no-pager -n 500 2>/dev/null | grep -iE "puppeteer|chromium|headless_shell|pdf" | tail -15 | sed 's/^/        /' || true
+
 echo "== Public HTTPS endpoints (Nginx + Let's Encrypt + Cloudflare) =="
 check_url "PMS Demo"    "https://pms.aryanb.dev/health"
 check_url "Portfolio"   "https://aryanb.dev/"

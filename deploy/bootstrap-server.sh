@@ -353,29 +353,22 @@ request_cert -d renewalflow.aryanb.dev
 echo "############################################################"
 echo "# 12) Certbot's Nginx SSL support files"
 echo "############################################################"
-# The Nginx configs below (deploy/nginx/*.conf) reference /etc/letsencrypt/options-ssl-nginx.conf
-# and /etc/letsencrypt/ssl-dhparam.pem. Those two files are normally created as a SIDE EFFECT
-# of Certbot's nginx *plugin* running (`certbot --nginx` / `certbot install --nginx`) — but
-# step 11 deliberately uses `certonly --webroot` instead, specifically so Certbot never
-# rewrites our git-tracked Nginx configs itself. That means the plugin's prepare() step that
-# would normally drop these two files never runs, and `nginx -t` fails on a fresh box
-# ("cannot load certificate ... ssl-dhparam.pem: No such file or directory") regardless of
-# whether Certbot came from the Ubuntu apt package or Snap — this is not a snap-vs-apt
-# packaging difference, it's specifically a webroot-vs-nginx-plugin one.
+# /etc/letsencrypt/ssl-dhparam.pem is normally created as a SIDE EFFECT of Certbot's nginx
+# *plugin* running (`certbot --nginx`) — but step 11 deliberately uses `certonly --webroot`
+# instead, specifically so Certbot never rewrites our git-tracked Nginx configs itself. That
+# means the plugin's prepare() step that would normally drop this file never runs, and
+# `nginx -t` fails on a fresh box ("cannot load certificate ... ssl-dhparam.pem: No such
+# file or directory") regardless of whether Certbot came from the Ubuntu apt package or Snap
+# — not a packaging difference, specifically a webroot-vs-nginx-plugin one.
 #
-# Fix: provide both files ourselves. options-ssl-nginx.conf is Certbot's own long-standing
-# publicly-documented baseline (TLSv1.2/1.3, modern cipher list) — deploy/nginx/options-ssl-nginx.conf
-# is a checked-in copy of it, installed only if nothing is there yet (never overwrites a
-# real Certbot-managed copy, e.g. if `--nginx` was ever used on this box for something else).
-# ssl-dhparam.pem has no meaningful "checked-in" version (it's meant to be host-specific, and
-# hand-embedding a long DH parameter blob in git is exactly the kind of thing a single typo
-# would silently make cryptographically weak rather than obviously broken) — generated once
-# with openssl instead; skipped on re-runs since it's slow (up to ~a minute) and never needs
-# to change.
+# No meaningful "checked-in" version of this file exists (it's meant to be host-specific,
+# and hand-embedding a long DH parameter blob in git is exactly the kind of thing a single
+# typo would silently make cryptographically weak rather than obviously broken) — generated
+# once with openssl instead; skipped on re-runs since it's slow (up to ~a minute) and never
+# needs to change. (options-ssl-nginx.conf, the other file Certbot's plugin would normally
+# drop, is handled by deploy/sync-nginx.sh below, since it — unlike this one — does have a
+# checked-in version.)
 mkdir -p /etc/letsencrypt
-if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
-  cp "$REPO_DIR/deploy/nginx/options-ssl-nginx.conf" /etc/letsencrypt/options-ssl-nginx.conf
-fi
 if [ ! -f /etc/letsencrypt/ssl-dhparam.pem ]; then
   echo "-- Generating a 2048-bit DH parameter file (one-time, can take up to ~a minute)..."
   openssl dhparam -out /etc/letsencrypt/ssl-dhparam.pem 2048
@@ -384,17 +377,17 @@ fi
 echo "############################################################"
 echo "# 13) Nginx — final TLS-enabled site configs"
 echo "############################################################"
-for f in pms.aryanb.dev aryanb.dev docs.aryanb.dev renewalflow.aryanb.dev; do
-  if [ -d "/etc/letsencrypt/live/$f" ]; then
-    cp "$REPO_DIR/deploy/nginx/$f.conf" "/etc/nginx/sites-available/$f.conf"
-  else
-    echo "-- Skipping final config for $f: no certificate yet."
-  fi
-done
-# The www.aryanb.dev bootstrap stub is superseded by aryanb.dev.conf (which handles the
-# www -> apex redirect itself), so remove it once the real cert/config are in place.
+# The www.aryanb.dev bootstrap stub (step 10) is superseded by aryanb.dev.conf (which
+# handles the www -> apex redirect itself), so remove it before sync-nginx.sh installs the
+# real configs.
 rm -f /etc/nginx/sites-enabled/www.aryanb.dev.conf /etc/nginx/sites-available/www.aryanb.dev.conf
-nginx -t && systemctl reload nginx
+# Shared with deploy/publish.sh (every routine deploy re-runs this too) specifically so a
+# Nginx config fix committed to the repo can never again silently fail to reach the live
+# server just because the operator used the normal update/publish path instead of
+# re-running this full bootstrap script — see deploy/sync-nginx.sh's own comment for the
+# incident (aryanb.dev serving docs.aryanb.dev's content in production) this closes.
+chmod +x "$REPO_DIR/deploy/sync-nginx.sh"
+"$REPO_DIR/deploy/sync-nginx.sh"
 
 echo "############################################################"
 echo "# 14) Certbot auto-renewal deploy-hook (reload Nginx after renewal)"
@@ -414,7 +407,7 @@ cp "$REPO_DIR/deploy/systemd/pms-demo.service" /etc/systemd/system/pms-demo.serv
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.service" /etc/systemd/system/pms-demo-backup.service
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.timer" /etc/systemd/system/pms-demo-backup.timer
 chmod +x "$REPO_DIR/deploy/backup-demo-db.sh" "$REPO_DIR/deploy/publish.sh" "$REPO_DIR/deploy/update.sh" \
-  "$REPO_DIR/deploy/publish-static-sites.sh" "$REPO_DIR/deploy/healthcheck.sh"
+  "$REPO_DIR/deploy/publish-static-sites.sh" "$REPO_DIR/deploy/healthcheck.sh" "$REPO_DIR/deploy/sync-nginx.sh"
 systemctl daemon-reload
 # `enable` (no --now): registers pms-demo to start on every future boot, without starting it
 # now — there's no release under /var/www/pms-demo/current yet at this point in a fresh

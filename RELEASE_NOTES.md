@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-03 — `8e943f4`
+
+- Finish docs.aryanb.dev redesign: wire in real guides and real screenshots
+
 ## 2026-08-03 — `3c9f15c`
 
 - RC1: fix .gitignore excluding .github/workflows/, redesign portfolio and RenewalFlow sites

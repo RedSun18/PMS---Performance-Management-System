@@ -24,10 +24,20 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+CHANGED=0
+
+# Snippets are `include`d by every per-domain site config, so a change here (e.g. a fixed
+# CSP directive) must also trigger a reload below — copying the file to disk is not enough,
+# Nginx keeps serving whatever it already has loaded in memory until reloaded. Each copy is
+# therefore change-detected the same way as the per-domain configs, not done unconditionally.
 mkdir -p /etc/nginx/snippets
-cp "$REPO_DIR/deploy/nginx/acme-challenge.conf" /etc/nginx/snippets/acme-challenge.conf
-cp "$REPO_DIR/deploy/nginx/cloudflare-realip.conf" /etc/nginx/snippets/cloudflare-realip.conf
-cp "$REPO_DIR/deploy/nginx/security-headers-static.conf" /etc/nginx/snippets/security-headers-static.conf
+for snippet in acme-challenge.conf cloudflare-realip.conf security-headers-static.conf; do
+  if ! cmp -s "$REPO_DIR/deploy/nginx/$snippet" "/etc/nginx/snippets/$snippet" 2>/dev/null; then
+    cp "$REPO_DIR/deploy/nginx/$snippet" "/etc/nginx/snippets/$snippet"
+    echo "-- Updated /etc/nginx/snippets/$snippet"
+    CHANGED=1
+  fi
+done
 
 mkdir -p /etc/letsencrypt
 if [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ]; then
@@ -40,8 +50,6 @@ fi
 
 chmod +x "$REPO_DIR/deploy/ensure-certs.sh"
 "$REPO_DIR/deploy/ensure-certs.sh"
-
-CHANGED=0
 
 # Installed unconditionally (no certificate dependency — see default-catchall.conf) so a
 # domain missing its certificate can never silently inherit another real domain's content

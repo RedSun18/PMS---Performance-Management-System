@@ -62,6 +62,14 @@ CHROME_BIN="$(find /var/www/pms-demo -path '*/puppeteer/*' -type f \( -name chro
 if [ -z "$CHROME_BIN" ]; then
   echo "  FAIL  No downloaded Chromium binary found under /var/www/pms-demo/.cache/puppeteer"
   echo "        -- PuppeteerSharp's BrowserFetcher.DownloadAsync() has not completed successfully."
+  # Reproduces the exact download BrowserFetcher performs, but with curl instead of .NET's
+  # HttpClient, so the real network-level failure (DNS/TLS/timeout/HTTP status) is visible —
+  # PuppeteerSharp's own exception only says "Failed to download", no lower-level detail.
+  CHROME_URL="https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip"
+  echo "  -- Reproducing the download directly (curl -v against the exact URL PuppeteerSharp uses):"
+  curl -v --max-time 25 -o /dev/null "$CHROME_URL" 2>&1 | tail -25 | sed 's/^/        /'
+  echo "  -- DNS resolution for storage.googleapis.com:"
+  getent hosts storage.googleapis.com 2>&1 | sed 's/^/        /' || echo "        (getent failed / not found)"
 else
   echo "  OK    Chromium binary found: $CHROME_BIN"
   MISSING="$(ldd "$CHROME_BIN" 2>&1 | grep 'not found' || true)"
@@ -73,7 +81,7 @@ else
   fi
 fi
 echo "  -- Recent PDF/Chromium-related lines from journalctl -u pms-demo (if any):"
-journalctl -u pms-demo --no-pager -n 500 2>/dev/null | grep -iE "puppeteer|chromium|headless_shell|pdf" | tail -15 | sed 's/^/        /' || true
+journalctl -u pms-demo --no-pager -n 500 2>/dev/null | grep -iE "puppeteer|chromium|headless_shell|pdf" | tail -40 | sed 's/^/        /' || true
 
 echo "== Public HTTPS endpoints (Nginx + Let's Encrypt + Cloudflare) =="
 check_url "PMS Demo"    "https://pms.aryanb.dev/health"

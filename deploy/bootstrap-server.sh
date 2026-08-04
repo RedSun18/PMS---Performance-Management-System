@@ -108,22 +108,16 @@ apt-get install -y \
   curl git ufw fail2ban unattended-upgrades apt-listchanges \
   nginx certbot python3-certbot-nginx postgresql-client
 
-# Separate, non-fatal install: these are only needed for PDF export (PuppeteerSharp/headless
-# Chromium — see README.md "Reports"), not for the app to run at all. Isolated from the core
-# packages above deliberately — Ubuntu's 24.04 "time_t" transition renamed a number of these
-# libs (libasound2 -> libasound2t64 being one already accounted for below), and a single
+# Isolated from the core packages above deliberately — Ubuntu's 24.04 "time_t" transition
+# renamed a number of these libs (libasound2 -> libasound2t64 being one), and a single
 # renamed/missing package name in one `apt-get install` line aborts the ENTIRE line under
 # `set -e`, which previously took nginx/certbot/fail2ban/UFW down with it too (the same class
 # of bug fixed for docker-compose-plugin below). A future Ubuntu point release renaming one of
 # these must not be able to block the rest of the deployment — it should only cost PDF export.
-if ! apt-get install -y \
-  libnss3 libatk-bridge2.0-0 libcups2 libxcomposite1 libxdamage1 libxrandr2 libgbm1 \
-  libpango-1.0-0 libasound2t64; then
-  echo "!! Failed to install one or more Chromium/PDF-export dependencies — continuing anyway."
-  echo "!! PDF export (Reports page) will not work until this is resolved manually; nothing"
-  echo "!! else in this deployment depends on these packages. See README.md 'Reports' for the"
-  echo "!! exact package list, or check apt output above for the specific failing name."
-fi
+# Also (re-)run by deploy/publish.sh on every routine deploy — see deploy/ensure-pdf-deps.sh
+# for why a one-time bootstrap-only install isn't enough.
+chmod +x "$REPO_DIR/deploy/ensure-pdf-deps.sh"
+"$REPO_DIR/deploy/ensure-pdf-deps.sh"
 
 echo "############################################################"
 echo "# 2) Docker Engine + Compose plugin"
@@ -337,7 +331,7 @@ cp "$REPO_DIR/deploy/systemd/pms-demo-backup.service" /etc/systemd/system/pms-de
 cp "$REPO_DIR/deploy/systemd/pms-demo-backup.timer" /etc/systemd/system/pms-demo-backup.timer
 chmod +x "$REPO_DIR/deploy/backup-demo-db.sh" "$REPO_DIR/deploy/publish.sh" "$REPO_DIR/deploy/update.sh" \
   "$REPO_DIR/deploy/publish-static-sites.sh" "$REPO_DIR/deploy/healthcheck.sh" "$REPO_DIR/deploy/sync-nginx.sh" \
-  "$REPO_DIR/deploy/ensure-certs.sh"
+  "$REPO_DIR/deploy/ensure-certs.sh" "$REPO_DIR/deploy/ensure-pdf-deps.sh"
 systemctl daemon-reload
 # `enable` (no --now): registers pms-demo to start on every future boot, without starting it
 # now — there's no release under /var/www/pms-demo/current yet at this point in a fresh

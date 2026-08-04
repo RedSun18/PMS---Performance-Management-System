@@ -95,6 +95,10 @@ fi
 echo "==> Syncing Nginx config from repo (self-heals any drift — see deploy/sync-nginx.sh)"
 "$REPO_DIR/deploy/sync-nginx.sh"
 
+echo "==> Ensuring PDF export (Chromium) apt dependencies (self-heals — see deploy/ensure-pdf-deps.sh)"
+chmod +x "$REPO_DIR/deploy/ensure-pdf-deps.sh"
+"$REPO_DIR/deploy/ensure-pdf-deps.sh"
+
 echo "==> Deploying static sites"
 "$REPO_DIR/deploy/publish-static-sites.sh" "$GIT_COMMIT" "$APP_VERSION" "$DEPLOY_TIMESTAMP"
 

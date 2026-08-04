@@ -74,8 +74,6 @@ else
     echo "  OK    All shared libraries resolved (ldd reports none missing)"
   fi
 fi
-echo "  -- Full exception block (last PuppeteerException in the last 2000 log lines, incl. any inner exception):"
-journalctl -u pms-demo --no-pager -n 2000 2>/dev/null | grep -A 40 "PuppeteerException" | tail -80 | sed 's/^/        /' || true
 
 echo "== Public HTTPS endpoints (Nginx + Let's Encrypt + Cloudflare) =="
 check_url "PMS Demo"    "https://pms.aryanb.dev/health"

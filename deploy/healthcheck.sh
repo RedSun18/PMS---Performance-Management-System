@@ -51,25 +51,19 @@ check_url "Kestrel /health" "http://127.0.0.1:8090/health"
 
 # Diagnostic only (never sets FAILED) — same reasoning as bootstrap-server.sh's Chromium apt
 # packages: PDF export is one optional feature, not core app health, so a problem here must
-# never fail the whole deploy. This exists because PDF export failures produce nothing more
-# specific than a generic 500 (Error.cshtml deliberately shows no exception detail — see
-# Pages/Error.cshtml.cs), and there's no interactive SSH access to this box (the GitHub
-# Actions deploy key runs update.sh only), so `ldd` against the actual downloaded Chromium
-# binary is the only way to see whether required shared libraries are missing without direct
-# server access — its output lands in the routine GitHub Actions deploy log.
+# never fail the whole deploy. PdfRenderer.WarmupAsync() anchors PuppeteerSharp's Chromium
+# cache at $HOME/.cache/puppeteer (see its comment — a stable, pms-demo-owned directory that
+# survives every deploy; a past bug had it downloading into the ephemeral, root-owned release
+# directory instead, failing with UnauthorizedAccessException on every single deploy). This
+# check confirms the download actually landed there and that Chromium's shared-library
+# dependencies are satisfied — output lands in the routine GitHub Actions deploy log, useful
+# since there's no interactive SSH access to this box (the deploy key runs update.sh only).
 echo "== PDF export (PuppeteerSharp/headless Chromium) =="
-CHROME_BIN="$(find /var/www/pms-demo -path '*/puppeteer/*' -type f \( -name chrome -o -name headless_shell \) -perm -u+x 2>/dev/null | head -1)"
+CHROME_BIN="$(find /var/www/pms-demo/.cache/puppeteer -type f \( -name chrome -o -name headless_shell \) -perm -u+x 2>/dev/null | head -1)"
 if [ -z "$CHROME_BIN" ]; then
   echo "  FAIL  No downloaded Chromium binary found under /var/www/pms-demo/.cache/puppeteer"
   echo "        -- PuppeteerSharp's BrowserFetcher.DownloadAsync() has not completed successfully."
-  # Reproduces the exact download BrowserFetcher performs, but with curl instead of .NET's
-  # HttpClient, so the real network-level failure (DNS/TLS/timeout/HTTP status) is visible —
-  # PuppeteerSharp's own exception only says "Failed to download", no lower-level detail.
-  CHROME_URL="https://storage.googleapis.com/chrome-for-testing-public/130.0.6723.69/linux64/chrome-linux64.zip"
-  echo "  -- Reproducing the download directly (curl -v against the exact URL PuppeteerSharp uses):"
-  curl -v --max-time 25 -o /dev/null "$CHROME_URL" 2>&1 | tail -25 | sed 's/^/        /'
-  echo "  -- DNS resolution for storage.googleapis.com:"
-  getent hosts storage.googleapis.com 2>&1 | sed 's/^/        /' || echo "        (getent failed / not found)"
+  echo "        Check: journalctl -u pms-demo -n 200 --no-pager | grep -A20 PuppeteerException"
 else
   echo "  OK    Chromium binary found: $CHROME_BIN"
   MISSING="$(ldd "$CHROME_BIN" 2>&1 | grep 'not found' || true)"
@@ -80,8 +74,6 @@ else
     echo "  OK    All shared libraries resolved (ldd reports none missing)"
   fi
 fi
-echo "  -- Full exception block (last PuppeteerException in the last 2000 log lines, incl. any inner exception):"
-journalctl -u pms-demo --no-pager -n 2000 2>/dev/null | grep -A 40 "PuppeteerException" | tail -80 | sed 's/^/        /' || true
 
 echo "== Public HTTPS endpoints (Nginx + Let's Encrypt + Cloudflare) =="
 check_url "PMS Demo"    "https://pms.aryanb.dev/health"

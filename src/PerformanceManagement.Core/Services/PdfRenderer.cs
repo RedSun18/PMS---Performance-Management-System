@@ -32,11 +32,26 @@ public static class PdfRenderer
         try
         {
             if (_browser is not null) return;
-            var fetcher = new BrowserFetcher();
-            await fetcher.DownloadAsync();
+
+            // Explicit cache directory instead of new BrowserFetcher()'s unconfigured default
+            // (which resolves relative to the running assembly's own directory). In production
+            // that default is a freshly published, timestamped release folder (see
+            // deploy/publish.sh) owned by a different user than the one the app runs as (see
+            // deploy/systemd/pms-demo.service) — every deploy would both force a full ~150MB
+            // re-download AND fail outright with UnauthorizedAccessException, because the
+            // unprivileged service account has no write access to its own release directory.
+            // $HOME (set explicitly in pms-demo.service, also where the Data Protection key
+            // ring already lives) is a stable, app-owned directory that survives every deploy —
+            // anchoring the Chromium cache there makes it persist across releases and actually
+            // writable by the account that needs to write it.
+            var cacheDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".cache", "puppeteer");
+            var fetcher = Puppeteer.CreateBrowserFetcher(new BrowserFetcherOptions { Path = cacheDir });
+            var installedBrowser = await fetcher.DownloadAsync();
             _browser = await Puppeteer.LaunchAsync(new LaunchOptions
             {
                 Headless = true,
+                ExecutablePath = installedBrowser.GetExecutablePath(),
                 Args = new[] { "--no-sandbox" }
             });
         }

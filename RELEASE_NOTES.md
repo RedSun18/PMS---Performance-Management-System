@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-04 — `196e51a`
+
+- Self-heal missing Chromium shared-library deps on every deploy
+
 ## 2026-08-04 — `cb993d9`
 
 - Temporarily re-add full exception capture to PDF diagnostics

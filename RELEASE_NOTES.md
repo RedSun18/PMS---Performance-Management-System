@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-04 — `cb993d9`
+
+- Temporarily re-add full exception capture to PDF diagnostics
+
 ## 2026-08-04 — `15b977b`
 
 - Fix PDF export 500: Chromium cache dir must be writable by the app's own user

@@ -398,3 +398,6 @@ deploy/sites/aryanb.dev/resume.pdf
 
 # Local backup copy (not tracked; see conversation for why)
 bkp/
+
+# Claude Code local session/config data — machine-specific, not part of the app.
+.claude/

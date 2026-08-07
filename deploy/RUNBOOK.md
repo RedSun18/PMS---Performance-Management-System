@@ -459,3 +459,12 @@ publish anything.
   `systemctl status pms-demo nginx`.
 - **Certbot renewal fails silently**: `sudo certbot renew --dry-run` to test without
   actually renewing; check `/var/log/letsencrypt/letsencrypt.log`.
+- **Deploy fails on "no stale localhost links in Notifications/EmailLogs"**: the
+  `FixLocalhostNotificationAndEmailLinks` migration (runs automatically with every other EF
+  migration on startup) didn't apply, most likely because migrations themselves failed earlier
+  in the same deploy — check `journalctl -u pms-demo` for a migration error first. If
+  migrations are otherwise healthy but this still fails, run
+  `deploy/check-stale-links.sh` by hand for the exact row count, then apply the migration
+  directly: `dotnet ef database update --project src/PerformanceManagement.Core --startup-project src/PerformanceManagement.Web`
+  against the Demo connection string. This check only ever touches the `pms_demo` database by
+  name — it cannot fire against Development.

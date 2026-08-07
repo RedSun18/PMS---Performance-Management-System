@@ -12,6 +12,8 @@
 # the point is to report EVERY problem in one pass, not just the first one.
 set -uo pipefail
 
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 FAILED=0
 
 check() {
@@ -48,6 +50,13 @@ check "pms-demo-backup.timer active"   systemctl is-active --quiet pms-demo-back
 echo "== Application (Kestrel, local — also covers migrations: Program.cs runs them"
 echo "   before /health is reachable at all, so a migration failure fails this check) =="
 check_url "Kestrel /health" "http://127.0.0.1:8090/health"
+
+# A real deploy-breaking condition, not diagnostic-only: a stored notification/email link
+# still pointing at localhost is exactly the class of bug (fix the setting, forget the
+# already-created rows) that let this go unnoticed in production for weeks — see
+# check-stale-links.sh for the full story. FAILED=1 here, same as any other real check.
+echo "== Data hygiene (stale localhost links) =="
+check "no stale localhost links in Notifications/EmailLogs" "$REPO_DIR/deploy/check-stale-links.sh"
 
 # Diagnostic only (never sets FAILED) — same reasoning as bootstrap-server.sh's Chromium apt
 # packages: PDF export is one optional feature, not core app health, so a problem here must

@@ -2,6 +2,7 @@ using PerformanceManagement.Core.Data;
 using PerformanceManagement.Core.Domain;
 using PerformanceManagement.Core.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -23,12 +24,13 @@ public class IndexModel : AppPageModel
     private readonly NotificationService _notifications;
     private readonly SettingsService _settings;
     private readonly IStringLocalizer<IndexModel> _localizer;
+    private readonly IWebHostEnvironment _env;
 
     public IndexModel(PmDbContext db, IClock clock, ReportDataService reports, NotificationService notifications,
-        SettingsService settings, IStringLocalizer<IndexModel> localizer)
+        SettingsService settings, IStringLocalizer<IndexModel> localizer, IWebHostEnvironment env)
     {
         _db = db; _clock = clock; _reports = reports; _notifications = notifications;
-        _settings = settings; _localizer = localizer;
+        _settings = settings; _localizer = localizer; _env = env;
     }
 
     /// <summary>Report/Excel header brand text — the environment's own company name if set
@@ -145,11 +147,42 @@ public class IndexModel : AppPageModel
         return await _reports.GetManagerReportAsync(manager, year);
     }
 
-    private FileContentResult PdfFile(byte[] bytes, string fileNameNoExtension) =>
-        File(bytes, "application/pdf", $"{fileNameNoExtension}.pdf");
+    private FileContentResult PdfFile(byte[] bytes, string fileNameNoExtension)
+    {
+        MarkDownloadComplete();
+        return File(bytes, "application/pdf", $"{fileNameNoExtension}.pdf");
+    }
 
-    private FileContentResult ExcelFile(byte[] bytes, string fileNameNoExtension) =>
-        File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileNameNoExtension}.xlsx");
+    private FileContentResult ExcelFile(byte[] bytes, string fileNameNoExtension)
+    {
+        MarkDownloadComplete();
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{fileNameNoExtension}.xlsx");
+    }
+
+    /// <summary>Completion signal for _Layout.cshtml's Export button spinner. A GET request that
+    /// returns Content-Disposition: attachment never navigates the page — nothing native tells
+    /// the browser (or our own JS) "this submission finished" the way a normal page load does,
+    /// so the client attaches a one-off token to the request (query string `dltoken`) and polls
+    /// document.cookie for it. Setting that same value back as a cookie, right alongside the file
+    /// itself, is the actual signal: it can only appear once this response has genuinely started
+    /// — nothing about the client's poll interval decides when the button re-enables, only this
+    /// cookie's presence does. Not HttpOnly: it exists purely for that JS poll to read; it isn't
+    /// authorization or a session value, and Secure/SameSite=Strict still protect it from anyone
+    /// but this same first-party page. A no-op whenever the token is absent (e.g. someone hits an
+    /// export URL directly, outside the normal button flow) — nothing else about the response
+    /// changes either way.</summary>
+    private void MarkDownloadComplete()
+    {
+        var token = Request.Query["dltoken"].ToString();
+        if (string.IsNullOrEmpty(token)) return;
+        Response.Cookies.Append("pms_download_token", token, new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = !_env.IsDevelopment(),
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.FromMinutes(2)
+        });
+    }
 
     private async Task LoadOptionsAsync()
     {

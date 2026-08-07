@@ -13,7 +13,13 @@
     <div class="card-header">@Localizer["EmployeePerformanceReportHeader"]</div>
     <div class="card-body">
         <p class="muted" style="margin-top:0;">@Localizer["EmployeeReportDescription"]</p>
-        <form method="get">
+        @* data-download: this GET "submission" never navigates the page — the response is a
+           file (Content-Disposition: attachment), so there's no page-load to reset the Export
+           buttons' disabled/spinner state the way every other form gets it reset for free.
+           _Layout.cshtml's submit handler gives forms marked this way a real completion signal
+           (a hidden iframe's load event) instead of leaving them stuck forever. See that file's
+           "Prevent duplicate submissions" section for the full explanation. *@
+        <form method="get" data-download>
             <div class="filters">
                 <div class="filter-wide">
                     <label for="repEmpcd">@SharedLocalizer["Employee"]</label>
@@ -48,7 +54,7 @@
     <div class="card-header">@Localizer["DepartmentSummaryHeader"]</div>
     <div class="card-body">
         <p class="muted" style="margin-top:0;">@Localizer["DepartmentSummaryDescription"]</p>
-        <form method="get">
+        <form method="get" data-download>
             <div class="filters">
                 <div class="filter-wide">
                     <label for="repDept">@SharedLocalizer["Department"]</label>
@@ -83,7 +89,7 @@
     <div class="card-header">@Localizer["ManagerSummaryHeader"]</div>
     <div class="card-body">
         <p class="muted" style="margin-top:0;">@Localizer["ManagerSummaryDescription"]</p>
-        <form method="get">
+        <form method="get" data-download>
             <div class="filters">
                 <div class="filter-wide">
                     <label for="repManager">@SharedLocalizer["Manager"]</label>
@@ -118,7 +124,7 @@
     <div class="card-header">@Localizer["OverallOrgSummaryHeader"]</div>
     <div class="card-body">
         <p class="muted" style="margin-top:0;">@Localizer["OverallOrgSummaryDescription"]</p>
-        <form method="get">
+        <form method="get" data-download>
             <div class="filters">
                 <div>
                     <label for="repOrgYear">@SharedLocalizer["ReviewYear"]</label>

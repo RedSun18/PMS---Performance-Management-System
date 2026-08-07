@@ -26,7 +26,11 @@
         {
             <div class="alert alert-error">@Model.Error</div>
         }
-        <form method="post" data-no-dirty-check>
+        @* POST (credentials must never land in a query string) but still pure "log in", not
+           content-editing — exempted so clicking the EN/عربي language toggle mid-type doesn't
+           trigger the unsaved-changes prompt. See _Layout.cshtml's dirty-tracking section for
+           why this needs an explicit ="off" value rather than a bare attribute. *@
+        <form method="post" data-dirty-tracking="off">
             <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
             <div style="margin-bottom:12px;">
                 <label for="username">@SharedLocalizer["Username"]</label>

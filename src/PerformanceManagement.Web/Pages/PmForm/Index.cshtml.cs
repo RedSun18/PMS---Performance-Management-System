@@ -127,10 +127,6 @@ public class IndexModel : AppPageModel
         return Page();
     }
 
-    // ---- selection postbacks --------------------------------------------
-    public IActionResult OnPostSelect(string? dept, string? empcd, int? year) =>
-        RedirectToPage(new { Dept = dept, Empcd = empcd, Year = year });
-
     // ---- KPI item handlers (session working set, like legacy grids) ------
     public async Task<IActionResult> OnPostAddKpiAsync(string perspective, string kpiCode, string? target,
         int weight, int? achievement, string? comments, int? editingSeq)

@@ -306,7 +306,14 @@
         // affect what gets sent.
         document.addEventListener('submit', function(e) {
             var form = e.target;
-            if (!(form instanceof HTMLFormElement) || form.dataset.noDupeGuard) return;
+            // hasAttribute(), not dataset — a bare `data-no-dupe-guard` (no ="value") reads back
+            // as dataset.noDupeGuard === "" (the empty string), which is FALSY, so a naive
+            // `if (form.dataset.noDupeGuard)` check silently never fires for exactly the plain,
+            // valueless attribute form every call site here actually uses. This is the same class
+            // of bug that broke the unsaved-changes exemption below (see that section's comment)
+            // — fixed the same way in both places so it can't resurface from copy-pasting one
+            // into the other.
+            if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-dupe-guard')) return;
             setTimeout(function () {
                 form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(function(btn) {
                     btn.disabled = true;
@@ -316,26 +323,53 @@
         }, true);
 
         // ---- Unsaved-changes warning ----------------------------------------
-        // Any edit to a text/select/checkbox/textarea field inside a POST form marks the
-        // page dirty; navigating away (closing the tab, following a link, refreshing)
-        // then prompts the browser's native confirmation. Submitting the form that made the
-        // change is treated as an intentional save, not a loss, so the flag clears first.
-        var formsDirty = false;
+        //
+        // Design: a page is dirty — worth a native "leave site?" confirmation — only when a POST
+        // form whose purpose is to SAVE content has an actual, un-submitted edit sitting in it.
+        // Internal workflow navigation (reloading the page with different query parameters —
+        // PM Form's Department/Employee/Year selector, every search/filter form in the app,
+        // language switching) has nothing to lose by definition, so it's excluded from tracking
+        // up front instead of being tracked and then reset:
+        //
+        //  - GET forms and links are never tracked below. This is not a special case; it's the
+        //    reason every filter/search form in the app (Employees, Users, Reports,
+        //    WorkflowAdmin, and now PM Form's own selector) is deliberately method="get" — the
+        //    HTTP verb itself is the "this is navigation, not a save" signal, which can't be
+        //    silently defeated by a broken JS attribute check the way the old design was.
+        //  - A POST form that is ALSO pure navigation for some other technical reason (e.g.
+        //    Account/Login, which must be POST so credentials never land in a query string, but
+        //    still shouldn't warn if the user clicks the language toggle mid-type) opts out with
+        //    an explicit `data-dirty-tracking="off"` — a real value, checked with strict `===`.
+        //
+        // Why not the old `data-no-dirty-check` bare attribute? `element.dataset.foo` on a
+        // present-but-valueless `data-foo` attribute reads back as "" (the empty string), and ""
+        // is falsy — so `if (form.dataset.noDirtyCheck)` silently never returned early for the
+        // exact plain `data-no-dirty-check` (no ="true") every affected form actually used. That
+        // form was correctly marked exempt in the HTML and still got tracked anyway, which is
+        // exactly why the "Leave site?" prompt kept firing on every Department/Employee change
+        // despite the earlier fix looking correct on inspection. Comparing against a real string
+        // value removes the whole class of "did the bare attribute actually work" doubt.
+        //
+        // A tracked form's own submission is always an intentional save, not a loss — listened
+        // for once, in the capture phase, on the document itself (not per-form), so it covers
+        // every current and future save path (a real click, Enter-to-submit, requestSubmit())
+        // without each page having to remember to reset anything. This is no longer standing in
+        // for the exemption above (as it used to for the selector's programmatic form.submit()
+        // calls, which never fire a 'submit' event at all per spec, and so were never actually
+        // reset by this): every form that calls .submit() directly is GET, hence never tracked
+        // in the first place, so there's nothing left for this listener to paper over.
+        var dirtyForms = new Set();
         document.querySelectorAll('form').forEach(function(form) {
-            // Clearing the dirty flag applies to EVERY form submission, including ones exempt
-            // from dirty-TRACKING below (data-no-dirty-check, e.g. PM Form's Department/
-            // Employee/Year selector) — submitting any form is always a deliberate, intentional
-            // navigation. Without this, typing into an unrelated tracked form (say, an
-            // achievement-score field) earlier on the same page would leave formsDirty stuck
-            // true, and the later, perfectly legitimate selector submission would still trigger
-            // a false "Leave site?" warning purely because nothing ever reset the flag for it.
-            form.addEventListener('submit', function() { formsDirty = false; });
-            if (form.method.toLowerCase() !== 'post' || form.dataset.noDirtyCheck) return;
-            form.addEventListener('input', function() { formsDirty = true; });
-            form.addEventListener('change', function() { formsDirty = true; });
+            if (form.method.toLowerCase() !== 'post') return;
+            if (form.dataset.dirtyTracking === 'off') return;
+            form.addEventListener('input', function() { dirtyForms.add(form); });
+            form.addEventListener('change', function() { dirtyForms.add(form); });
         });
+        document.addEventListener('submit', function(e) {
+            if (e.target instanceof HTMLFormElement) dirtyForms.delete(e.target);
+        }, true);
         window.addEventListener('beforeunload', function(e) {
-            if (!formsDirty) return;
+            if (dirtyForms.size === 0) return;
             e.preventDefault();
             e.returnValue = '';
         });

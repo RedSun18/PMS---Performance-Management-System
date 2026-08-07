@@ -26,13 +26,14 @@
 <div class="card">
     <div class="card-header">👤 @Localizer["EmployeeSelectionHeader"]</div>
     <div class="card-body">
-        @* This form only ever carries the Department/Employee/Year filter selects — OnPostSelect
-           is a pure redirect, never a data save — so it's opted out of the global unsaved-changes
-           dirty-check below. Without this, changing Department set the page "dirty" via the
-           select's change event before its own auto-submit could reset the flag (form.submit()
-           bypasses the submit event the reset relies on), so the browser's native "leave page?"
-           confirmation fired on every department switch even though nothing was actually unsaved. *@
-        <form method="post" asp-page-handler="Select" id="selectForm" data-no-dirty-check>
+        @* This form only ever carries the Department/Employee/Year filter selects — reloading the
+           page with different query parameters, exactly like every other search/filter form in
+           the app (Employees, Users, Reports, WorkflowAdmin). method="get" is what makes it
+           unsaved-changes-exempt: the layout's global dirty-tracking script only ever attaches to
+           POST forms in the first place, so a GET form needs no special opt-out attribute at all
+           — see _Layout.cshtml's "Unsaved-changes warning" section for why that's deliberately a
+           categorical exclusion (by HTTP verb) rather than a per-form JS flag. *@
+        <form method="get" id="selectForm">
             <div class="grid-3">
                 <div>
                     <label for="deptSelect">@Localizer["SelectDepartmentLabel"]</label>

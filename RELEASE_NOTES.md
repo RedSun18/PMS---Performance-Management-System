@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-07 — `d8df2cd`
+
+- Add Arabic KPI/Competency content: fix English-only text on the Arabic PM Form
+
 ## 2026-08-07 — `a17e3ec`
 
 - CAT fixes: allow Google Fonts in static-site CSP, point GitHub links at the repo

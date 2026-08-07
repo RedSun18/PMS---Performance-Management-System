@@ -503,7 +503,7 @@ else
                     <tr>
                         <form method="post" asp-page-handler="SaveJobFamily">
                             <td>@j.Code<input type="hidden" name="code" value="@j.Code" /></td>
-                            <td><input type="text" name="nameEn" aria-label="@Localizer["NameForJobFamilyAriaLabel", j.Code]" value="@j.NameEn" /></td>
+                            <td><input type="text" name="nameEn" aria-label="@Localizer["NameForJobFamilyAriaLabel", j.Code]" value="@j.NameEn" style="min-width:170px;" /></td>
                             <td><input type="text" name="gradesCsv" aria-label="@Localizer["GradesForJobFamilyAriaLabel", j.Code]" value="@j.GradesCsv" style="max-width:120px;" /></td>
                             <td><input type="number" name="kpiWeight" aria-label="@Localizer["KpiWeightForJobFamilyAriaLabel", j.Code]" value="@j.KpiWeight" min="0" max="100" style="max-width:90px;" /></td>
                             <td><input type="number" name="compWeight" aria-label="@Localizer["CompWeightForJobFamilyAriaLabel", j.Code]" value="@j.CompWeight" min="0" max="100" style="max-width:90px;" /></td>

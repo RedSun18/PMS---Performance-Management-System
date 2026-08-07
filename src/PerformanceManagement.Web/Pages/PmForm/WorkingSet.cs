@@ -30,7 +30,9 @@ public class WorkingSet
         public string Code { get; set; } = "";
         public string Name { get; set; } = "";
         public string? Definition { get; set; }
+        public string? DefinitionAr { get; set; }
         public string? Formula { get; set; }
+        public string? FormulaAr { get; set; }
         public string? Target { get; set; }
         public int Weight { get; set; }
         public int Achievement { get; set; }

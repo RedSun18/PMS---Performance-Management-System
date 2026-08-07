@@ -158,7 +158,9 @@ public class IndexModel : AppPageModel
         item.Code = master.KpiId;
         item.Name = master.Name;
         item.Definition = master.Description;
+        item.DefinitionAr = master.DescriptionAr;
         item.Formula = master.Formula;
+        item.FormulaAr = master.FormulaAr;
         item.Target = target;
         item.Weight = weight;
         item.Achievement = await _gate.NormalizeAchievementAsync(EvalYear, achievement);
@@ -212,6 +214,7 @@ public class IndexModel : AppPageModel
         item.Code = master.CompId;
         item.Name = master.Name;
         item.Definition = master.Description;
+        item.DefinitionAr = master.DescriptionAr;
         item.Weight = weight;
         item.Achievement = await _gate.NormalizeAchievementAsync(EvalYear, achievement);
         item.Comments = comments;
@@ -401,13 +404,15 @@ public class IndexModel : AppPageModel
             work.Kpis.Select(k => new PmFormKpi
             {
                 RecordSeq = k.Seq, Perspective = k.Kind, KpiCode = k.Code, KpiName = k.Name,
-                KpiDefinition = k.Definition, FormulaMetric = k.Formula, Target = k.Target,
+                KpiDefinition = k.Definition, KpiDefinitionAr = k.DefinitionAr,
+                FormulaMetric = k.Formula, FormulaMetricAr = k.FormulaAr, Target = k.Target,
                 ItemWeight = k.Weight, AchievementScore = k.Achievement, Comments = k.Comments
             }).ToList(),
             work.Comps.Select(c => new PmFormCompetency
             {
                 RecordSeq = c.Seq, CompType = c.Kind, CompCode = c.Code, CompName = c.Name,
-                Description = c.Definition, ItemWeight = c.Weight, AchievementScore = c.Achievement,
+                Description = c.Definition, DescriptionAr = c.DefinitionAr,
+                ItemWeight = c.Weight, AchievementScore = c.Achievement,
                 Comments = c.Comments
             }).ToList());
 
@@ -438,13 +443,15 @@ public class IndexModel : AppPageModel
         w.Kpis = form.Kpis.OrderBy(k => k.RecordSeq).Select(k => new WorkingSet.Item
         {
             Seq = k.RecordSeq, Kind = k.Perspective, Code = k.KpiCode, Name = k.KpiName,
-            Definition = k.KpiDefinition, Formula = k.FormulaMetric, Target = k.Target,
+            Definition = k.KpiDefinition, DefinitionAr = k.KpiDefinitionAr,
+            Formula = k.FormulaMetric, FormulaAr = k.FormulaMetricAr, Target = k.Target,
             Weight = k.ItemWeight, Achievement = k.AchievementScore, Comments = k.Comments
         }).ToList();
         w.Comps = form.Competencies.OrderBy(c => c.RecordSeq).Select(c => new WorkingSet.Item
         {
             Seq = c.RecordSeq, Kind = c.CompType, Code = c.CompCode, Name = c.CompName,
-            Definition = c.Description, Weight = c.ItemWeight, Achievement = c.AchievementScore,
+            Definition = c.Description, DefinitionAr = c.DescriptionAr,
+            Weight = c.ItemWeight, Achievement = c.AchievementScore,
             Comments = c.Comments
         }).ToList();
         return w;

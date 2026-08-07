@@ -17,6 +17,7 @@
     var isSameAsHr1 = (Model.Form?.Hr1Sign ?? "").Trim().Length > 0 &&
                       (Model.Form?.Hr1Sign ?? "").Trim().Equals(Model.CurrentEmpCode, StringComparison.OrdinalIgnoreCase);
     var canEditHr2 = perms?.CanActAsHr == true && status == PmFormStatus.HrReview1Approved && !isSameAsHr1;
+    var isArabicUi = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "ar";
 }
 
 <div class="page-header">@Localizer["PageHeader"]</div>
@@ -284,8 +285,8 @@
                     <td>@k.Seq</td>
                     <td>@(k.Kind switch { "F" => Localizer["PerspectiveFinancial"].Value, "C" => Localizer["PerspectiveCustomer"].Value, "I" => Localizer["PerspectiveInternal"].Value, "L" => Localizer["PerspectiveLearning"].Value, _ => k.Kind })</td>
                     <td><strong>@k.Name</strong></td>
-                    <td>@k.Definition</td>
-                    <td>@k.Formula</td>
+                    <td>@(isArabicUi ? (k.DefinitionAr ?? k.Definition) : k.Definition)</td>
+                    <td>@(isArabicUi ? (k.FormulaAr ?? k.Formula) : k.Formula)</td>
                     <td>@k.Target</td>
                     <td>@k.Weight%</td>
                     @if (showScores)
@@ -436,7 +437,7 @@
                     <td>@(c.Kind == "B" ? Localizer["CompTypeBehavioral"].Value : c.Kind == "T" ? Localizer["CompTypeTechnical"].Value : c.Kind)</td>
                     <td>@c.Code</td>
                     <td><strong>@c.Name</strong></td>
-                    <td>@c.Definition</td>
+                    <td>@(isArabicUi ? (c.DefinitionAr ?? c.Definition) : c.Definition)</td>
                     <td>@c.Weight%</td>
                     @if (showScores)
                     {
@@ -680,12 +681,15 @@
         const KPI_MASTERS = @Html.Raw(JsonSerializer.Serialize(Model.KpiOptions.Select(k => new
                              {
                                  id = k.KpiId, name = k.Name, p = k.Perspective.Trim(),
-                                 desc = k.Description, formula = k.Formula, min = k.MinWeight, max = k.MaxWeight
+                                 desc = isArabicUi ? (k.DescriptionAr ?? k.Description) : k.Description,
+                                 formula = isArabicUi ? (k.FormulaAr ?? k.Formula) : k.Formula,
+                                 min = k.MinWeight, max = k.MaxWeight
                              })));
         const COMP_MASTERS = @Html.Raw(JsonSerializer.Serialize(Model.CompOptions.Select(c => new
                              {
                                  id = c.CompId, name = c.Name, t = c.CompType.Trim(),
-                                 desc = c.Description, min = c.MinWeight, max = c.MaxWeight
+                                 desc = isArabicUi ? (c.DescriptionAr ?? c.Description) : c.Description,
+                                 min = c.MinWeight, max = c.MaxWeight
                              })));
         const SUGGESTED_TEXT = @Html.Raw(JsonSerializer.Serialize(Localizer["SuggestedWeightRangePrefix"].Value));
 

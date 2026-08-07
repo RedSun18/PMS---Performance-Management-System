@@ -214,7 +214,9 @@ public class PmFormKpi
     public string KpiCode { get; set; } = "";
     public string KpiName { get; set; } = "";
     public string? KpiDefinition { get; set; }
+    public string? KpiDefinitionAr { get; set; }
     public string? FormulaMetric { get; set; }
+    public string? FormulaMetricAr { get; set; }
     public string? Target { get; set; }
     public int ItemWeight { get; set; }
     public int AchievementScore { get; set; }
@@ -234,6 +236,7 @@ public class PmFormCompetency
     public string CompName { get; set; } = "";
     /// <summary>Legacy stored the competency description in kpi_definition.</summary>
     public string? Description { get; set; }
+    public string? DescriptionAr { get; set; }
     public int ItemWeight { get; set; }
     public int AchievementScore { get; set; }
     public decimal WeightedCalculation { get; set; }

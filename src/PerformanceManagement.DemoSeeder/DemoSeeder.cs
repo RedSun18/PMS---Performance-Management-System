@@ -181,10 +181,11 @@ public sealed class DemoSeeder
 
     private async Task<int> SeedKpisAsync()
     {
-        foreach (var (id, name, perspective) in DemoReferenceData.Kpis)
+        foreach (var (id, name, perspective, description, formula) in DemoReferenceData.Kpis)
             _db.KpiMasters.Add(new KpiMaster
             {
                 KpiId = id, Name = name, Perspective = perspective, DeptCsv = "*",
+                Description = description, Formula = formula,
                 MinWeight = 10, MaxWeight = 25, Status = "A"
             });
         await _db.SaveChangesAsync();
@@ -193,10 +194,11 @@ public sealed class DemoSeeder
 
     private async Task<int> SeedCompetenciesAsync()
     {
-        foreach (var (id, name, type) in DemoReferenceData.Competencies)
+        foreach (var (id, name, type, description) in DemoReferenceData.Competencies)
             _db.CompetencyMasters.Add(new CompetencyMaster
             {
                 CompId = id, Name = name, CompType = type, DeptCsv = "*",
+                Description = description,
                 MinWeight = 10, MaxWeight = 25, Status = "A"
             });
         await _db.SaveChangesAsync();
@@ -499,10 +501,11 @@ public sealed class DemoSeeder
         var kpis = new List<PmFormKpi>();
         for (var i = 0; i < kpiPicks.Length; i++)
         {
-            var (id, name, perspective) = DemoReferenceData.Kpis[kpiPicks[i]];
+            var (id, name, perspective, description, formula) = DemoReferenceData.Kpis[kpiPicks[i]];
             kpis.Add(new PmFormKpi
             {
                 RecordSeq = i + 1, Perspective = perspective, KpiCode = id, KpiName = name,
+                KpiDefinition = description, FormulaMetric = formula,
                 Target = "100% of plan", ItemWeight = 20, AchievementScore = kpiScores[i]
             });
         }
@@ -512,10 +515,11 @@ public sealed class DemoSeeder
         var comps = new List<PmFormCompetency>();
         for (var i = 0; i < compPicks.Length; i++)
         {
-            var (id, name, type) = DemoReferenceData.Competencies[compPicks[i]];
+            var (id, name, type, description) = DemoReferenceData.Competencies[compPicks[i]];
             comps.Add(new PmFormCompetency
             {
                 RecordSeq = i + 1, CompType = type, CompCode = id, CompName = name,
+                Description = description,
                 ItemWeight = 25, AchievementScore = compScores[i]
             });
         }

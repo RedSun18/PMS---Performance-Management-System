@@ -713,9 +713,15 @@
             document.getElementById('kpiWeightRange').textContent = k ? `${SUGGESTED_TEXT} ${k.min}–${k.max}%` : '';
         }
         function calcKpiScore() {
+            const out = document.getElementById('kpiWeighted');
+            // Only present in the Add/Edit KPI form (editable=true) — this is also called
+            // unconditionally once at the bottom of this script on every page load, including
+            // read-only views (e.g. an HR admin viewing an employee they don't manage), where
+            // none of the add/edit fields render at all.
+            if (!out) return;
             const w = parseFloat(document.getElementById('kpiWeight')?.value) || 0;
             const a = parseFloat(document.getElementById('kpiAchievement')?.value) || 0;
-            document.getElementById('kpiWeighted').value = (w && a) ? Math.round(w * a / 100).toFixed(2) : '';
+            out.value = (w && a) ? Math.round(w * a / 100).toFixed(2) : '';
         }
         function filterComps() {
             const t = document.getElementById('compType')?.value;
@@ -731,9 +737,12 @@
             document.getElementById('compWeightRange').value = c ? `${c.min}%-${c.max}%` : '';
         }
         function calcCompScore() {
+            const out = document.getElementById('compWeighted');
+            // See calcKpiScore's comment — same reason, same fix.
+            if (!out) return;
             const w = parseFloat(document.getElementById('compWeight')?.value) || 0;
             const a = parseFloat(document.getElementById('compAchievement')?.value) || 0;
-            document.getElementById('compWeighted').value = (w && a) ? Math.round(w * a / 100).toFixed(2) : '';
+            out.value = (w && a) ? Math.round(w * a / 100).toFixed(2) : '';
         }
         filterKpis(); filterComps(); calcKpiScore(); calcCompScore();
     </script>

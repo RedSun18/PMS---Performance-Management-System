@@ -241,6 +241,13 @@ app.UseForwardedHeaders(forwardedHeadersOptions);
 // the app relies throughout on inline onclick="..." handlers and small per-page <script> blocks
 // (a nonce-based rewrite is tracked as a roadmap item, not attempted here) — but still blocks
 // framing, plugins, and base-tag injection, which cost nothing to fix and need no page changes.
+// script-src/connect-src also allow Cloudflare Web Analytics' beacon host — this app sits behind
+// the same Cloudflare zone as the three static sites (deploy/nginx/security-headers-static.conf
+// already allows it there), which auto-injects that beacon script at the edge when Web Analytics
+// is enabled for the zone, regardless of what this app's own HTML contains. Without this
+// allowance the beacon script itself gets blocked and logs as a real console error on every
+// single page load — invisible to normal use, but exactly the kind of thing a technically
+// diligent evaluator opening devtools during a demo would notice immediately.
 app.Use(async (ctx, next) =>
 {
     var headers = ctx.Response.Headers;
@@ -249,8 +256,9 @@ app.Use(async (ctx, next) =>
     headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
     headers["Content-Security-Policy"] =
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; " +
         "style-src 'self' 'unsafe-inline'; " +
+        "connect-src 'self' https://cloudflareinsights.com; " +
         "img-src 'self' data:; " +
         "font-src 'self' data:; " +
         "object-src 'none'; " +

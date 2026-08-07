@@ -4,6 +4,10 @@ Auto-appended by `.github/workflows/deploy.yml` on every push to `main` that pas
 entry per deploy (date, short commit hash, commit subject), newest first. This is an
 operational log, not a curated summary — see [`CHANGELOG.md`](CHANGELOG.md) for that.
 
+## 2026-08-07 — `20fd02c`
+
+- CAT fixes: CSP Cloudflare allowance, PmForm null-guard, KPI/Competency content backfill
+
 ## 2026-08-07 — `56c39ef`
 
 - Fix Export PDF/Excel buttons staying stuck in loading state forever
